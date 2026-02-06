@@ -1,6 +1,8 @@
 import argparse
 import os
+import stat
 import sys
+import time
 
 from tree_sitter import Language, Parser
 from tree_sitter_c import language
@@ -106,11 +108,115 @@ class TypeAnalyzer:
             self.symbol_table.register(var_name, curr_type)
 
 
+class MetadataCollector:
+    def __init__(self, parser, code_bytes, source_file):
+        self.parser = parser
+        self.code_bytes = code_bytes
+        self.source_file = source_file
+        self.num_functions = 0
+        self.num_variables = 0
+        self.num_loops = 0
+        self.num_branches = 0
+        self.num_returns = 0
+        self.num_assignments = 0
+        self.num_calls = 0
+        self.num_includes = 0
+        self.num_comments = 0
+        self.max_depth = 0
+        self.function_names = []
+
+    def collect(self):
+        code_text = self.code_bytes.decode("utf-8")
+        tree = self.parser.parse(self.code_bytes)
+        self._walk(tree.root_node, depth=0)
+
+        for line in code_text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#include"):
+                self.num_includes += 1
+        self._count_comments(tree.root_node)
+
+        st = os.stat(self.source_file)
+        file_mode = stat.filemode(st.st_mode)
+        modified = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_mtime))
+        accessed = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_atime))
+        created = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_ctime))
+
+        total_lines = code_text.count("\n") + 1
+        non_blank = sum(1 for line in code_text.splitlines() if line.strip())
+
+        return {
+            "file_name": os.path.basename(self.source_file).replace("\\", "/"),
+            "file_path": os.path.abspath(self.source_file).replace("\\", "/"),
+            "file_size": st.st_size,
+            "file_mode": file_mode,
+            "modified": modified,
+            "accessed": accessed,
+            "created": created,
+            "language": "C",
+            "total_lines": total_lines,
+            "non_blank_lines": non_blank,
+            "num_includes": self.num_includes,
+            "num_comments": self.num_comments,
+            "num_functions": self.num_functions,
+            "function_names": ",".join(self.function_names),
+            "num_variables": self.num_variables,
+            "num_assignments": self.num_assignments,
+            "num_calls": self.num_calls,
+            "num_returns": self.num_returns,
+            "num_loops": self.num_loops,
+            "num_branches": self.num_branches,
+            "max_nesting_depth": self.max_depth,
+        }
+
+    def _count_comments(self, node):
+        for child in node.children:
+            if child.type == "comment":
+                self.num_comments += 1
+            self._count_comments(child)
+
+    def _walk(self, node, depth):
+        if node.type == "function_definition":
+            self.num_functions += 1
+            for child in node.children:
+                if child.type == "function_declarator":
+                    for sub in child.children:
+                        if sub.type == "identifier":
+                            self.function_names.append(
+                                Helpers.get_text(sub, self.code_bytes)
+                            )
+        elif node.type == "declaration":
+            for child in node.children:
+                if child.type == "init_declarator":
+                    self.num_variables += 1
+        elif node.type == "parameter_declaration":
+            self.num_variables += 1
+        elif node.type in ("while_statement", "for_statement", "do_statement"):
+            self.num_loops += 1
+        elif node.type == "if_statement":
+            self.num_branches += 1
+        elif node.type == "return_statement":
+            self.num_returns += 1
+        elif node.type == "assignment_expression":
+            self.num_assignments += 1
+        elif node.type == "call_expression":
+            self.num_calls += 1
+
+        if node.type == "compound_statement":
+            depth += 1
+            if depth > self.max_depth:
+                self.max_depth = depth
+
+        for child in node.children:
+            self._walk(child, depth)
+
+
 class CodeInstrumenter:
-    def __init__(self, parser, code_bytes, symbol_table):
+    def __init__(self, parser, code_bytes, symbol_table, metadata=None):
         self.parser = parser
         self.code_bytes = code_bytes
         self.symbol_table = symbol_table
+        self.metadata = metadata or {}
         self.lines = code_bytes.decode("utf-8").splitlines()
         self.insertions = {}
         self.pre_insertions = {}
@@ -203,6 +309,14 @@ class CodeInstrumenter:
             body = node.child_by_field_name("body")
             if body:
                 start_line = body.start_point[0]
+
+                if func_name == "main" and self.metadata:
+                    for key, val in self.metadata.items():
+                        self._add_after(
+                            start_line,
+                            f'    printf("META|{key}|{val}\\n");',
+                        )
+
                 self._add_after(start_line, "    __stack_depth++;")
 
                 fmt_params = []
@@ -442,7 +556,10 @@ def main():
     analyzer = TypeAnalyzer(ts_parser, code_bytes)
     symbol_table = analyzer.analyze()
 
-    instrumenter = CodeInstrumenter(ts_parser, code_bytes, symbol_table)
+    collector = MetadataCollector(ts_parser, code_bytes, args.input_file)
+    metadata = collector.collect()
+
+    instrumenter = CodeInstrumenter(ts_parser, code_bytes, symbol_table, metadata)
     result_code = instrumenter.instrument()
 
     output_path = (
