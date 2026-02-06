@@ -33,10 +33,10 @@ class CodeVisualizer {
         // Create camera — positioned to look DOWN at the descending spiral
         this.camera = new BABYLON.ArcRotateCamera(
             "camera",
-            Math.PI / 2,
-            Math.PI / 4, // slightly above looking down
-            60,
-            new BABYLON.Vector3(0, 10, 0), // target above origin
+            Math.PI / 4,
+            Math.acos(20 / Math.sqrt(1650)), // match resetCamera perspective
+            Math.sqrt(1650), // distance from (25,30,25) to (0,10,0)
+            new BABYLON.Vector3(0, 10, 0),
             this.scene
         );
         this.camera.attachControl(this.canvas, true);
