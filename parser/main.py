@@ -115,6 +115,8 @@ class CodeInstrumenter:
         self.insertions = {}
         self.pre_insertions = {}
 
+        self.branch_counter = 0
+
         self.exclude_types = {
             "declaration",
             "init_declarator",
@@ -229,20 +231,71 @@ class CodeInstrumenter:
             )
 
     def visit_if_statement(self, node):
-        consequence = node.child_by_field_name("consequence")
-        if consequence and consequence.type == "compound_statement":
-            line = consequence.start_point[0]
-            self._add_after(
-                line, f'    printf("BRANCH|if|taken|{line + 1}|%d\\n", __stack_depth);'
+        self.branch_counter += 1
+
+        # Extract condition: raw expr for evaluation, sanitized text for display
+        condition = node.child_by_field_name("condition")
+        cond_text = ""
+        cond_expr = ""
+        if condition:
+            raw = Helpers.get_text(condition, self.code_bytes)
+            cond_expr = raw  # keep parens for C evaluation
+            if raw.startswith("(") and raw.endswith(")"):
+                cond_text = raw[1:-1]
+            else:
+                cond_text = raw
+            cond_text = cond_text.replace("%", "%%").replace('"', '\\"')
+
+        # Emit condition evaluation before the if statement
+        if_line = node.start_point[0]
+        if cond_expr:
+            self._add_before(
+                if_line,
+                f'    printf("CONDITION|{cond_text}|%d|{if_line + 1}|%d\\n", {cond_expr}, __stack_depth);',
             )
 
+        # Track if branch taken
+        consequence = node.child_by_field_name("consequence")
+        if consequence:
+            if consequence.type == "compound_statement":
+                line = consequence.start_point[0]
+                self._add_after(
+                    line,
+                    f'    printf("BRANCH|if|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
+                )
+            else:
+                # Single statement without braces
+                line = consequence.start_point[0]
+                self._add_before(
+                    line,
+                    f'    printf("BRANCH|if|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
+                )
+
+        # Track else branch taken
         alternative = node.child_by_field_name("alternative")
-        if alternative and alternative.type == "compound_statement":
-            line = alternative.start_point[0]
-            self._add_after(
-                line,
-                f'    printf("BRANCH|else|taken|{line + 1}|%d\\n", __stack_depth);',
-            )
+        if alternative:
+            # tree-sitter-c wraps else in an else_clause node
+            alt_body = alternative
+            if alternative.type == "else_clause":
+                for child in alternative.children:
+                    if child.is_named:
+                        alt_body = child
+                        break
+
+            if alt_body.type == "compound_statement":
+                line = alt_body.start_point[0]
+                self._add_after(
+                    line,
+                    f'    printf("BRANCH|else|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
+                )
+            elif alt_body.type != "if_statement":
+                # Single statement else (no braces, not else-if)
+                line = alt_body.start_point[0]
+                self._add_before(
+                    line,
+                    f'    printf("BRANCH|else|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
+                )
+            # else-if chains are handled by recursive traversal
 
     def visit_while_statement(self, node):
         self._handle_loop(node)
