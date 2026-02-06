@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the visualizer
     visualizer.init();
 
+    // Load example code by default
+    const exampleTrace = CodeParser.getExampleTrace();
+    visualizer.visualize(exampleTrace);
+
     // Load example button
     document.getElementById('loadExample').addEventListener('click', () => {
         const exampleTrace = CodeParser.getExampleTrace();
