@@ -233,20 +233,18 @@ class CodeInstrumenter:
     def visit_if_statement(self, node):
         self.branch_counter += 1
 
-        # Extract condition: raw expr for evaluation, sanitized text for display
         condition = node.child_by_field_name("condition")
         cond_text = ""
         cond_expr = ""
         if condition:
             raw = Helpers.get_text(condition, self.code_bytes)
-            cond_expr = raw  # keep parens for C evaluation
+            cond_expr = raw
             if raw.startswith("(") and raw.endswith(")"):
                 cond_text = raw[1:-1]
             else:
                 cond_text = raw
             cond_text = cond_text.replace("%", "%%").replace('"', '\\"')
 
-        # Emit condition evaluation before the if statement
         if_line = node.start_point[0]
         if cond_expr:
             self._add_before(
@@ -254,7 +252,6 @@ class CodeInstrumenter:
                 f'    printf("CONDITION|{cond_text}|%d|{if_line + 1}|%d\\n", {cond_expr}, __stack_depth);',
             )
 
-        # Track if branch taken
         consequence = node.child_by_field_name("consequence")
         if consequence:
             if consequence.type == "compound_statement":
@@ -264,17 +261,14 @@ class CodeInstrumenter:
                     f'    printf("BRANCH|if|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
                 )
             else:
-                # Single statement without braces
                 line = consequence.start_point[0]
                 self._add_before(
                     line,
                     f'    printf("BRANCH|if|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
                 )
 
-        # Track else branch taken
         alternative = node.child_by_field_name("alternative")
         if alternative:
-            # tree-sitter-c wraps else in an else_clause node
             alt_body = alternative
             if alternative.type == "else_clause":
                 for child in alternative.children:
@@ -289,27 +283,61 @@ class CodeInstrumenter:
                     f'    printf("BRANCH|else|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
                 )
             elif alt_body.type != "if_statement":
-                # Single statement else (no braces, not else-if)
                 line = alt_body.start_point[0]
                 self._add_before(
                     line,
                     f'    printf("BRANCH|else|{cond_text}|{line + 1}|%d\\n", __stack_depth);',
                 )
-            # else-if chains are handled by recursive traversal
 
     def visit_while_statement(self, node):
-        self._handle_loop(node)
+        condition = node.child_by_field_name("condition")
+        cond_text = ""
+        cond_expr = ""
+        if condition:
+            raw = Helpers.get_text(condition, self.code_bytes)
+            cond_expr = raw
+            if raw.startswith("(") and raw.endswith(")"):
+                cond_text = raw[1:-1]
+            else:
+                cond_text = raw
+            cond_text = cond_text.replace("%", "%%").replace('"', '\\"')
 
-    def visit_for_statement(self, node):
-        self._handle_loop(node)
-
-    def _handle_loop(self, node):
         body = node.child_by_field_name("body")
         if body and body.type == "compound_statement":
             line = body.start_point[0]
-            self._add_after(
-                line, f'    printf("LOOP|iter|{line + 1}|%d\\n", __stack_depth);'
-            )
+            if cond_expr:
+                self._add_after(
+                    line,
+                    f'    printf("LOOP|while|{cond_text}|%d|{line + 1}|%d\\n", {cond_expr}, __stack_depth);',
+                )
+            else:
+                self._add_after(
+                    line,
+                    f'    printf("LOOP|while||1|{line + 1}|%d\\n", __stack_depth);',
+                )
+
+    def visit_for_statement(self, node):
+        condition = node.child_by_field_name("condition")
+        cond_text = ""
+        cond_expr = ""
+        if condition:
+            raw = Helpers.get_text(condition, self.code_bytes)
+            cond_expr = raw
+            cond_text = raw.replace("%", "%%").replace('"', '\\"')
+
+        body = node.child_by_field_name("body")
+        if body and body.type == "compound_statement":
+            line = body.start_point[0]
+            if cond_expr:
+                self._add_after(
+                    line,
+                    f'    printf("LOOP|for|{cond_text}|%d|{line + 1}|%d\\n", {cond_expr}, __stack_depth);',
+                )
+            else:
+                self._add_after(
+                    line,
+                    f'    printf("LOOP|for||1|{line + 1}|%d\\n", __stack_depth);',
+                )
 
     def visit_declaration(self, node):
         for child in node.children:
