@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 int test_external() {
     int b=20, c=172;
 
