@@ -29,7 +29,11 @@ class ExplodeManager {
         this._lastClickTime = 0;
         this._lastClickMesh = null;
 
+        /** Navigation history for 'a' and 'd' keys */
+        this._lastNavigatedMesh = null;
+
         this._setupPointerObservable();
+        this._setupNavigationKeys();
     }
 
     // ─── public ─────────────────────────────────────────────────────
@@ -56,6 +60,13 @@ class ExplodeManager {
             if (pick.pickedMesh._subSpiralDot) {
                 this._cancelPendingClick();
                 this._showDotInspector(pick.pickedMesh);
+                return;
+            }
+
+            // ── Phase 4: Check if a bubble node was clicked ──
+            if (pick.pickedMesh._isBubbleNode) {
+                this._cancelPendingClick();
+                this._showBubbleNodeInspector(pick.pickedMesh);
                 return;
             }
 
@@ -139,6 +150,162 @@ class ExplodeManager {
         });
     }
 
+    // ─── sequential node navigation (a/d keys) ───────────────────
+
+    _setupNavigationKeys() {
+        window.addEventListener('keydown', (e) => {
+            // Don't interfere if user is typing in an input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+            if (e.key === 'a' || e.key === 'A') {
+                e.preventDefault();
+                this._navigateSequential(-1);
+            } else if (e.key === 'd' || e.key === 'D') {
+                e.preventDefault();
+                this._navigateSequential(+1);
+            }
+        });
+    }
+
+    /**
+     * Get an ordered list of all navigable meshes in the current context.
+     *
+     * If we're inside a galaxy warp, return that galaxy's building meshes.
+     * Otherwise, return the main spiral's building meshes sorted by slot.
+     *
+     * Each entry is { mesh, type } where type is 'building', 'galaxy', or 'bubble'.
+     */
+    _getOrderedNodes() {
+        const nodes = [];
+
+        // ── Inside a galaxy warp? ──
+        if (this.galaxyWarpManager && this.galaxyWarpManager.isWarped()) {
+            const galaxy = this.galaxyWarpManager.warpedGalaxy;
+            if (galaxy) {
+                if (galaxy.isBubble && galaxy.galaxyData && galaxy.galaxyData.bubbleData) {
+                    // Bubble nodes from a for-loop galaxy
+                    const bubbleData = galaxy.galaxyData.bubbleData;
+                    if (bubbleData.nodes) {
+                        for (const n of bubbleData.nodes) {
+                            if (n.mesh && !n.mesh.isDisposed() && n.mesh._isBubbleNode) {
+                                nodes.push({ mesh: n.mesh, type: 'bubble' });
+                            }
+                        }
+                    }
+                } else if (galaxy.galaxyData && galaxy.galaxyData.meshes) {
+                    // Galaxy spiral buildings
+                    for (const m of galaxy.galaxyData.meshes) {
+                        if (m && !m.isDisposed() && m._isGalaxyBuilding) {
+                            nodes.push({ mesh: m, type: 'galaxy' });
+                        }
+                    }
+                }
+            }
+            return nodes;
+        }
+
+        // ── Main spiral: collect from all mesh caches ──
+        if (!this.cityRenderer) return nodes;
+
+        const caches = [
+            this.cityRenderer.functionMeshes,
+            this.cityRenderer.variableMeshes,
+            this.cityRenderer.loopMeshes,
+            this.cityRenderer.whileMeshes,
+            this.cityRenderer.branchMeshes,
+        ];
+
+        const unsorted = [];
+        for (const cache of caches) {
+            if (!cache) continue;
+            for (const [key, entry] of cache) {
+                if (!entry.mesh || entry.mesh.isDisposed()) continue;
+                const slot = this.cityRenderer._slotMap
+                    ? this.cityRenderer._slotMap.get(key)
+                    : undefined;
+                unsorted.push({ mesh: entry.mesh, type: 'building', slot: slot ?? Infinity });
+            }
+        }
+
+        // Sort by spiral slot so navigation follows the spiral path
+        unsorted.sort((a, b) => a.slot - b.slot);
+        for (const item of unsorted) {
+            nodes.push({ mesh: item.mesh, type: item.type });
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Find the currently active mesh — whatever is being inspected right now.
+     */
+    _getCurrentMesh() {
+        // Dot / galaxy / bubble inspector takes priority (secondary overlay)
+        if (this._dotPanel) {
+            // The dot panel can be for a dot, galaxy building, or bubble node.
+            // Check what we last opened:
+            if (this._lastNavigatedMesh && !this._lastNavigatedMesh.isDisposed()) {
+                return this._lastNavigatedMesh;
+            }
+        }
+        // Primary building inspector
+        if (this.exploded && this.exploded.mesh && !this.exploded.mesh.isDisposed()) {
+            return this.exploded.mesh;
+        }
+        return null;
+    }
+
+    /**
+     * Step forward (+1) or backward (-1) through the ordered node list.
+     */
+    _navigateSequential(direction) {
+        const nodes = this._getOrderedNodes();
+        if (nodes.length === 0) return;
+
+        const currentMesh = this._getCurrentMesh();
+
+        let currentIdx = -1;
+        if (currentMesh) {
+            currentIdx = nodes.findIndex(n => n.mesh === currentMesh);
+        }
+
+        let nextIdx;
+        if (currentIdx === -1) {
+            // Nothing selected yet — pick first (d) or last (a) node
+            nextIdx = direction > 0 ? 0 : nodes.length - 1;
+        } else {
+            nextIdx = currentIdx + direction;
+            // Wrap around
+            if (nextIdx < 0) nextIdx = nodes.length - 1;
+            if (nextIdx >= nodes.length) nextIdx = 0;
+        }
+
+        const target = nodes[nextIdx];
+        if (!target || !target.mesh || target.mesh.isDisposed()) return;
+
+        // Close whatever is open
+        if (this.exploded) this._collapse();
+        this._closeDotInspector();
+
+        // Open the correct inspector for this node type
+        switch (target.type) {
+            case 'building':
+                this._explode(target.mesh, false);
+                break;
+            case 'galaxy':
+                this._showGalaxyBuildingInspector(target.mesh, false);
+                break;
+            case 'bubble':
+                this._showBubbleNodeInspector(target.mesh, false);
+                break;
+        }
+
+        // Track so we can find it next time
+        this._lastNavigatedMesh = target.mesh;
+    }
+
+    // ─── click detection ────────────────────────────────────────────
+
     /** Cancel any pending delayed single-click. */
     _cancelPendingClick() {
         if (this._pendingClickTimer) {
@@ -174,7 +341,7 @@ class ExplodeManager {
 
     // ─── explode (open inspector) ───────────────────────────────────
 
-    _explode(buildingMesh) {
+    _explode(buildingMesh, fromNavigation = false) {
         const bd = buildingMesh._buildingData;
         if (!bd) return;
 
@@ -193,6 +360,9 @@ class ExplodeManager {
         });
 
         this.exploded = { mesh: buildingMesh, buildingData: bd, panel };
+
+        // Track as the last navigated mesh for a/d key navigation
+        this._lastNavigatedMesh = buildingMesh;
 
         // Highlight the source line for this node
         if (this.onNodeSelect) {
@@ -378,7 +548,7 @@ class ExplodeManager {
      * Show an inspector panel for a clicked galaxy building.
      * Reuses the dot inspector panel slot (secondary overlay).
      */
-    _showGalaxyBuildingInspector(mesh) {
+    _showGalaxyBuildingInspector(mesh, fromNavigation = false) {
         this._closeDotInspector();
 
         const entity = mesh._entityData;
@@ -403,6 +573,9 @@ class ExplodeManager {
         });
 
         this._dotPanel = panel;
+
+        // Track as the last navigated mesh for a/d key navigation
+        this._lastNavigatedMesh = mesh;
 
         // Highlight source line if available
         if (this.onNodeSelect) {
@@ -554,7 +727,7 @@ class ExplodeManager {
      * This doesn't collapse the parent building inspector — it overlays
      * a secondary panel with the trace-step data for that dot.
      */
-    _showDotInspector(dotMesh) {
+    _showDotInspector(dotMesh, fromNavigation = false) {
         // Remove any existing dot inspector
         this._closeDotInspector();
 
@@ -580,6 +753,9 @@ class ExplodeManager {
         });
 
         this._dotPanel = panel;
+
+        // Track as the last navigated mesh for a/d key navigation
+        this._lastNavigatedMesh = dotMesh;
 
         // Highlight source line for this step
         if (this.onNodeSelect) {
@@ -610,6 +786,193 @@ class ExplodeManager {
                 this.onNodeSelect(null);
             }
         }
+    }
+
+    // ─── Phase 4: Bubble Node Inspector ────────────────────────────
+
+    _showBubbleNodeInspector(nodeMesh, fromNavigation = false) {
+        // Remove any existing inspector
+        this._closeDotInspector();
+
+        const nodeData = nodeMesh._bubbleNodeData;
+        if (!nodeData) return;
+
+        const step = nodeData.stepData;
+        if (!step) return;
+
+        const panel = document.createElement('div');
+        panel.id = 'dotInspectorPanel';
+        panel.className = 'inspector-panel dot-inspector bubble-node-inspector';
+
+        let html = `<button class="inspector-close">✕</button>`;
+        html += this._buildBubbleNodeHTML(step, nodeData);
+        panel.innerHTML = html;
+
+        document.body.appendChild(panel);
+        requestAnimationFrame(() => panel.classList.add('open'));
+
+        panel.querySelector('.inspector-close').addEventListener('click', () => {
+            this._closeDotInspector();
+        });
+
+        this._dotPanel = panel;
+
+        // Track as the last navigated mesh for a/d key navigation
+        this._lastNavigatedMesh = nodeMesh;
+
+        // Highlight source line for this step
+        if (this.onNodeSelect && step.line) {
+            this.onNodeSelect(step.line);
+        }
+
+        // Briefly highlight the clicked node
+        const origScale = nodeMesh.scaling.clone();
+        nodeMesh.scaling = new BABYLON.Vector3(1.4, 1.4, 1.4);
+        setTimeout(() => {
+            if (nodeMesh && !nodeMesh.isDisposed()) nodeMesh.scaling.copyFrom(origScale);
+        }, 300);
+    }
+
+    _buildBubbleNodeHTML(step, nodeData) {
+        let h = '';
+        const entity = nodeData.entity;
+        const icon = this._iconForType(entity ? entity.type : (step.type || nodeData.type));
+
+        // Use entity label (variable name, function name, etc.) as the header
+        const headerText = entity ? (entity.label || entity.subject || entity.type) : (step.name || step.var || step.type || nodeData.type);
+
+        h += `<div class="inspector-header">
+            <span class="inspector-icon">${icon}</span>
+            <span>${headerText}</span>
+        </div>`;
+
+        h += `<div class="inspector-section">`;
+
+        // Entity-based rendering (consolidated buildings)
+        if (entity) {
+            switch (entity.type) {
+                case 'variable':
+                    h += this._row('Variable', `<strong>${entity.label || '?'}</strong>`);
+                    h += this._row('Current value', `<code>${entity.currentValue}</code>`);
+                    if (entity.address) h += this._row('Address', entity.address);
+                    h += this._row('Assignments', entity.values.length);
+                    
+                    if (entity.values.length > 1) {
+                        h += `</div>`;
+                        h += `<div class="inspector-subtitle">Value History</div>`;
+                        h += `<div class="inspector-section inspector-history">`;
+                        entity.values.forEach((entry, i) => {
+                            const isCurrent = (i === entity.values.length - 1);
+                            h += `<div class="history-row ${isCurrent ? 'current' : ''}">
+                                <span class="history-step">step ${entry.step}</span>
+                                <span class="history-arrow">→</span>
+                                <span class="history-value">${entry.value}</span>
+                            </div>`;
+                        });
+                    }
+                    break;
+
+                case 'call':
+                    h += this._row('Function', `<strong>${entity.name || '?'}</strong>`);
+                    if (entity.firstStep && entity.firstStep.line) h += this._row('Line', entity.firstStep.line);
+                    break;
+
+                case 'return':
+                    if (entity.value !== undefined) {
+                        h += this._row('Return value', `<code>${entity.value}</code>`);
+                    }
+                    if (entity.firstStep && entity.firstStep.line) h += this._row('Line', entity.firstStep.line);
+                    break;
+
+                case 'condition':
+                    h += this._row('Condition', `<code>${entity.condition || '?'}</code>`);
+                    h += this._row('Result', entity.result ? '✓ True' : '✗ False');
+                    if (entity.firstStep && entity.firstStep.line) h += this._row('Line', entity.firstStep.line);
+                    break;
+
+                case 'branch':
+                    h += this._row('Branch', `<strong>${entity.branch || '?'}</strong>`);
+                    if (entity.firstStep && entity.firstStep.line) h += this._row('Line', entity.firstStep.line);
+                    break;
+
+                case 'loop':
+                    if (entity.condition) h += this._row('Condition', `<code>${entity.condition}</code>`);
+                    if (entity.subtype) h += this._row('Type', entity.subtype);
+                    h += this._row('Iterations', entity.iterations);
+                    if (entity.firstStep && entity.firstStep.line) h += this._row('Line', entity.firstStep.line);
+                    break;
+
+                default:
+                    if (entity.label) h += this._row('Label', entity.label);
+                    if (entity.firstStep && entity.firstStep.line) h += this._row('Line', entity.firstStep.line);
+            }
+        } else {
+            // Fallback to raw step data if no entity
+            // Type-specific rendering
+            switch (step.type || nodeData.type) {
+                case 'DECL':
+                    h += this._row('Variable', `<strong>${step.var || '?'}</strong>`);
+                    if (step.address) h += this._row('Address', step.address);
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                case 'ASSIGN':
+                    h += this._row('Variable', `<strong>${step.var || '?'}</strong>`);
+                    h += this._row('Value', `<code>${step.value || '?'}</code>`);
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                case 'CALL':
+                    h += this._row('Function', `<strong>${step.name || '?'}</strong>`);
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                case 'RETURN':
+                    if (step.value !== undefined) {
+                        h += this._row('Return value', `<code>${step.value}</code>`);
+                    }
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                case 'CONDITION':
+                    h += this._row('Condition', `<code>${step.condition || '?'}</code>`);
+                    h += this._row('Result', step.result ? '✓ True' : '✗ False');
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                case 'BRANCH':
+                    h += this._row('Branch', `<strong>${step.branch || '?'}</strong>`);
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                case 'LOOP':
+                    if (step.condition) h += this._row('Condition', `<code>${step.condition}</code>`);
+                    if (step.subtype) h += this._row('Type', step.subtype);
+                    if (step.line) h += this._row('Line', step.line);
+                    break;
+
+                default:
+                    // Generic display
+                    if (step.name) h += this._row('Name', step.name);
+                    if (step.line) h += this._row('Line', step.line);
+                    Object.keys(step).forEach(key => {
+                        if (!['type', 'name', 'line'].includes(key)) {
+                            h += this._row(key, JSON.stringify(step[key]));
+                        }
+                    });
+            }
+        }
+
+        h += `</div>`;
+
+        // Position in chain
+        h += `<div class="inspector-subtitle">Node Position</div>`;
+        h += `<div class="inspector-section">`;
+        h += this._row('Index in loop', nodeData.index);
+        h += this._row('Step', nodeData.step);
+        h += `</div>`;
+
+        return h;
     }
 
     _buildDotInspectorHTML(step, stepIndex) {

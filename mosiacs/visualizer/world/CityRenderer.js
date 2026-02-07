@@ -18,8 +18,16 @@ class CityRenderer {
         this.meshFactory = new MeshFactory(scene, this.labelHelper);
         this.subSpiralRenderer = new SubSpiralRenderer(scene, this.labelHelper);
 
+        // Phase 4: Bubble renderer for for-loops
+        this.loopBubbleRenderer = new LoopBubbleRenderer(scene, this.labelHelper);
+
         // Wire up the sub-spiral toggle callback so we know when to push/restore
         this.subSpiralRenderer.onSubSpiralToggle = (action, key, boundingRadius, parentPos) => {
+            this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
+        };
+
+        // Wire up bubble toggle callback
+        this.loopBubbleRenderer.onBubbleToggle = (action, key, boundingRadius, parentPos) => {
             this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
         };
 
@@ -61,10 +69,10 @@ class CityRenderer {
         this.scene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE) return;
 
-            // Check for main buildings, sub-spiral dots, and galaxy buildings
+            // Check for main buildings, sub-spiral dots, galaxy buildings, and bubble nodes
             const pick = this.scene.pick(
                 this.scene.pointerX, this.scene.pointerY,
-                (m) => m._buildingData != null || m._subSpiralDot != null || m._isGalaxyBuilding != null
+                (m) => m._buildingData != null || m._subSpiralDot != null || m._isGalaxyBuilding != null || m._isBubbleNode != null
             );
 
             if (pick && pick.hit && pick.pickedMesh) {
@@ -80,6 +88,13 @@ class CityRenderer {
                 }
                 // Handle sub-spiral dot hover
                 else if (pick.pickedMesh._subSpiralDot && pick.pickedMesh._label) {
+                    if (this._hoveredLabel && this._hoveredLabel !== pick.pickedMesh._label)
+                        this._hoveredLabel.isVisible = false;
+                    pick.pickedMesh._label.isVisible = true;
+                    this._hoveredLabel = pick.pickedMesh._label;
+                }
+                // Handle bubble node hover (Phase 4)
+                else if (pick.pickedMesh._isBubbleNode && pick.pickedMesh._label) {
                     if (this._hoveredLabel && this._hoveredLabel !== pick.pickedMesh._label)
                         this._hoveredLabel.isVisible = false;
                     pick.pickedMesh._label.isVisible = true;

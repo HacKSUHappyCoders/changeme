@@ -163,7 +163,14 @@ class CodeVisualizer {
     // ─── Causality web (Phase 3 Part 3) ────────────────────────────
 
     toggleCausality() {
-        return this.causalityRenderer.toggle();
+        const result = this.causalityRenderer.toggle();
+        
+        // Phase 4: Also toggle causality within bubbles
+        if (this.cityRenderer && this.cityRenderer.loopBubbleRenderer) {
+            this.cityRenderer.loopBubbleRenderer.setCausalityVisible(result);
+        }
+        
+        return result;
     }
 
     isCausalityVisible() {

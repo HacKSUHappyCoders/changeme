@@ -60,6 +60,7 @@ class GalaxyWarpManager {
 
     /**
      * Warp to the galaxy for the given building
+     * Phase 4: For-loops use bubble rendering instead of spiral galaxies
      */
     warpTo(buildingMesh) {
         if (!this.canWarp(buildingMesh)) return;
@@ -71,6 +72,100 @@ class GalaxyWarpManager {
         const subTrace = this._extractSubTrace(buildingMesh, entity);
         if (subTrace.length === 0) return;
 
+        // Phase 4: Check if this is a for-loop
+        const isForLoop = this._isForLoop(buildingMesh, entity);
+
+        if (isForLoop) {
+            // Use bubble renderer for for-loops
+            this._warpToBubble(buildingMesh, entity, sourcePos, subTrace);
+        } else {
+            // Use traditional galaxy spiral for other types
+            this._warpToGalaxy(buildingMesh, entity, sourcePos, subTrace);
+        }
+    }
+
+    /**
+     * Check if a building represents a for-loop
+     */
+    _isForLoop(buildingMesh, entity) {
+        // Check building data
+        const bd = buildingMesh._buildingData;
+        if (bd && bd.type === 'LOOP' && bd.stepData) {
+            if (bd.stepData.subtype === 'for') return true;
+        }
+
+        // Check entity data
+        if (entity.type === 'loop' && entity.subtype === 'for') return true;
+
+        // Check if it's from a loop mesh cache
+        const isFromLoopCache = this.mainCityRenderer.loopMeshes.has(entity.key);
+        if (isFromLoopCache) {
+            // Get the loop data to check subtype
+            const loopEntry = this.mainCityRenderer.loopMeshes.get(entity.key);
+            if (loopEntry && loopEntry.mesh && loopEntry.mesh._buildingData) {
+                const loopData = loopEntry.mesh._buildingData.stepData;
+                if (loopData && loopData.subtype === 'for') return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Warp to a bubble view (for for-loops)
+     */
+    _warpToBubble(buildingMesh, entity, sourcePos, subTrace) {
+        // Handle stacking
+        if (this.warpedGalaxy) {
+            this._galaxyStack.push(this.warpedGalaxy);
+            this._dimGalaxyVisuals(this.warpedGalaxy, 0.45);
+        } else {
+            this._dimMainSpiral(0.3);
+        }
+
+        // Compute bubble position (similar to galaxy position)
+        const bubbleCenter = this._computeGalaxyPosition(sourcePos);
+        
+        // Get building color
+        const color = this._colorForType(entity.colorType || entity.type || 'LOOP');
+
+        // Render the bubble
+        const childIndices = subTrace.map((_, i) => i);
+        const bubbleRenderer = this.mainCityRenderer.loopBubbleRenderer;
+        const bubbleData = bubbleRenderer.renderBubble(
+            entity.key || 'bubble',
+            childIndices,
+            bubbleCenter,
+            subTrace
+        );
+
+        // Create warp effects
+        this.warpEffects.createWarpLine(sourcePos, bubbleCenter, color);
+        this.warpEffects.createSourceGlow(sourcePos, color);
+        this.warpEffects.createGalaxyLabel(bubbleCenter, entity);
+
+        // Store state (similar to galaxy state)
+        this.warpedGalaxy = {
+            buildingMesh,
+            entity,
+            sourcePos,
+            galaxyCenter: bubbleCenter,
+            galaxyData: { isBubble: true, bubbleData, entities: [], meshes: bubbleData.nodes.map(n => n.mesh) },
+            color,
+            ...this.warpEffects.getEffects(),
+            subTrace,
+            isBubble: true
+        };
+
+        // Fly camera
+        this._flyCamera(bubbleCenter, true);
+        this._showReturnButton(true);
+    }
+
+    /**
+     * Traditional galaxy spiral warp (for functions, while-loops, branches)
+     */
+    _warpToGalaxy(buildingMesh, entity, sourcePos, subTrace) {
         // Handle stacking
         if (this.warpedGalaxy) {
             this._galaxyStack.push(this.warpedGalaxy);
@@ -418,26 +513,35 @@ class GalaxyWarpManager {
 
     /**
      * Dispose a warped galaxy entry
+     * Phase 4: Handle bubble disposal
      */
     _disposeWarpedGalaxy(galaxy) {
         if (!galaxy) return;
 
-        const cachedMats = new Set(this.galaxyBuilder._matCache.values());
+        // Check if this is a bubble or traditional galaxy
+        if (galaxy.isBubble && galaxy.galaxyData && galaxy.galaxyData.bubbleData) {
+            // Dispose bubble using bubble renderer
+            const bubbleKey = galaxy.entity.key || 'bubble';
+            this.mainCityRenderer.loopBubbleRenderer.removeBubble(bubbleKey);
+        } else {
+            // Traditional galaxy disposal
+            const cachedMats = new Set(this.galaxyBuilder._matCache.values());
 
-        // Dispose galaxy meshes
-        const allMeshes = galaxy.galaxyData.meshes || [];
-        for (const mesh of allMeshes) {
-            if (mesh && !mesh.isDisposed()) {
-                this.scene.stopAnimation(mesh);
-                if (mesh.material) {
-                    if (!cachedMats.has(mesh.material)) {
-                        if (mesh.material.diffuseTexture) mesh.material.diffuseTexture.dispose();
-                        mesh.material.dispose();
-                    } else {
-                        mesh.material = null;
+            // Dispose galaxy meshes
+            const allMeshes = galaxy.galaxyData.meshes || [];
+            for (const mesh of allMeshes) {
+                if (mesh && !mesh.isDisposed()) {
+                    this.scene.stopAnimation(mesh);
+                    if (mesh.material) {
+                        if (!cachedMats.has(mesh.material)) {
+                            if (mesh.material.diffuseTexture) mesh.material.diffuseTexture.dispose();
+                            mesh.material.dispose();
+                        } else {
+                            mesh.material = null;
+                        }
                     }
+                    mesh.dispose();
                 }
-                mesh.dispose();
             }
         }
 

@@ -259,3 +259,8 @@ In this phase we will be creating a lot of different visual features that can be
 # Part whenever
 - Make the title of each building and node more visible.
 - Make the contrast between the buildings and the web in the galaxies less hard. THe web is currently readly bright and over powering to the buildings
+
+
+## Phase 4 - Advanced Development of Building Designs
+# This phase is all about changing the way some of the nodes are displayed when expanded
+Firstly, we will change the way the for loop galaxy is displayed. Instead of a spiral galaxy, we want the for loop to be represented by a bubble and this would be a semi transparent bubble, and the bubble reprents the for loop itself and inside of the bubble is a connected chain of nodes/buildings of the code inside of the bubble. They should all be conncted up and inside of the bubble and they should all have tags when hovering over them and also show causality.
