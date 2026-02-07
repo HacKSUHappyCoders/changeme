@@ -29,11 +29,14 @@ def _make_error(stage, message, metadata=None, traces=None):
 
 def _derived_paths(input_file):
     """Build output paths next to the input file."""
-    base, ext = os.path.splitext(input_file)
+    abs_input = os.path.abspath(input_file)
+    directory = os.path.dirname(abs_input)
+    basename = os.path.basename(abs_input)
+    stem, ext = os.path.splitext(basename)
     return {
-        "instrumented": f"instrumented_{os.path.basename(input_file)}",
-        "trace": f"{base}_trace.txt",
-        "exe": f"{base}.exe",
+        "instrumented": os.path.join(directory, f"instrumented_{basename}"),
+        "trace": os.path.join(directory, f"{stem}_trace.txt"),
+        "exe": os.path.join(directory, f"{stem}.exe"),
         "ext": ext,
     }
 
