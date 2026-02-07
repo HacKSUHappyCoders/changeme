@@ -263,4 +263,8 @@ In this phase we will be creating a lot of different visual features that can be
 
 ## Phase 4 - Advanced Development of Building Designs
 # This phase is all about changing the way some of the nodes are displayed when expanded
+# For loops - bubbles
 Firstly, we will change the way the for loop galaxy is displayed. Instead of a spiral galaxy, we want the for loop to be represented by a bubble and this would be a semi transparent bubble, and the bubble reprents the for loop itself and inside of the bubble is a connected chain of nodes/buildings of the code inside of the bubble. They should all be conncted up and inside of the bubble and they should all have tags when hovering over them and also show causality.
+
+# If statements - Trees
+Secodnly for IF statements, we want them to become a tree like structure when we click to expand them, instead of the current spiral shape. Potentially maybe we can pull the if, if else, and else statements together into one unit and when we expand it we can see the tree structure form. This would be pretty cool to see work and function this way, but maybe it would not be possible with the current setup. If it is not possible, let me know.

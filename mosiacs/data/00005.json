@@ -1,0 +1,4967 @@
+{
+  "success": true,
+  "metadata": {
+    "file_name": "00005.c",
+    "file_path": "/tmp/tmpsazpeqfn/00005.c",
+    "file_size": "3145",
+    "file_mode": "-rw-r--r--",
+    "modified": "2026-02-07 14:33:47",
+    "accessed": "2026-02-07 14:33:47",
+    "created": "2026-02-07 14:33:47",
+    "language": "C",
+    "total_lines": "172",
+    "non_blank_lines": "146",
+    "num_includes": "1",
+    "num_comments": "20",
+    "num_functions": "10",
+    "function_names": "factorial,fibonacci,sumRange,multiply,classify,nestedSum,compute,isEven,isOdd,main",
+    "num_variables": "42",
+    "num_assignments": "27",
+    "num_calls": "18",
+    "num_returns": "16",
+    "num_loops": "8",
+    "num_branches": "13",
+    "max_nesting_depth": "3"
+  },
+  "traces": [
+    {
+      "type": "CALL",
+      "subject": "main",
+      "stack_depth": "1",
+      "id": 0
+    },
+    {
+      "type": "DECL",
+      "subject": "a",
+      "value": "5",
+      "address": "0x7ffc9380629c",
+      "line_number": "92",
+      "stack_depth": "1",
+      "id": 1
+    },
+    {
+      "type": "DECL",
+      "subject": "b",
+      "value": "10",
+      "address": "0x7ffc93806298",
+      "line_number": "93",
+      "stack_depth": "1",
+      "id": 2
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "5",
+      "address": "0x7ffc9380629c",
+      "line_number": "94",
+      "stack_depth": "1",
+      "id": 3
+    },
+    {
+      "type": "READ",
+      "subject": "b",
+      "format_spec": "10",
+      "address": "0x7ffc93806298",
+      "line_number": "94",
+      "stack_depth": "1",
+      "id": 4
+    },
+    {
+      "type": "DECL",
+      "subject": "c",
+      "value": "15",
+      "address": "0x7ffc93806294",
+      "line_number": "94",
+      "stack_depth": "1",
+      "id": 5
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "2",
+      "args": [
+        "5"
+      ],
+      "id": 6
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "5",
+      "line_number": "4",
+      "id": 7
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "2",
+      "id": 8
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "2",
+      "args": [
+        "4"
+      ],
+      "id": 9
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "4",
+      "id": 10
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "2",
+      "id": 11
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 12
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "4",
+      "id": 13
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "2",
+      "id": 14
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 15
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "4",
+      "id": 16
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "2",
+      "id": 17
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 18
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "4",
+      "id": 19
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "5",
+      "stack_depth": "2",
+      "id": 20
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "5",
+      "stack_depth": "2",
+      "id": 21
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "1",
+      "line_number": "6",
+      "stack_depth": "2",
+      "id": 22
+    },
+    {
+      "type": "DECL",
+      "subject": "fact",
+      "value": "120",
+      "address": "0x7ffc93806290",
+      "line_number": "97",
+      "stack_depth": "1",
+      "id": 23
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "7"
+      ],
+      "id": 24
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "7",
+      "line_number": "12",
+      "id": 25
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 26
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "6"
+      ],
+      "id": 27
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "6",
+      "line_number": "12",
+      "id": 28
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 29
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "5"
+      ],
+      "id": 30
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "5",
+      "line_number": "12",
+      "id": 31
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 32
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "4"
+      ],
+      "id": 33
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "12",
+      "id": 34
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 35
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 36
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "12",
+      "id": 37
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 38
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 39
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 40
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 41
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 42
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 43
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 44
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 45
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc938060fc",
+      "id": 46
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 47
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 48
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 49
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 50
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc938060fc",
+      "id": 51
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 52
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 53
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 54
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 55
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 56
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 57
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 58
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 59
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 60
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 61
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 62
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 63
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 64
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 65
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 66
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 67
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 68
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 69
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 70
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "12",
+      "id": 71
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 72
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 73
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 74
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 75
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 76
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 77
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 78
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 79
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 80
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 81
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 82
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 83
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 84
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 85
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 86
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 87
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 88
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 89
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 90
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "4"
+      ],
+      "id": 91
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "12",
+      "id": 92
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 93
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 94
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "12",
+      "id": 95
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 96
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 97
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 98
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 99
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 100
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 101
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 102
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 103
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 104
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 105
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 106
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 107
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 108
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 109
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 110
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 111
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 112
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 113
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 114
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 115
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 116
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 117
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 118
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 119
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 120
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 121
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 122
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 123
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 124
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 125
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 126
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 127
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "5"
+      ],
+      "id": 128
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "5",
+      "line_number": "12",
+      "id": 129
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 130
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "4"
+      ],
+      "id": 131
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "12",
+      "id": 132
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 133
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 134
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "12",
+      "id": 135
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 136
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 137
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 138
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 139
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 140
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 141
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 142
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 143
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 144
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 145
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 146
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 147
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 148
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380612c",
+      "id": 149
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 150
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 151
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 152
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 153
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 154
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 155
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 156
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 157
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 158
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 159
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 160
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 161
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 162
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 163
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 164
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 165
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 166
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 167
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 168
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "12",
+      "id": 169
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 170
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 171
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "12",
+      "id": 172
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 173
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 174
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 175
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 176
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 177
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 178
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 179
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "12",
+      "id": 180
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 181
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 182
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380615c",
+      "id": 183
+    },
+    {
+      "type": "CALL",
+      "subject": "fibonacci",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 184
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "12",
+      "id": 185
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 186
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "13",
+      "stack_depth": "2",
+      "id": 187
+    },
+    {
+      "type": "RETURN",
+      "subtype": "n",
+      "value": "1",
+      "line_number": "14",
+      "stack_depth": "2",
+      "address": "0x7ffc9380618c",
+      "id": 188
+    },
+    {
+      "type": "DECL",
+      "subject": "fib",
+      "value": "13",
+      "address": "0x7ffc9380628c",
+      "line_number": "98",
+      "stack_depth": "1",
+      "id": 189
+    },
+    {
+      "type": "CALL",
+      "subject": "sumRange",
+      "stack_depth": "2",
+      "args": [
+        "10"
+      ],
+      "id": 190
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "10",
+      "line_number": "20",
+      "id": 191
+    },
+    {
+      "type": "DECL",
+      "subject": "sum",
+      "value": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "21",
+      "stack_depth": "2",
+      "id": 192
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 193
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 194
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 195
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 196
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 197
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 198
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 199
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 200
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 201
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "1",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 202
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 203
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 204
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "1",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 205
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 206
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "3",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 207
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 208
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "3",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 209
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "3",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 210
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "3",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 211
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "6",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 212
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 213
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "4",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 214
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "6",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 215
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "4",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 216
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "10",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 217
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 218
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "5",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 219
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "10",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 220
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "5",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 221
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "15",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 222
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 223
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "6",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 224
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "15",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 225
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "6",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 226
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "21",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 227
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 228
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "7",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 229
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "21",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 230
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "7",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 231
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "28",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 232
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 233
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "8",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 234
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "28",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 235
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "8",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 236
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "36",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 237
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "22",
+      "stack_depth": "2",
+      "condition": "i < n",
+      "condition_result": "1",
+      "id": 238
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "9",
+      "address": "0x7ffc93806228",
+      "line_number": "22",
+      "stack_depth": "2",
+      "id": 239
+    },
+    {
+      "type": "READ",
+      "subject": "sum",
+      "format_spec": "36",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 240
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "9",
+      "address": "0x7ffc93806228",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 241
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "sum",
+      "value": "45",
+      "address": "0x7ffc9380622c",
+      "line_number": "23",
+      "stack_depth": "2",
+      "id": 242
+    },
+    {
+      "type": "RETURN",
+      "subtype": "sum",
+      "value": "45",
+      "line_number": "25",
+      "stack_depth": "2",
+      "address": "0x7ffc9380622c",
+      "id": 243
+    },
+    {
+      "type": "DECL",
+      "subject": "sum",
+      "value": "45",
+      "address": "0x7ffc93806288",
+      "line_number": "99",
+      "stack_depth": "1",
+      "id": 244
+    },
+    {
+      "type": "CALL",
+      "subject": "multiply",
+      "stack_depth": "2",
+      "args": [
+        "6",
+        "7"
+      ],
+      "id": 245
+    },
+    {
+      "type": "PARAM",
+      "subject": "a",
+      "value": "6",
+      "line_number": "29",
+      "id": 246
+    },
+    {
+      "type": "PARAM",
+      "subject": "b",
+      "value": "7",
+      "line_number": "29",
+      "id": 247
+    },
+    {
+      "type": "DECL",
+      "subject": "result",
+      "value": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "30",
+      "stack_depth": "2",
+      "id": 248
+    },
+    {
+      "type": "DECL",
+      "subject": "count",
+      "value": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "31",
+      "stack_depth": "2",
+      "id": 249
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 250
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 251
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 252
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "6",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 253
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 254
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 255
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 256
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "6",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 257
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 258
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "12",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 259
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 260
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 261
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 262
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "12",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 263
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 264
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "18",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 265
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 266
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "3",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 267
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 268
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "18",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 269
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 270
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "24",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 271
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "3",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 272
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "4",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 273
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 274
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "24",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 275
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 276
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "30",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 277
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "4",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 278
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "5",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 279
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 280
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "30",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 281
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 282
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "36",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 283
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "5",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 284
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "6",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 285
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "2",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 286
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "36",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 287
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "6",
+      "address": "0x7ffc9380621c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 288
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "42",
+      "address": "0x7ffc9380622c",
+      "line_number": "33",
+      "stack_depth": "2",
+      "id": 289
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "6",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 290
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "7",
+      "address": "0x7ffc93806228",
+      "line_number": "34",
+      "stack_depth": "2",
+      "id": 291
+    },
+    {
+      "type": "RETURN",
+      "subtype": "result",
+      "value": "42",
+      "line_number": "36",
+      "stack_depth": "2",
+      "address": "0x7ffc9380622c",
+      "id": 292
+    },
+    {
+      "type": "DECL",
+      "subject": "prod",
+      "value": "42",
+      "address": "0x7ffc93806284",
+      "line_number": "100",
+      "stack_depth": "1",
+      "id": 293
+    },
+    {
+      "type": "DECL",
+      "subject": "result",
+      "value": "0",
+      "address": "0x7ffc93806280",
+      "line_number": "103",
+      "stack_depth": "1",
+      "id": 294
+    },
+    {
+      "type": "CONDITION",
+      "subject": "c > 10",
+      "condition_result": "1",
+      "line_number": "104",
+      "stack_depth": "1",
+      "id": 295
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "c > 10",
+      "line_number": "104",
+      "stack_depth": "1",
+      "id": 296
+    },
+    {
+      "type": "READ",
+      "subject": "c",
+      "format_spec": "15",
+      "address": "0x7ffc93806294",
+      "line_number": "105",
+      "stack_depth": "1",
+      "id": 297
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "30",
+      "address": "0x7ffc93806280",
+      "line_number": "105",
+      "stack_depth": "1",
+      "id": 298
+    },
+    {
+      "type": "CONDITION",
+      "subject": "result > 20",
+      "condition_result": "1",
+      "line_number": "111",
+      "stack_depth": "1",
+      "id": 299
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "result > 20",
+      "line_number": "111",
+      "stack_depth": "1",
+      "id": 300
+    },
+    {
+      "type": "CONDITION",
+      "subject": "result > 30",
+      "condition_result": "0",
+      "line_number": "112",
+      "stack_depth": "1",
+      "id": 301
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "else",
+      "condition": "result > 30",
+      "line_number": "112",
+      "stack_depth": "1",
+      "id": 302
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "30",
+      "address": "0x7ffc93806280",
+      "line_number": "115",
+      "stack_depth": "1",
+      "id": 303
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "35",
+      "address": "0x7ffc93806280",
+      "line_number": "115",
+      "stack_depth": "1",
+      "id": 304
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "120",
+      "stack_depth": "1",
+      "condition": "i < 3",
+      "condition_result": "1",
+      "id": 305
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "0",
+      "address": "0x7ffc93806254",
+      "line_number": "120",
+      "stack_depth": "1",
+      "id": 306
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "35",
+      "address": "0x7ffc93806280",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 307
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffc93806254",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 308
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "35",
+      "address": "0x7ffc93806280",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 309
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "120",
+      "stack_depth": "1",
+      "condition": "i < 3",
+      "condition_result": "1",
+      "id": 310
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "1",
+      "address": "0x7ffc93806254",
+      "line_number": "120",
+      "stack_depth": "1",
+      "id": 311
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "35",
+      "address": "0x7ffc93806280",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 312
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffc93806254",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 313
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "36",
+      "address": "0x7ffc93806280",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 314
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "120",
+      "stack_depth": "1",
+      "condition": "i < 3",
+      "condition_result": "1",
+      "id": 315
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "2",
+      "address": "0x7ffc93806254",
+      "line_number": "120",
+      "stack_depth": "1",
+      "id": 316
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "36",
+      "address": "0x7ffc93806280",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 317
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffc93806254",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 318
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "38",
+      "address": "0x7ffc93806280",
+      "line_number": "121",
+      "stack_depth": "1",
+      "id": 319
+    },
+    {
+      "type": "DECL",
+      "subject": "counter",
+      "value": "0",
+      "address": "0x7ffc9380627c",
+      "line_number": "125",
+      "stack_depth": "1",
+      "id": 320
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "126",
+      "stack_depth": "1",
+      "condition": "counter < 5",
+      "condition_result": "1",
+      "id": 321
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "38",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 322
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "39",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 323
+    },
+    {
+      "type": "READ",
+      "subject": "counter",
+      "format_spec": "0",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 324
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "counter",
+      "value": "1",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 325
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "126",
+      "stack_depth": "1",
+      "condition": "counter < 5",
+      "condition_result": "1",
+      "id": 326
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "39",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 327
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "40",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 328
+    },
+    {
+      "type": "READ",
+      "subject": "counter",
+      "format_spec": "1",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 329
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "counter",
+      "value": "2",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 330
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "126",
+      "stack_depth": "1",
+      "condition": "counter < 5",
+      "condition_result": "1",
+      "id": 331
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "40",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 332
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "41",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 333
+    },
+    {
+      "type": "READ",
+      "subject": "counter",
+      "format_spec": "2",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 334
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "counter",
+      "value": "3",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 335
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "126",
+      "stack_depth": "1",
+      "condition": "counter < 5",
+      "condition_result": "1",
+      "id": 336
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "41",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 337
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "42",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 338
+    },
+    {
+      "type": "READ",
+      "subject": "counter",
+      "format_spec": "3",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 339
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "counter",
+      "value": "4",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 340
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "126",
+      "stack_depth": "1",
+      "condition": "counter < 5",
+      "condition_result": "1",
+      "id": 341
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "42",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 342
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "127",
+      "stack_depth": "1",
+      "id": 343
+    },
+    {
+      "type": "READ",
+      "subject": "counter",
+      "format_spec": "4",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 344
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "counter",
+      "value": "5",
+      "address": "0x7ffc9380627c",
+      "line_number": "128",
+      "stack_depth": "1",
+      "id": 345
+    },
+    {
+      "type": "CALL",
+      "subject": "nestedSum",
+      "stack_depth": "2",
+      "args": [
+        "3",
+        "3"
+      ],
+      "id": 346
+    },
+    {
+      "type": "PARAM",
+      "subject": "rows",
+      "value": "3",
+      "line_number": "51",
+      "id": 347
+    },
+    {
+      "type": "PARAM",
+      "subject": "cols",
+      "value": "3",
+      "line_number": "51",
+      "id": 348
+    },
+    {
+      "type": "DECL",
+      "subject": "total",
+      "value": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "52",
+      "stack_depth": "2",
+      "id": 349
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "53",
+      "stack_depth": "2",
+      "condition": "i < rows",
+      "condition_result": "1",
+      "id": 350
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "53",
+      "stack_depth": "2",
+      "id": 351
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 352
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "0",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 353
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 354
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 355
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "0",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 356
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 357
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 358
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "1",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 359
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "0",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 360
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 361
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "1",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 362
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "1",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 363
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 364
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "2",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 365
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "1",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 366
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 367
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "2",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 368
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "3",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 369
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "53",
+      "stack_depth": "2",
+      "condition": "i < rows",
+      "condition_result": "1",
+      "id": 370
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "53",
+      "stack_depth": "2",
+      "id": 371
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 372
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "0",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 373
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "3",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 374
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 375
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "0",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 376
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "4",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 377
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 378
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "1",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 379
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "4",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 380
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 381
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "1",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 382
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "6",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 383
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 384
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "2",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 385
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "6",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 386
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 387
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "2",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 388
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "9",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 389
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "53",
+      "stack_depth": "2",
+      "condition": "i < rows",
+      "condition_result": "1",
+      "id": 390
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "53",
+      "stack_depth": "2",
+      "id": 391
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 392
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "0",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 393
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "9",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 394
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 395
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "0",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 396
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "11",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 397
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 398
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "1",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 399
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "11",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 400
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 401
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "1",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 402
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "14",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 403
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "54",
+      "stack_depth": "2",
+      "condition": "j < cols",
+      "condition_result": "1",
+      "id": 404
+    },
+    {
+      "type": "DECL",
+      "subject": "j",
+      "value": "2",
+      "address": "0x7ffc93806224",
+      "line_number": "54",
+      "stack_depth": "2",
+      "id": 405
+    },
+    {
+      "type": "READ",
+      "subject": "total",
+      "format_spec": "14",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 406
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffc93806228",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 407
+    },
+    {
+      "type": "READ",
+      "subject": "j",
+      "format_spec": "2",
+      "address": "0x7ffc93806224",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 408
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "total",
+      "value": "18",
+      "address": "0x7ffc9380622c",
+      "line_number": "55",
+      "stack_depth": "2",
+      "id": 409
+    },
+    {
+      "type": "RETURN",
+      "subtype": "total",
+      "value": "18",
+      "line_number": "58",
+      "stack_depth": "2",
+      "address": "0x7ffc9380622c",
+      "id": 410
+    },
+    {
+      "type": "DECL",
+      "subject": "nested",
+      "value": "18",
+      "address": "0x7ffc93806278",
+      "line_number": "132",
+      "stack_depth": "1",
+      "id": 411
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "134",
+      "stack_depth": "1",
+      "condition": "outer < 2",
+      "condition_result": "1",
+      "id": 412
+    },
+    {
+      "type": "DECL",
+      "subject": "outer",
+      "value": "0",
+      "address": "0x7ffc93806250",
+      "line_number": "134",
+      "stack_depth": "1",
+      "id": 413
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "135",
+      "stack_depth": "1",
+      "condition": "inner < 2",
+      "condition_result": "1",
+      "id": 414
+    },
+    {
+      "type": "DECL",
+      "subject": "inner",
+      "value": "0",
+      "address": "0x7ffc9380624c",
+      "line_number": "135",
+      "stack_depth": "1",
+      "id": 415
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 416
+    },
+    {
+      "type": "READ",
+      "subject": "outer",
+      "format_spec": "0",
+      "address": "0x7ffc93806250",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 417
+    },
+    {
+      "type": "READ",
+      "subject": "inner",
+      "format_spec": "0",
+      "address": "0x7ffc9380624c",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 418
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 419
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "135",
+      "stack_depth": "1",
+      "condition": "inner < 2",
+      "condition_result": "1",
+      "id": 420
+    },
+    {
+      "type": "DECL",
+      "subject": "inner",
+      "value": "1",
+      "address": "0x7ffc9380624c",
+      "line_number": "135",
+      "stack_depth": "1",
+      "id": 421
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 422
+    },
+    {
+      "type": "READ",
+      "subject": "outer",
+      "format_spec": "0",
+      "address": "0x7ffc93806250",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 423
+    },
+    {
+      "type": "READ",
+      "subject": "inner",
+      "format_spec": "1",
+      "address": "0x7ffc9380624c",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 424
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 425
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "134",
+      "stack_depth": "1",
+      "condition": "outer < 2",
+      "condition_result": "1",
+      "id": 426
+    },
+    {
+      "type": "DECL",
+      "subject": "outer",
+      "value": "1",
+      "address": "0x7ffc93806250",
+      "line_number": "134",
+      "stack_depth": "1",
+      "id": 427
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "135",
+      "stack_depth": "1",
+      "condition": "inner < 2",
+      "condition_result": "1",
+      "id": 428
+    },
+    {
+      "type": "DECL",
+      "subject": "inner",
+      "value": "0",
+      "address": "0x7ffc9380624c",
+      "line_number": "135",
+      "stack_depth": "1",
+      "id": 429
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 430
+    },
+    {
+      "type": "READ",
+      "subject": "outer",
+      "format_spec": "1",
+      "address": "0x7ffc93806250",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 431
+    },
+    {
+      "type": "READ",
+      "subject": "inner",
+      "format_spec": "0",
+      "address": "0x7ffc9380624c",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 432
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 433
+    },
+    {
+      "type": "LOOP",
+      "subtype": "for",
+      "line_number": "135",
+      "stack_depth": "1",
+      "condition": "inner < 2",
+      "condition_result": "1",
+      "id": 434
+    },
+    {
+      "type": "DECL",
+      "subject": "inner",
+      "value": "1",
+      "address": "0x7ffc9380624c",
+      "line_number": "135",
+      "stack_depth": "1",
+      "id": 435
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "43",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 436
+    },
+    {
+      "type": "READ",
+      "subject": "outer",
+      "format_spec": "1",
+      "address": "0x7ffc93806250",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 437
+    },
+    {
+      "type": "READ",
+      "subject": "inner",
+      "format_spec": "1",
+      "address": "0x7ffc9380624c",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 438
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "44",
+      "address": "0x7ffc93806280",
+      "line_number": "136",
+      "stack_depth": "1",
+      "id": 439
+    },
+    {
+      "type": "CALL",
+      "subject": "compute",
+      "stack_depth": "2",
+      "args": [
+        "4",
+        "3"
+      ],
+      "id": 440
+    },
+    {
+      "type": "PARAM",
+      "subject": "x",
+      "value": "4",
+      "line_number": "62",
+      "id": 441
+    },
+    {
+      "type": "PARAM",
+      "subject": "y",
+      "value": "3",
+      "line_number": "62",
+      "id": 442
+    },
+    {
+      "type": "READ",
+      "subject": "x",
+      "format_spec": "4",
+      "address": "0x7ffc9380621c",
+      "line_number": "63",
+      "stack_depth": "2",
+      "id": 443
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "3",
+      "args": [
+        "4"
+      ],
+      "id": 444
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "4",
+      "id": 445
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "3",
+      "id": 446
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "3",
+      "args": [
+        "3"
+      ],
+      "id": 447
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "4",
+      "id": 448
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "3",
+      "id": 449
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "3",
+      "args": [
+        "2"
+      ],
+      "id": 450
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "4",
+      "id": 451
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "0",
+      "line_number": "5",
+      "stack_depth": "3",
+      "id": 452
+    },
+    {
+      "type": "CALL",
+      "subject": "factorial",
+      "stack_depth": "3",
+      "args": [
+        "1"
+      ],
+      "id": 453
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "4",
+      "id": 454
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n <= 1",
+      "condition_result": "1",
+      "line_number": "5",
+      "stack_depth": "3",
+      "id": 455
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n <= 1",
+      "line_number": "5",
+      "stack_depth": "3",
+      "id": 456
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "1",
+      "line_number": "6",
+      "stack_depth": "3",
+      "id": 457
+    },
+    {
+      "type": "DECL",
+      "subject": "a",
+      "value": "24",
+      "address": "0x7ffc9380622c",
+      "line_number": "63",
+      "stack_depth": "2",
+      "id": 458
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "24",
+      "address": "0x7ffc9380622c",
+      "line_number": "64",
+      "stack_depth": "2",
+      "id": 459
+    },
+    {
+      "type": "READ",
+      "subject": "y",
+      "format_spec": "3",
+      "address": "0x7ffc93806218",
+      "line_number": "64",
+      "stack_depth": "2",
+      "id": 460
+    },
+    {
+      "type": "CALL",
+      "subject": "multiply",
+      "stack_depth": "3",
+      "args": [
+        "24",
+        "3"
+      ],
+      "id": 461
+    },
+    {
+      "type": "PARAM",
+      "subject": "a",
+      "value": "24",
+      "line_number": "29",
+      "id": 462
+    },
+    {
+      "type": "PARAM",
+      "subject": "b",
+      "value": "3",
+      "line_number": "29",
+      "id": 463
+    },
+    {
+      "type": "DECL",
+      "subject": "result",
+      "value": "0",
+      "address": "0x7ffc938061fc",
+      "line_number": "30",
+      "stack_depth": "3",
+      "id": 464
+    },
+    {
+      "type": "DECL",
+      "subject": "count",
+      "value": "0",
+      "address": "0x7ffc938061f8",
+      "line_number": "31",
+      "stack_depth": "3",
+      "id": 465
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "3",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 466
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "0",
+      "address": "0x7ffc938061fc",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 467
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "24",
+      "address": "0x7ffc938061ec",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 468
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "24",
+      "address": "0x7ffc938061fc",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 469
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "0",
+      "address": "0x7ffc938061f8",
+      "line_number": "34",
+      "stack_depth": "3",
+      "id": 470
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "1",
+      "address": "0x7ffc938061f8",
+      "line_number": "34",
+      "stack_depth": "3",
+      "id": 471
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "3",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 472
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "24",
+      "address": "0x7ffc938061fc",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 473
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "24",
+      "address": "0x7ffc938061ec",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 474
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "48",
+      "address": "0x7ffc938061fc",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 475
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "1",
+      "address": "0x7ffc938061f8",
+      "line_number": "34",
+      "stack_depth": "3",
+      "id": 476
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "2",
+      "address": "0x7ffc938061f8",
+      "line_number": "34",
+      "stack_depth": "3",
+      "id": 477
+    },
+    {
+      "type": "LOOP",
+      "subtype": "while",
+      "line_number": "32",
+      "stack_depth": "3",
+      "condition": "count < b",
+      "condition_result": "1",
+      "id": 478
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "48",
+      "address": "0x7ffc938061fc",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 479
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "24",
+      "address": "0x7ffc938061ec",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 480
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "72",
+      "address": "0x7ffc938061fc",
+      "line_number": "33",
+      "stack_depth": "3",
+      "id": 481
+    },
+    {
+      "type": "READ",
+      "subject": "count",
+      "format_spec": "2",
+      "address": "0x7ffc938061f8",
+      "line_number": "34",
+      "stack_depth": "3",
+      "id": 482
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "count",
+      "value": "3",
+      "address": "0x7ffc938061f8",
+      "line_number": "34",
+      "stack_depth": "3",
+      "id": 483
+    },
+    {
+      "type": "RETURN",
+      "subtype": "result",
+      "value": "72",
+      "line_number": "36",
+      "stack_depth": "3",
+      "address": "0x7ffc938061fc",
+      "id": 484
+    },
+    {
+      "type": "DECL",
+      "subject": "b",
+      "value": "72",
+      "address": "0x7ffc93806228",
+      "line_number": "64",
+      "stack_depth": "2",
+      "id": 485
+    },
+    {
+      "type": "CONDITION",
+      "subject": "b > 50",
+      "condition_result": "1",
+      "line_number": "66",
+      "stack_depth": "2",
+      "id": 486
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "b > 50",
+      "line_number": "66",
+      "stack_depth": "2",
+      "id": 487
+    },
+    {
+      "type": "READ",
+      "subject": "b",
+      "format_spec": "72",
+      "address": "0x7ffc93806228",
+      "line_number": "67",
+      "stack_depth": "2",
+      "id": 488
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "b",
+      "value": "62",
+      "address": "0x7ffc93806228",
+      "line_number": "67",
+      "stack_depth": "2",
+      "id": 489
+    },
+    {
+      "type": "RETURN",
+      "subtype": "b",
+      "value": "62",
+      "line_number": "72",
+      "stack_depth": "2",
+      "address": "0x7ffc93806228",
+      "id": 490
+    },
+    {
+      "type": "DECL",
+      "subject": "comp",
+      "value": "62",
+      "address": "0x7ffc93806274",
+      "line_number": "141",
+      "stack_depth": "1",
+      "id": 491
+    },
+    {
+      "type": "CALL",
+      "subject": "classify",
+      "stack_depth": "2",
+      "args": [
+        "-5"
+      ],
+      "id": 492
+    },
+    {
+      "type": "PARAM",
+      "subject": "num",
+      "value": "-5",
+      "line_number": "40",
+      "id": 493
+    },
+    {
+      "type": "CONDITION",
+      "subject": "num < 0",
+      "condition_result": "1",
+      "line_number": "41",
+      "stack_depth": "2",
+      "id": 494
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "num < 0",
+      "line_number": "41",
+      "stack_depth": "2",
+      "id": 495
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "-1",
+      "line_number": "42",
+      "stack_depth": "2",
+      "id": 496
+    },
+    {
+      "type": "DECL",
+      "subject": "cls1",
+      "value": "-1",
+      "address": "0x7ffc93806270",
+      "line_number": "144",
+      "stack_depth": "1",
+      "id": 497
+    },
+    {
+      "type": "CALL",
+      "subject": "classify",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 498
+    },
+    {
+      "type": "PARAM",
+      "subject": "num",
+      "value": "0",
+      "line_number": "40",
+      "id": 499
+    },
+    {
+      "type": "CONDITION",
+      "subject": "num < 0",
+      "condition_result": "0",
+      "line_number": "41",
+      "stack_depth": "2",
+      "id": 500
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "num == 0",
+      "line_number": "43",
+      "stack_depth": "2",
+      "id": 501
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "0",
+      "line_number": "44",
+      "stack_depth": "2",
+      "id": 502
+    },
+    {
+      "type": "DECL",
+      "subject": "cls2",
+      "value": "0",
+      "address": "0x7ffc9380626c",
+      "line_number": "145",
+      "stack_depth": "1",
+      "id": 503
+    },
+    {
+      "type": "CALL",
+      "subject": "classify",
+      "stack_depth": "2",
+      "args": [
+        "10"
+      ],
+      "id": 504
+    },
+    {
+      "type": "PARAM",
+      "subject": "num",
+      "value": "10",
+      "line_number": "40",
+      "id": 505
+    },
+    {
+      "type": "CONDITION",
+      "subject": "num < 0",
+      "condition_result": "0",
+      "line_number": "41",
+      "stack_depth": "2",
+      "id": 506
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "else",
+      "condition": "num == 0",
+      "line_number": "43",
+      "stack_depth": "2",
+      "id": 507
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "1",
+      "line_number": "46",
+      "stack_depth": "2",
+      "id": 508
+    },
+    {
+      "type": "DECL",
+      "subject": "cls3",
+      "value": "1",
+      "address": "0x7ffc93806268",
+      "line_number": "146",
+      "stack_depth": "1",
+      "id": 509
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "8"
+      ],
+      "id": 510
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "8",
+      "line_number": "76",
+      "id": 511
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 512
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "7"
+      ],
+      "id": 513
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "7",
+      "line_number": "83",
+      "id": 514
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 515
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "6"
+      ],
+      "id": 516
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "6",
+      "line_number": "76",
+      "id": 517
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 518
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "5"
+      ],
+      "id": 519
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "5",
+      "line_number": "83",
+      "id": 520
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 521
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "4"
+      ],
+      "id": 522
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "76",
+      "id": 523
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 524
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 525
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "83",
+      "id": 526
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 527
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 528
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "76",
+      "id": 529
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 530
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 531
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "83",
+      "id": 532
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 533
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 534
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "76",
+      "id": 535
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "1",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 536
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n == 0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 537
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "1",
+      "line_number": "78",
+      "stack_depth": "2",
+      "id": 538
+    },
+    {
+      "type": "DECL",
+      "subject": "even",
+      "value": "1",
+      "address": "0x7ffc93806264",
+      "line_number": "149",
+      "stack_depth": "1",
+      "id": 539
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "7"
+      ],
+      "id": 540
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "7",
+      "line_number": "83",
+      "id": 541
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 542
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "6"
+      ],
+      "id": 543
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "6",
+      "line_number": "76",
+      "id": 544
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 545
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "5"
+      ],
+      "id": 546
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "5",
+      "line_number": "83",
+      "id": 547
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 548
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "4"
+      ],
+      "id": 549
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "4",
+      "line_number": "76",
+      "id": 550
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 551
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "3"
+      ],
+      "id": 552
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "3",
+      "line_number": "83",
+      "id": 553
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 554
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "2"
+      ],
+      "id": 555
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "2",
+      "line_number": "76",
+      "id": 556
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 557
+    },
+    {
+      "type": "CALL",
+      "subject": "isOdd",
+      "stack_depth": "2",
+      "args": [
+        "1"
+      ],
+      "id": 558
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "1",
+      "line_number": "83",
+      "id": 559
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "0",
+      "line_number": "84",
+      "stack_depth": "2",
+      "id": 560
+    },
+    {
+      "type": "CALL",
+      "subject": "isEven",
+      "stack_depth": "2",
+      "args": [
+        "0"
+      ],
+      "id": 561
+    },
+    {
+      "type": "PARAM",
+      "subject": "n",
+      "value": "0",
+      "line_number": "76",
+      "id": 562
+    },
+    {
+      "type": "CONDITION",
+      "subject": "n == 0",
+      "condition_result": "1",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 563
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "n == 0",
+      "line_number": "77",
+      "stack_depth": "2",
+      "id": 564
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "1",
+      "line_number": "78",
+      "stack_depth": "2",
+      "id": 565
+    },
+    {
+      "type": "DECL",
+      "subject": "odd",
+      "value": "1",
+      "address": "0x7ffc93806260",
+      "line_number": "150",
+      "stack_depth": "1",
+      "id": 566
+    },
+    {
+      "type": "DECL",
+      "subject": "x",
+      "value": "1",
+      "address": "0x7ffc9380625c",
+      "line_number": "153",
+      "stack_depth": "1",
+      "id": 567
+    },
+    {
+      "type": "READ",
+      "subject": "x",
+      "format_spec": "1",
+      "address": "0x7ffc9380625c",
+      "line_number": "154",
+      "stack_depth": "1",
+      "id": 568
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "x",
+      "value": "3",
+      "address": "0x7ffc9380625c",
+      "line_number": "154",
+      "stack_depth": "1",
+      "id": 569
+    },
+    {
+      "type": "READ",
+      "subject": "x",
+      "format_spec": "3",
+      "address": "0x7ffc9380625c",
+      "line_number": "155",
+      "stack_depth": "1",
+      "id": 570
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "x",
+      "value": "9",
+      "address": "0x7ffc9380625c",
+      "line_number": "155",
+      "stack_depth": "1",
+      "id": 571
+    },
+    {
+      "type": "READ",
+      "subject": "x",
+      "format_spec": "9",
+      "address": "0x7ffc9380625c",
+      "line_number": "156",
+      "stack_depth": "1",
+      "id": 572
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "x",
+      "value": "8",
+      "address": "0x7ffc9380625c",
+      "line_number": "156",
+      "stack_depth": "1",
+      "id": 573
+    },
+    {
+      "type": "DECL",
+      "subject": "final",
+      "value": "0",
+      "address": "0x7ffc93806258",
+      "line_number": "159",
+      "stack_depth": "1",
+      "id": 574
+    },
+    {
+      "type": "CONDITION",
+      "subject": "x < 5",
+      "condition_result": "0",
+      "line_number": "160",
+      "stack_depth": "1",
+      "id": 575
+    },
+    {
+      "type": "BRANCH",
+      "subtype": "if",
+      "condition": "x < 10",
+      "line_number": "162",
+      "stack_depth": "1",
+      "id": 576
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "final",
+      "value": "2",
+      "address": "0x7ffc93806258",
+      "line_number": "163",
+      "stack_depth": "1",
+      "id": 577
+    },
+    {
+      "type": "CONDITION",
+      "subject": "x < 15",
+      "condition_result": "1",
+      "line_number": "164",
+      "stack_depth": "1",
+      "id": 578
+    }
+  ],
+  "seed": 19824109656278133978
+}

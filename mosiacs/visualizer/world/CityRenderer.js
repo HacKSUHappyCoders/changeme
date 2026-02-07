@@ -21,6 +21,9 @@ class CityRenderer {
         // Phase 4: Bubble renderer for for-loops
         this.loopBubbleRenderer = new LoopBubbleRenderer(scene, this.labelHelper);
 
+        // Phase 4: Tree renderer for if-statements
+        this.branchTreeRenderer = new BranchTreeRenderer(scene, this.labelHelper);
+
         // Wire up the sub-spiral toggle callback so we know when to push/restore
         this.subSpiralRenderer.onSubSpiralToggle = (action, key, boundingRadius, parentPos) => {
             this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
@@ -28,6 +31,11 @@ class CityRenderer {
 
         // Wire up bubble toggle callback
         this.loopBubbleRenderer.onBubbleToggle = (action, key, boundingRadius, parentPos) => {
+            this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
+        };
+
+        // Wire up tree toggle callback (Phase 4: if-statement trees)
+        this.branchTreeRenderer.onTreeToggle = (action, key, boundingRadius, parentPos) => {
             this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
         };
 
@@ -342,6 +350,8 @@ class CityRenderer {
         this._openSubSpirals.clear();
         this._lastSnapshot = null;
         this.subSpiralRenderer.clear();
+        this.loopBubbleRenderer.clearAll();
+        this.branchTreeRenderer.clearAll();
     }
 
     /**

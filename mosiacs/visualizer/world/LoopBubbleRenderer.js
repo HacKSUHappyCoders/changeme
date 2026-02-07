@@ -22,21 +22,21 @@ class LoopBubbleRenderer {
         this.bubbles = new Map();
 
         // Bubble configuration
-        this.bubbleOpacity = 0.25;          // semi-transparent
+        this.bubbleOpacity = 0.22;          // semi-transparent
         this.bubbleRadiusBase = 3.0;        // base bubble size
-        this.bubbleRadiusPerNode = 0.15;    // grows with content
-        this.bubbleSegments = 32;           // smooth sphere
+        this.bubbleRadiusPerNode = 0.12;    // grows with content
+        this.bubbleSegments = 12;           // low-poly sphere (was 32)
 
         // Node chain configuration
-        this.nodeRadius = 0.35;             // individual node size
+        this.nodeRadius = 0.30;             // individual node size (smaller)
         this.nodeSpacing = 0.8;             // distance between nodes
         this.chainCurvature = 0.4;          // how much the chain curves
 
-        // Connection line configuration
-        this.connectionRadius = 0.08;       // tube thickness between nodes
-        this.connectionOpacity = 0.6;       // slightly transparent
+        // Connection line configuration — use lines instead of tubes
+        this.connectionRadius = 0.05;       // thinner tubes for connections
+        this.connectionOpacity = 0.5;       // slightly transparent
 
-        // Material cache for performance
+        // Material cache for performance (shared across all bubbles)
         this._matCache = new Map();
 
         // Callback for when bubble is toggled
@@ -142,6 +142,11 @@ class LoopBubbleRenderer {
             this._disposeBubble(bubbleData);
         }
         this.bubbles.clear();
+        // Dispose cached materials on full clear
+        this._matCache.forEach(mat => {
+            try { if (mat) mat.dispose(); } catch (e) { /* already disposed */ }
+        });
+        this._matCache.clear();
     }
 
     /**
@@ -173,43 +178,32 @@ class LoopBubbleRenderer {
         );
 
         bubble.position = position.clone();
-        // Center the bubble at the parent position (camera focus point)
 
-        // Semi-transparent material
-        const mat = new BABYLON.StandardMaterial(`bubbleMat_${key}`, this.scene);
-        mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
-        mat.emissiveColor = new BABYLON.Color3(color.r * 0.3, color.g * 0.3, color.b * 0.3);
-        mat.alpha = this.bubbleOpacity;
-        mat.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-        mat.backFaceCulling = false; // show from inside too
-
+        // Semi-transparent material — use cached material when possible
+        const mat = this._getOrCreateBubbleMat(key, color);
         bubble.material = mat;
         bubble.isPickable = false; // clicks go through to nodes
 
-        // Gentle pulsing animation
-        this._animateBubblePulse(bubble, radius);
+        // Freeze world matrix immediately (bubble doesn't move)
+        bubble.computeWorldMatrix(true);
+        bubble.freezeWorldMatrix();
 
         return bubble;
     }
 
-    _animateBubblePulse(bubble, radius) {
-        const scaleAnim = new BABYLON.Animation(
-            'bubblePulse',
-            'scaling',
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-        );
-
-        const keys = [
-            { frame: 0, value: new BABYLON.Vector3(1, 1, 1) },
-            { frame: 60, value: new BABYLON.Vector3(1.02, 1.02, 1.02) },
-            { frame: 120, value: new BABYLON.Vector3(1, 1, 1) }
-        ];
-
-        scaleAnim.setKeys(keys);
-        bubble.animations.push(scaleAnim);
-        this.scene.beginAnimation(bubble, 0, 120, true);
+    /**
+     * Get or create a bubble material. No pulse animation — static is faster.
+     */
+    _getOrCreateBubbleMat(key, color) {
+        const mat = new BABYLON.StandardMaterial(`bubbleMat_${key}`, this.scene);
+        mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
+        mat.emissiveColor = new BABYLON.Color3(color.r * 0.3, color.g * 0.3, color.b * 0.3);
+        mat.specularColor = BABYLON.Color3.Black();
+        mat.alpha = this.bubbleOpacity;
+        mat.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
+        mat.backFaceCulling = false;
+        mat.freeze();
+        return mat;
     }
 
     // ─── Node Chain Creation ───────────────────────────────────────
@@ -459,133 +453,94 @@ class LoopBubbleRenderer {
     }
 
     _createEntityNode(name, position, color, entity) {
-        // Match galaxy building shapes exactly
+        // Simplified geometry — lower poly, no roof sub-meshes
         let mesh;
 
         switch (entity.type) {
             case 'variable': {
-                // Variables are boxes with a pyramidal roof (houses)
-                const height = this.nodeRadius * 2.5;
-                mesh = BABYLON.MeshBuilder.CreateBox(
-                    name,
-                    { height, width: this.nodeRadius * 2, depth: this.nodeRadius * 2 },
-                    this.scene
-                );
+                const h = this.nodeRadius * 2.2;
+                mesh = BABYLON.MeshBuilder.CreateBox(name, {
+                    height: h, width: this.nodeRadius * 1.8, depth: this.nodeRadius * 1.8
+                }, this.scene);
                 mesh.position = position.clone();
-                mesh.position.y += height / 2;
-
-                // Create roof (optional - can skip for simpler look in bubble)
-                const roof = BABYLON.MeshBuilder.CreateCylinder(
-                    `${name}_roof`,
-                    { 
-                        height: this.nodeRadius * 0.8, 
-                        diameterTop: 0, 
-                        diameterBottom: this.nodeRadius * 2.5, 
-                        tessellation: 4 
-                    },
-                    this.scene
-                );
-                roof.bakeTransformIntoVertices(BABYLON.Matrix.RotationY(Math.PI / 4));
-                roof.position = position.clone();
-                roof.position.y += height + this.nodeRadius * 0.4;
-                roof.material = mesh.material; // Will be set below
-                roof.isPickable = false;
-                mesh._roofMesh = roof; // Store for disposal
+                mesh.position.y += h / 2;
                 break;
             }
 
             case 'loop': {
-                // Loops are tapered cylinders (factories)
-                const height = this.nodeRadius * 3;
-                mesh = BABYLON.MeshBuilder.CreateCylinder(
-                    name,
-                    { 
-                        height, 
-                        diameterTop: this.nodeRadius * 2 * 0.75, 
-                        diameterBottom: this.nodeRadius * 2, 
-                        tessellation: 6 
-                    },
-                    this.scene
-                );
+                const h = this.nodeRadius * 2.5;
+                mesh = BABYLON.MeshBuilder.CreateCylinder(name, {
+                    height: h, diameterTop: this.nodeRadius * 1.2,
+                    diameterBottom: this.nodeRadius * 1.8, tessellation: 6
+                }, this.scene);
                 mesh.position = position.clone();
-                mesh.position.y += height / 2;
+                mesh.position.y += h / 2;
                 break;
             }
 
             case 'call':
             case 'return': {
-                // Functions are tapered cylinders rotated 45° (districts)
-                const height = this.nodeRadius * 3;
-                mesh = BABYLON.MeshBuilder.CreateCylinder(
-                    name,
-                    { 
-                        height, 
-                        diameterTop: this.nodeRadius * 1, 
-                        diameterBottom: this.nodeRadius * 2.5, 
-                        tessellation: 4 
-                    },
-                    this.scene
-                );
+                const h = this.nodeRadius * 2.5;
+                mesh = BABYLON.MeshBuilder.CreateCylinder(name, {
+                    height: h, diameterTop: this.nodeRadius * 0.8,
+                    diameterBottom: this.nodeRadius * 2, tessellation: 4
+                }, this.scene);
                 const bake = BABYLON.Matrix.RotationY(Math.PI / 4)
-                    .multiply(BABYLON.Matrix.Translation(0, height / 2, 0));
+                    .multiply(BABYLON.Matrix.Translation(0, h / 2, 0));
                 mesh.bakeTransformIntoVertices(bake);
                 mesh.position = position.clone();
                 break;
             }
 
             default: {
-                // Default fallback for any other types - use spheres
-                mesh = BABYLON.MeshBuilder.CreateSphere(
-                    name,
-                    { diameter: this.nodeRadius * 2.2, segments: 8 },
-                    this.scene
-                );
+                mesh = BABYLON.MeshBuilder.CreateSphere(name, {
+                    diameter: this.nodeRadius * 2, segments: 6
+                }, this.scene);
                 mesh.position = position.clone();
-                mesh.position.y += this.nodeRadius * 1.1;
+                mesh.position.y += this.nodeRadius;
                 break;
             }
         }
 
-        // Material with glow (matching galaxy style)
-        const mat = new BABYLON.StandardMaterial(`${name}_mat`, this.scene);
-        mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
-        mat.emissiveColor = new BABYLON.Color3(color.r * 0.4, color.g * 0.4, color.b * 0.4);
-        mat.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
-        mat.alpha = color.a || 0.9;
-        mesh.material = mat;
+        // Use cached material for performance
+        mesh.material = this._getCachedNodeMat(entity.type, color);
 
-        // Apply same material to roof if it exists
-        if (mesh._roofMesh) {
-            const roofColor = {
-                r: Math.min(color.r * 1.3, 1),
-                g: Math.min(color.g * 1.3, 1),
-                b: Math.min(color.b * 1.3, 1)
-            };
-            const roofMat = new BABYLON.StandardMaterial(`${name}_roof_mat`, this.scene);
-            roofMat.diffuseColor = new BABYLON.Color3(roofColor.r, roofColor.g, roofColor.b);
-            roofMat.emissiveColor = new BABYLON.Color3(roofColor.r * 0.4, roofColor.g * 0.4, roofColor.b * 0.4);
-            roofMat.alpha = 0.9;
-            mesh._roofMesh.material = roofMat;
-        }
-
-        // Scale-in animation
+        // Simple fast scale-in (no looping animation)
         mesh.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
         BABYLON.Animation.CreateAndStartAnimation(
-            'scaleIn',
-            mesh,
-            'scaling',
-            30,
-            15,
+            'scaleIn', mesh, 'scaling', 60, 8,
             mesh.scaling,
             new BABYLON.Vector3(1, 1, 1),
             BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
         );
 
         mesh._isBubbleNode = true;
-        mesh._entityData = entity;  // Attach entity for recursive warping
+        mesh._entityData = entity;
         mesh.isPickable = true;
 
         return mesh;
+    }
+
+    /**
+     * Cached material per (type, colorKey) pair — avoids creating one material per node.
+     */
+    _getCachedNodeMat(entityType, color) {
+        // Round colour to reduce unique materials
+        const cr = (color.r * 10 | 0);
+        const cg = (color.g * 10 | 0);
+        const cb = (color.b * 10 | 0);
+        const cacheKey = `${entityType}_${cr}_${cg}_${cb}`;
+
+        if (this._matCache.has(cacheKey)) return this._matCache.get(cacheKey);
+
+        const mat = new BABYLON.StandardMaterial(`bubbleNodeMat_${cacheKey}`, this.scene);
+        mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
+        mat.emissiveColor = new BABYLON.Color3(color.r * 0.35, color.g * 0.35, color.b * 0.35);
+        mat.specularColor = new BABYLON.Color3(0.15, 0.15, 0.15);
+        mat.alpha = color.a || 0.9;
+        mat.freeze();
+        this._matCache.set(cacheKey, mat);
+        return mat;
     }
 
     _getEntityColor(entity) {
@@ -682,71 +637,24 @@ class LoopBubbleRenderer {
     // ─── Connection Creation ───────────────────────────────────────
 
     /**
-     * Create entry connector from parent loop building to the bubble's first node.
-     * This visually connects the main spiral to the bubble content.
+     * Create entry connector — simple line instead of tube.
      */
     _createEntryConnector(parentPos, firstNode, parentKey, bubbleColor) {
         if (!firstNode) return null;
 
-        // Calculate entry point on the bubble (where it touches the parent building)
         const entryPoint = parentPos.clone();
-        entryPoint.y += 1.5; // Slightly above the loop building
+        entryPoint.y += 1.5;
 
-        // Create a curved connection line
-        const path = this._createCurvedPath(entryPoint, firstNode.position);
-
-        const connector = BABYLON.MeshBuilder.CreateTube(
+        const connector = BABYLON.MeshBuilder.CreateLines(
             `${parentKey}_entry_connector`,
-            {
-                path,
-                radius: this.connectionRadius * 1.2, // Slightly thicker for emphasis
-                tessellation: 8,
-                cap: BABYLON.Mesh.CAP_ALL
-            },
+            { points: [entryPoint, firstNode.position], updatable: false },
             this.scene
         );
-
-        // Use bubble color for the entry connector
-        const mat = new BABYLON.StandardMaterial(`${parentKey}_entry_mat`, this.scene);
-        mat.diffuseColor = new BABYLON.Color3(bubbleColor.r, bubbleColor.g, bubbleColor.b);
-        mat.emissiveColor = new BABYLON.Color3(
-            bubbleColor.r * 0.6,
-            bubbleColor.g * 0.6,
-            bubbleColor.b * 0.6
-        );
-        mat.alpha = 0.8;
-        mat.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-
-        connector.material = mat;
+        connector.color = new BABYLON.Color3(bubbleColor.r, bubbleColor.g, bubbleColor.b);
+        connector.alpha = 0.7;
         connector.isPickable = false;
 
-        // Gentle pulse animation
-        this._animateEntryConnector(connector);
-
         return connector;
-    }
-
-    _animateEntryConnector(connector) {
-        const mat = connector.material;
-        const baseEmissive = mat.emissiveColor.clone();
-
-        const pulseAnim = new BABYLON.Animation(
-            'entryPulse',
-            'material.emissiveColor',
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_COLOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-        );
-
-        const keys = [
-            { frame: 0, value: baseEmissive.clone() },
-            { frame: 45, value: baseEmissive.clone().scale(1.3) },
-            { frame: 90, value: baseEmissive.clone() }
-        ];
-
-        pulseAnim.setKeys(keys);
-        connector.animations.push(pulseAnim);
-        this.scene.beginAnimation(connector, 0, 90, true);
     }
 
     _createConnections(nodes, parentKey) {
@@ -782,26 +690,18 @@ class LoopBubbleRenderer {
 
     _createCausalityConnections(nodes, parentKey) {
         const causalityConnections = [];
-
-        // Build a map of variable entities
-        const varMap = new Map(); // varName → [nodeIndices]
+        const varMap = new Map();
 
         nodes.forEach((nodeData, i) => {
             const entity = nodeData.entity;
             if (!entity) return;
-
-            // Only connect variables
             if (entity.type === 'variable') {
                 const varName = entity.subject || entity.label;
-                if (!varMap.has(varName)) {
-                    varMap.set(varName, []);
-                }
+                if (!varMap.has(varName)) varMap.set(varName, []);
                 varMap.get(varName).push(i);
             }
         });
 
-        // Create causality connections between related variables
-        // Connect assignments in sequence for same variable
         for (const [varName, indices] of varMap.entries()) {
             for (let i = 0; i < indices.length - 1; i++) {
                 const fromIdx = indices[i];
@@ -809,16 +709,17 @@ class LoopBubbleRenderer {
                 const fromNode = nodes[fromIdx];
                 const toNode = nodes[toIdx];
 
-                // Create a more subtle causality line
-                const causalityLine = this._createCausalityLine(
+                // Use simple lines for causality (no tubes, no animation)
+                const causalityLine = BABYLON.MeshBuilder.CreateLines(
                     `${parentKey}_causality_${fromIdx}_${toIdx}`,
-                    fromNode.position,
-                    toNode.position,
-                    fromNode.mesh.material.diffuseColor,
-                    toNode.mesh.material.diffuseColor
+                    { points: [fromNode.position, toNode.position], updatable: false },
+                    this.scene
                 );
-
-                causalityLine.isVisible = false; // Hidden by default
+                const col = fromNode.mesh.material.diffuseColor;
+                causalityLine.color = new BABYLON.Color3(col.r, col.g, col.b);
+                causalityLine.alpha = 0.4;
+                causalityLine.isPickable = false;
+                causalityLine.isVisible = false;
 
                 causalityConnections.push({
                     mesh: causalityLine,
@@ -833,121 +734,18 @@ class LoopBubbleRenderer {
         return causalityConnections;
     }
 
-    _createCausalityLine(name, fromPos, toPos, colorFrom, colorTo) {
-        // Create a curved line for causality (more visually interesting)
-        const path = this._createCurvedPath(fromPos, toPos);
-        
-        const tube = BABYLON.MeshBuilder.CreateTube(
-            name,
-            {
-                path,
-                radius: this.connectionRadius * 0.6, // Thinner than regular connections
-                tessellation: 8,
-                cap: BABYLON.Mesh.CAP_ALL
-            },
-            this.scene
-        );
-
-        // Blend colors from source to target
-        const blendedColor = new BABYLON.Color3(
-            (colorFrom.r + colorTo.r) * 0.5,
-            (colorFrom.g + colorTo.g) * 0.5,
-            (colorFrom.b + colorTo.b) * 0.5
-        );
-
-        const mat = new BABYLON.StandardMaterial(`${name}_mat`, this.scene);
-        mat.diffuseColor = blendedColor.clone();
-        mat.emissiveColor = blendedColor.clone().scale(0.8);
-        mat.alpha = 0.5;
-        mat.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-
-        tube.material = mat;
-        tube.isPickable = false;
-
-        // Gentle glow animation
-        this._animateCausalityGlow(tube);
-
-        return tube;
-    }
-
-    _createCurvedPath(fromPos, toPos) {
-        // Create a gentle curve between points
-        const midPoint = BABYLON.Vector3.Lerp(fromPos, toPos, 0.5);
-        
-        // Add perpendicular offset for curve
-        const direction = toPos.subtract(fromPos);
-        const perpendicular = new BABYLON.Vector3(-direction.z, 0, direction.x).normalize();
-        midPoint.addInPlace(perpendicular.scale(direction.length() * 0.2));
-
-        // Create bezier-like curve with multiple segments
-        const segments = 10;
-        const path = [];
-        for (let i = 0; i <= segments; i++) {
-            const t = i / segments;
-            const t2 = t * t;
-            const t3 = t2 * t;
-            const mt = 1 - t;
-            const mt2 = mt * mt;
-            const mt3 = mt2 * mt;
-
-            // Quadratic bezier
-            const point = new BABYLON.Vector3(
-                mt2 * fromPos.x + 2 * mt * t * midPoint.x + t2 * toPos.x,
-                mt2 * fromPos.y + 2 * mt * t * midPoint.y + t2 * toPos.y,
-                mt2 * fromPos.z + 2 * mt * t * midPoint.z + t2 * toPos.z
-            );
-            path.push(point);
-        }
-
-        return path;
-    }
-
-    _animateCausalityGlow(mesh) {
-        const mat = mesh.material;
-        const baseEmissive = mat.emissiveColor.clone();
-
-        const glowAnim = new BABYLON.Animation(
-            'causalityGlow',
-            'material.emissiveColor',
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_COLOR3,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-        );
-
-        const keys = [
-            { frame: 0, value: baseEmissive.clone() },
-            { frame: 60, value: baseEmissive.clone().scale(1.5) },
-            { frame: 120, value: baseEmissive.clone() }
-        ];
-
-        glowAnim.setKeys(keys);
-        mesh.animations.push(glowAnim);
-        this.scene.beginAnimation(mesh, 0, 120, true);
-    }
-
     _createConnection(name, fromPos, toPos, color) {
-        const path = [fromPos, toPos];
-        const tube = BABYLON.MeshBuilder.CreateTube(
+        // Use simple lines instead of tubes for much better performance
+        const line = BABYLON.MeshBuilder.CreateLines(
             name,
-            {
-                path,
-                radius: this.connectionRadius,
-                tessellation: 8,
-                cap: BABYLON.Mesh.CAP_ALL
-            },
+            { points: [fromPos, toPos], updatable: false },
             this.scene
         );
+        line.color = new BABYLON.Color3(color.r, color.g, color.b);
+        line.alpha = this.connectionOpacity;
+        line.isPickable = false;
 
-        const mat = new BABYLON.StandardMaterial(`${name}_mat`, this.scene);
-        mat.diffuseColor = color.clone();
-        mat.emissiveColor = color.clone().scale(0.3);
-        mat.alpha = this.connectionOpacity;
-        mat.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-
-        tube.material = mat;
-        tube.isPickable = false;
-
-        return tube;
+        return line;
     }
 
     // ─── Helper Methods ────────────────────────────────────────────
@@ -1006,14 +804,12 @@ class LoopBubbleRenderer {
     _disposeBubble(bubbleData) {
         // Dispose bubble mesh
         if (bubbleData.bubble) {
+            if (bubbleData.bubble.material) bubbleData.bubble.material.dispose();
             bubbleData.bubble.dispose();
         }
 
         // Dispose entry connector
         if (bubbleData.entryConnector) {
-            if (bubbleData.entryConnector.material) {
-                bubbleData.entryConnector.material.dispose();
-            }
             bubbleData.entryConnector.dispose();
         }
 
@@ -1021,28 +817,20 @@ class LoopBubbleRenderer {
         if (bubbleData.nodes) {
             bubbleData.nodes.forEach(nodeData => {
                 if (nodeData.mesh) {
-                    // Dispose roof mesh if it exists
-                    if (nodeData.mesh._roofMesh) {
-                        if (nodeData.mesh._roofMesh.material) {
-                            nodeData.mesh._roofMesh.material.dispose();
-                        }
-                        nodeData.mesh._roofMesh.dispose();
-                    }
-                    // Dispose main mesh
-                    if (nodeData.mesh.material) {
-                        nodeData.mesh.material.dispose();
-                    }
+                    this.scene.stopAnimation(nodeData.mesh);
+                    // Don't dispose cached materials
+                    nodeData.mesh.material = null;
                     nodeData.mesh.dispose();
                 }
                 if (nodeData.label) nodeData.label.dispose();
             });
         }
 
-        // Dispose all connections
+        // Dispose all connections (lines — no material to dispose)
         if (bubbleData.connections) {
             bubbleData.connections.forEach(conn => {
-                if (conn.mesh) conn.mesh.dispose();
-                if (conn.causality) conn.causality.dispose();
+                try { if (conn.mesh) conn.mesh.dispose(); } catch (e) {}
+                try { if (conn.causality) conn.causality.dispose(); } catch (e) {}
             });
         }
     }

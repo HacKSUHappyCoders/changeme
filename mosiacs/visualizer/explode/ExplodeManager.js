@@ -295,6 +295,13 @@ class ExplodeManager {
                             }
                         }
                     }
+                } else if (galaxy.isTree && galaxy.galaxyData && galaxy.galaxyData.meshes) {
+                    // Phase 4: Tree nodes for if-statements
+                    for (const m of galaxy.galaxyData.meshes) {
+                        if (m && !m.isDisposed() && m._isTreeNode) {
+                            nodes.push({ mesh: m, type: 'tree' });
+                        }
+                    }
                 } else if (galaxy.galaxyData && galaxy.galaxyData.meshes) {
                     for (const m of galaxy.galaxyData.meshes) {
                         if (m && !m.isDisposed() && m._isGalaxyBuilding) {
