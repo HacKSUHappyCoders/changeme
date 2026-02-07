@@ -42,7 +42,7 @@ class CodeVisualizer {
         this.camera.attachControl(this.canvas, true);
         this.camera.lowerRadiusLimit = 10;
         this.camera.upperRadiusLimit = 150;
-        this.camera.wheelPrecision = 50;
+        this.camera.wheelPrecision = 5;
 
         // Create lights
         const hemisphericLight = new BABYLON.HemisphericLight(

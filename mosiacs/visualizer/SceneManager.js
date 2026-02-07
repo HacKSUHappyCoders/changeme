@@ -29,7 +29,7 @@ class SceneManager {
         this.camera.attachControl(this.canvas, true);
         this.camera.lowerRadiusLimit = 10;
         this.camera.upperRadiusLimit = 150;
-        this.camera.wheelPrecision = 50;
+        this.camera.wheelPrecision = 5;
 
         this._setupLighting();
         this._setupGlowLayer();
