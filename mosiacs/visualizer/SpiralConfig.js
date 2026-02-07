@@ -13,16 +13,17 @@ const SPIRAL_CONFIG = {
 
     /** Angle increment (radians) at slot 0 — sets the step distance for the whole spiral */
     angleStep: 0.95,
-
-    /** Vertical drop per slot — controls how steeply the spiral descends */
-    heightStep: 0.5,
-
-    /** Decay factor for height step — each slot's drop is multiplied by this
-     *  (1 = constant, <1 = flattens out like a horn) */
-    heightDecay: 0.99,
-
+    
     /** Radius of the spiral tube (the visible path line) */
     tubeRadius: 0.12,
+
+    /** Height per slot — sets overall spiral height (totalSlots * heightStep) */
+    heightStep: 0.15,
+
+    /** Each slot's Y is this fraction of the previous slot's Y.
+     *  (1 = linear descent, <1 = horn shape — drops shrink as a % each step) */
+    heightDecay: 0.9975,
+
 };
 
 /**
@@ -49,19 +50,17 @@ function getSpiralAngleStep(slot) {
 }
 
 /**
- * Compute the cumulative height at a given slot.
- * Each step's drop shrinks by heightDecay, creating a horn-like curve.
+ * Get the Y position at a given slot.
+ * Starting height = totalSlots * heightStep (scales with code size).
+ * Each slot's Y = previous Y * heightDecay, so the drop is always a fixed
+ * percentage of the current height — it shrinks but never reaches zero.
  */
-function getSpiralHeight(slot) {
+function getSpiralY(slot, totalSlots) {
     const { heightStep, heightDecay } = SPIRAL_CONFIG;
-    if (heightDecay >= 1) return slot * heightStep;
-    // geometric series: h * (1 - d^slot) / (1 - d)
-    return heightStep * (1 - Math.pow(heightDecay, slot)) / (1 - heightDecay);
-}
-
-/**
- * Total height of the spiral for a given number of steps.
- */
-function getSpiralTotalHeight(steps) {
-    return getSpiralHeight(steps - 1);
+    const startHeight = totalSlots * heightStep;
+    if (heightDecay >= 1) {
+        // Linear fallback: evenly spaced descent
+        return startHeight * (1 - slot / totalSlots);
+    }
+    return startHeight * Math.pow(heightDecay, slot);
 }
