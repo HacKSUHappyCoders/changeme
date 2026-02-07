@@ -188,6 +188,238 @@
             "address": "0",
             "line_number": 16,
             "stack_depth": 1
+        },
+        {
+            "type": "CALL",
+            "subject": "main",
+            "line_number": 1,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "sum",
+            "value": 0,
+            "address": "000000660F5FF91C",
+            "line_number": 4,
+            "stack_depth": 1
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<5",
+            "condition_result": 1,
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 0,
+            "address": "000000660F5FF918",
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 2,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<5",
+            "condition_result": 1,
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 1,
+            "address": "000000660F5FF918",
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 4,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<5",
+            "condition_result": 1,
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 2,
+            "address": "000000660F5FF918",
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 7,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<5",
+            "condition_result": 1,
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 3,
+            "address": "000000660F5FF918",
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 11,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<5",
+            "condition_result": 1,
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 4,
+            "address": "000000660F5FF918",
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 16,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "CONDITION",
+            "subject": "sum < 10",
+            "condition_result": 0,
+            "line_number": 9,
+            "stack_depth": 1
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "sum < 10",
+            "line_number": 11,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 17,
+            "address": "000000660F5FF91C",
+            "line_number": 12,
+            "stack_depth": 1
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 16,
+            "stack_depth": 1
+        },
+        {
+            "type": "CALL",
+            "subject": "main",
+            "line_number": 1,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "sum",
+            "value": 5,
+            "address": "000000660F5FF91C",
+            "line_number": 4,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 0,
+            "address": "000000660F5FF918",
+            "line_number": 5,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 8,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 12,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sum",
+            "value": 18,
+            "address": "000000660F5FF91C",
+            "line_number": 6,
+            "stack_depth": 1
+        },
+        {
+            "type": "CONDITION",
+            "subject": "sum < 10",
+            "condition_result": 0,
+            "line_number": 9,
+            "stack_depth": 1
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "sum < 10",
+            "line_number": 11,
+            "stack_depth": 1
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 16,
+            "stack_depth": 1
         }
     ]
 }

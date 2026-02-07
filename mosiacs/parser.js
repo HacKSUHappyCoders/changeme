@@ -67,7 +67,7 @@ class CodeParser {
 
     /**
      * Fetch trace data from the Flask API.
-     * @param {string} [filename='test_data.json'] – JSON file in data/
+     * @param {string} [filename='bit_test_data.json'] – JSON file in data/
      * @returns {Promise<object>} The trace JSON object
      */
     static getExampleTrace(filename) {
