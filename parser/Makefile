@@ -1,4 +1,4 @@
-INPUT  ?= tests/00001.c
+INPUT  ?= tests/00005.c
 OUTPUT := instrumented_$(notdir $(INPUT))
 
 .PHONY: all clean
