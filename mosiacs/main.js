@@ -52,6 +52,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Toggle info panel button
+    const infoPanel = document.getElementById('info');
+    const infoBtn = document.getElementById('toggleInfo');
+    infoBtn.addEventListener('click', () => {
+        const visible = infoPanel.style.display !== 'none';
+        infoPanel.style.display = visible ? 'none' : '';
+        infoBtn.textContent = visible ? 'Show Controls' : 'Hide Controls';
+    });
+
     // Toggle animation button
     const toggleBtn = document.getElementById('toggleAnimation');
     toggleBtn.addEventListener('click', () => {
