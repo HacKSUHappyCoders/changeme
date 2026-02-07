@@ -61,21 +61,39 @@ class CityRenderer {
         this.scene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE) return;
 
+            // Check for main buildings, sub-spiral dots, and galaxy buildings
             const pick = this.scene.pick(
                 this.scene.pointerX, this.scene.pointerY,
-                (m) => m._buildingData != null
+                (m) => m._buildingData != null || m._subSpiralDot != null || m._isGalaxyBuilding != null
             );
 
-            if (pick && pick.hit && pick.pickedMesh && pick.pickedMesh._buildingData) {
-                const entry = this._entryForMesh(pick.pickedMesh);
-                if (entry && entry.label) {
-                    if (this._hoveredLabel && this._hoveredLabel !== entry.label)
-                        this._hoveredLabel.setEnabled(false);
-                    entry.label.setEnabled(true);
-                    this._hoveredLabel = entry.label;
+            if (pick && pick.hit && pick.pickedMesh) {
+                // Handle main building hover
+                if (pick.pickedMesh._buildingData) {
+                    const entry = this._entryForMesh(pick.pickedMesh);
+                    if (entry && entry.label) {
+                        if (this._hoveredLabel && this._hoveredLabel !== entry.label)
+                            this._hoveredLabel.isVisible = false;
+                        entry.label.isVisible = true;
+                        this._hoveredLabel = entry.label;
+                    }
+                }
+                // Handle sub-spiral dot hover
+                else if (pick.pickedMesh._subSpiralDot && pick.pickedMesh._label) {
+                    if (this._hoveredLabel && this._hoveredLabel !== pick.pickedMesh._label)
+                        this._hoveredLabel.isVisible = false;
+                    pick.pickedMesh._label.isVisible = true;
+                    this._hoveredLabel = pick.pickedMesh._label;
+                }
+                // Handle galaxy building hover
+                else if (pick.pickedMesh._isGalaxyBuilding && pick.pickedMesh._label) {
+                    if (this._hoveredLabel && this._hoveredLabel !== pick.pickedMesh._label)
+                        this._hoveredLabel.isVisible = false;
+                    pick.pickedMesh._label.isVisible = true;
+                    this._hoveredLabel = pick.pickedMesh._label;
                 }
             } else if (this._hoveredLabel) {
-                this._hoveredLabel.setEnabled(false);
+                this._hoveredLabel.isVisible = false;
                 this._hoveredLabel = null;
             }
         });

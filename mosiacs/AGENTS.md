@@ -257,5 +257,5 @@ In this phase we will be creating a lot of different visual features that can be
 
 
 # Part whenever
-- Make the title of each building and noce more visible.
+- Make the title of each building and node more visible.
 - Make the contrast between the buildings and the web in the galaxies less hard. THe web is currently readly bright and over powering to the buildings

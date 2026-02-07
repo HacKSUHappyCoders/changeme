@@ -270,11 +270,11 @@ class CausalityRenderer {
             const fromColor = colorMap.get(link.fromKey) || { r: 0.5, g: 0.5, b: 0.5 };
             const toColor = colorMap.get(link.toKey) || { r: 0.5, g: 0.5, b: 0.5 };
 
-            // Blend colours
-            const blendR = (fromColor.r + toColor.r) / 2;
-            const blendG = (fromColor.g + toColor.g) / 2;
-            const blendB = (fromColor.b + toColor.b) / 2;
-            const col = new BABYLON.Color4(blendR, blendG, blendB, 0.7);
+            // Blend colours with reduced brightness
+            const blendR = (fromColor.r + toColor.r) / 2 * 0.4;
+            const blendG = (fromColor.g + toColor.g) / 2 * 0.4;
+            const blendB = (fromColor.b + toColor.b) / 2 * 0.4;
+            const col = new BABYLON.Color4(blendR, blendG, blendB, 0.4);
 
             // Arc midpoint slightly upward
             const midPoint = BABYLON.Vector3.Lerp(fromPos, toPos, 0.5);
@@ -305,7 +305,7 @@ class CausalityRenderer {
             colors: allColors
         }, this.scene);
         this._lineMat = new BABYLON.StandardMaterial('causalLineMat', this.scene);
-        this._lineMat.emissiveColor = new BABYLON.Color3(0.7, 0.6, 0.9);
+        this._lineMat.emissiveColor = new BABYLON.Color3(0.2, 0.15, 0.25);
         this._lineMat.disableLighting = true;
         this._lineSystem.material = this._lineMat;
         this._lineSystem.isPickable = false;
@@ -314,9 +314,9 @@ class CausalityRenderer {
         // ── 2) Thin-instanced arrowheads ──
         if (arrowData.length > 0) {
             this._arrowMat = new BABYLON.StandardMaterial('causalArrowMat', this.scene);
-            this._arrowMat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 1.0);
-            this._arrowMat.diffuseColor = new BABYLON.Color3(0.8, 0.7, 1.0);
-            this._arrowMat.alpha = 0.6;
+            this._arrowMat.emissiveColor = new BABYLON.Color3(0.3, 0.25, 0.4);
+            this._arrowMat.diffuseColor = new BABYLON.Color3(0.3, 0.25, 0.4);
+            this._arrowMat.alpha = 0.4;
 
             this._arrowRoot = BABYLON.MeshBuilder.CreateCylinder('causalArrowRoot', {
                 height: 0.3, diameterTop: 0, diameterBottom: 0.18, tessellation: 4

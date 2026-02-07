@@ -80,7 +80,7 @@ class MeshFactory {
         const label = this.labelHelper.create(
             `fnLabel_${fn.key}`, fn.name, pos.clone(), height + 0.5, color
         );
-        label.setEnabled(false);
+        label.isVisible = false;
 
         mesh._buildingData = {
             step: fn.enterStep,
@@ -130,7 +130,7 @@ class MeshFactory {
         const label = this.labelHelper.create(
             `varLabel_${v.key}`, labelText, pos.clone(), height + 1.3, color
         );
-        label.setEnabled(false);
+        label.isVisible = false;
 
         mesh._buildingData = {
             step: v.declStep,
@@ -177,7 +177,7 @@ class MeshFactory {
         const label = this.labelHelper.create(
             `loopLabel_${loop.key}`, labelText, pos.clone(), height + 2, color
         );
-        label.setEnabled(false);
+        label.isVisible = false;
 
         mesh._buildingData = {
             step: loop.steps[0] || 0,
@@ -222,7 +222,7 @@ class MeshFactory {
         const label = this.labelHelper.create(
             `brLabel_${br.key}`, labelText, pos.clone(), height + 1, color
         );
-        label.setEnabled(false);
+        label.isVisible = false;
 
         mesh._buildingData = {
             step: br.step,

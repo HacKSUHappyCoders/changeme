@@ -19,6 +19,9 @@ class GalaxyWarpManager {
         this.sceneManager = sceneManager;
         this.mainCityRenderer = mainCityRenderer;
 
+        /** LabelHelper for creating proper labels */
+        this.labelHelper = new LabelHelper(scene);
+
         /** Currently warped galaxy info, or null */
         this.warpedGalaxy = null;
 
@@ -806,7 +809,7 @@ class GalaxyWarpManager {
                 const z = (1 - t) * (1 - t) * fromPos.z + 2 * (1 - t) * t * midPoint.z + t * t * toPos.z;
                 pts.push(new BABYLON.Vector3(x, y, z));
             }
-            const col = new BABYLON.Color4(0.7, 0.6, 0.9, 0.6);
+            const col = new BABYLON.Color4(0.3, 0.25, 0.4, 0.35);
             const cols = new Array(pts.length).fill(col);
             allLines.push(pts);
             allColors.push(cols);
@@ -818,7 +821,7 @@ class GalaxyWarpManager {
                 colors: allColors
             }, this.scene);
             const lineMat = new BABYLON.StandardMaterial('galaxyCausalLineMat', this.scene);
-            lineMat.emissiveColor = new BABYLON.Color3(0.7, 0.6, 0.9);
+            lineMat.emissiveColor = new BABYLON.Color3(0.2, 0.15, 0.25);
             lineMat.disableLighting = true;
             lineSystem.material = lineMat;
             lineSystem.isPickable = false;
@@ -924,6 +927,7 @@ class GalaxyWarpManager {
             mesh.position.clone(),
             color
         );
+        mesh._label = label;  // Attach label to mesh for hover access
         this._galaxyExtraMeshes.push(label);
 
         return mesh;
@@ -1113,36 +1117,20 @@ class GalaxyWarpManager {
         const name = entity.name || entity.condition || entity.key || 'Galaxy';
         const text = `✦ ${name} Galaxy ✦`;
 
-        const plane = BABYLON.MeshBuilder.CreatePlane('galaxyLabel', {
-            width: text.length * 0.5,
-            height: 1.2
-        }, this.scene);
-        plane.position = center.clone();
-        plane.position.y += 12;
-        plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+        // Use LabelHelper for the main galaxy label
+        const color = { r: 1.0, g: 0.9, b: 0.3, a: 1.0 };  // Golden color for galaxy labels
+        const label = this.labelHelper.create(
+            'galaxyLabel',
+            text,
+            center.clone(),
+            12,  // yOffset - float high above the galaxy
+            color,
+            1.2  // Larger scale for the main galaxy title
+        );
+        label.isVisible = true;  // Always visible
+        label.isPickable = false;
 
-        const dtSize = 512;
-        const dt = new BABYLON.DynamicTexture('galaxyLabelTex', { width: dtSize * 4, height: dtSize }, this.scene, false);
-        dt.hasAlpha = true;
-        const ctx = dt.getContext();
-        ctx.clearRect(0, 0, dtSize * 4, dtSize);
-        ctx.font = 'bold 64px Segoe UI, sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, dtSize * 2, dtSize / 2);
-        dt.update();
-
-        const mat = new BABYLON.StandardMaterial('galaxyLabelMat', this.scene);
-        mat.diffuseTexture = dt;
-        mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
-        mat.backFaceCulling = false;
-        mat.useAlphaFromDiffuseTexture = true;
-        mat.disableLighting = true;
-        plane.material = mat;
-        plane.isPickable = false;
-
-        this._galaxyLabel = plane;
+        this._galaxyLabel = label;
     }
 
     // ─── Camera Fly ────────────────────────────────────────────────
@@ -1300,40 +1288,18 @@ class GalaxyWarpManager {
     }
 
     _createLabel(name, text, pos, color) {
-        const plane = BABYLON.MeshBuilder.CreatePlane(name, {
-            width: Math.max(text.length * 0.35, 2),
-            height: 0.7
-        }, this.scene);
-        plane.position = pos.clone();
-        plane.position.y += 3.5;
-        plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-
-        const dtW = 512;
-        const dtH = 128;
-        const dt = new BABYLON.DynamicTexture(name + '_tex', { width: dtW, height: dtH }, this.scene, false);
-        dt.hasAlpha = true;
-        const ctx = dt.getContext();
-        ctx.clearRect(0, 0, dtW, dtH);
-        ctx.font = 'bold 36px Segoe UI, sans-serif';
-        const r = Math.round((color.r || 0.8) * 255);
-        const g = Math.round((color.g || 0.8) * 255);
-        const b = Math.round((color.b || 0.8) * 255);
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, dtW / 2, dtH / 2);
-        dt.update();
-
-        const mat = new BABYLON.StandardMaterial(name + '_mat', this.scene);
-        mat.diffuseTexture = dt;
-        mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
-        mat.backFaceCulling = false;
-        mat.useAlphaFromDiffuseTexture = true;
-        mat.disableLighting = true;
-        plane.material = mat;
-        plane.isPickable = false;
-
-        return plane;
+        // Use the LabelHelper for consistent, high-quality labels
+        const label = this.labelHelper.create(
+            name,
+            text,
+            pos.clone(),
+            3.5,  // yOffset - position above the building
+            color,
+            0.5   // Slightly smaller scale for galaxy labels
+        );
+        label.isVisible = false;  // Hidden by default, show on hover
+        label.isPickable = false;
+        return label;
     }
 
     // ─── Disposal ──────────────────────────────────────────────────

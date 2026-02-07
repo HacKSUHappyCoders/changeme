@@ -20,7 +20,8 @@ class LabelHelper {
      */
     create(name, text, pos, yOffset, color, scale) {
         scale = scale || 1;
-        const planeSize = 3 * scale;
+        // Increased label size for better visibility
+        const planeSize = 4.5 * scale;
         const plane = BABYLON.MeshBuilder.CreatePlane(name, {
             width: planeSize, height: planeSize * 0.5
         }, this.scene);
@@ -28,8 +29,9 @@ class LabelHelper {
         plane.position.y += yOffset;
         plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
-        const texW = 512;
-        const texH = 256;
+        // High resolution texture for crisp text
+        const texW = 768;
+        const texH = 384;
         const dynTex = new BABYLON.DynamicTexture(
             name + '_tex', { width: texW, height: texH }, this.scene, false
         );
@@ -38,15 +40,16 @@ class LabelHelper {
 
         const mat = new BABYLON.StandardMaterial(name + '_mat', this.scene);
         mat.diffuseTexture = dynTex;
-        mat.emissiveColor = new BABYLON.Color3(
-            color.r * 0.2, color.g * 0.2, color.b * 0.2
-        );
-        mat.alpha = color.a || 0.85;
+        mat.diffuseTexture.hasAlpha = true;
+        // Minimal emissive - just enough to see the text
+        mat.emissiveColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+        mat.opacityTexture = dynTex;
         mat.backFaceCulling = false;
         plane.material = mat;
 
         plane._dynTex = dynTex;
         plane._labelColor = color;
+        plane.isVisible = true;  // Ensure visibility is controlled properly
         return plane;
     }
 
@@ -56,7 +59,7 @@ class LabelHelper {
     update(plane, text) {
         if (!plane || !plane._dynTex) return;
         this._drawTexture(
-            plane._dynTex, text, plane._labelColor, 512, 256
+            plane._dynTex, text, plane._labelColor, 768, 384
         );
     }
 
@@ -66,24 +69,25 @@ class LabelHelper {
         const ctx = dynTex.getContext();
         ctx.clearRect(0, 0, texW, texH);
 
-        // Background
-        ctx.fillStyle = `rgba(${Math.floor(color.r * 200)}, ${Math.floor(color.g * 200)}, ${Math.floor(color.b * 200)}, 0.75)`;
+        // Background with semi-transparent dark box
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(0, 0, texW, texH);
 
-        // Border
+        // Border for better definition
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(4, 4, texW - 8, texH - 8);
+        ctx.lineWidth = 8;
+        ctx.strokeRect(8, 8, texW - 16, texH - 16);
 
-        // Text
+        // Even larger text for better visibility
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 36px monospace';
+        ctx.font = 'bold 100px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        const lines = this._wrapText(ctx, text, texW - 40);
-        const lineH = 42;
+        const lines = this._wrapText(ctx, text, texW - 100);
+        const lineH = 110;
         const startY = texH / 2 - ((lines.length - 1) * lineH) / 2;
+        
         lines.forEach((line, i) => {
             ctx.fillText(line, texW / 2, startY + i * lineH);
         });

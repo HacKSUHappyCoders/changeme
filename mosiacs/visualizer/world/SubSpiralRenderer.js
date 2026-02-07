@@ -222,6 +222,7 @@ class SubSpiralRenderer {
         const entities = this._consolidateChildren(childIndices, trace);
 
         const dots = [];
+        const labels = [];
         const pathPoints = [];
         const maxSlots = entities.length;
         let maxRadius = 0;
@@ -253,6 +254,21 @@ class SubSpiralRenderer {
             dot._stepIndex = entity.stepIndices[0];
             dot._stepData = entity.firstStep;
             dot._entityData = entity;          // full consolidated entity
+
+            // Create a label for this sub-spiral node
+            const labelText = entity.label || entity.type || '?';
+            const labelColor = this._dotColor(entity.firstStep);
+            const label = this.labelHelper.create(
+                `subLabel_${parentKey}_${i}`,
+                labelText,
+                pos.clone(),
+                this.dotRadius + 0.3,
+                labelColor,
+                0.6  // Smaller scale for sub-spiral labels
+            );
+            label.isVisible = false;  // Start hidden, show on hover
+            dot._label = label;
+            labels.push(label);
 
             dots.push(dot);
         }
@@ -302,7 +318,7 @@ class SubSpiralRenderer {
         // The bounding radius determines how far the main spiral should push out
         const boundingRadius = maxRadius + this.dotRadius + 0.5;
 
-        return { tube, dots, pathColor, dotCount: maxSlots, parentPos: origin.clone(), boundingRadius };
+        return { tube, dots, labels, pathColor, dotCount: maxSlots, parentPos: origin.clone(), boundingRadius };
     }
 
     /**
@@ -330,8 +346,28 @@ class SubSpiralRenderer {
             entry.tube.dispose();
         }
         for (const dot of entry.dots) {
+            if (dot._label) {
+                if (dot._label.material) {
+                    if (dot._label.material.diffuseTexture) {
+                        dot._label.material.diffuseTexture.dispose();
+                    }
+                    dot._label.material.dispose();
+                }
+                dot._label.dispose();
+            }
             dot.material = null;   // don't dispose shared cached materials
             dot.dispose();
+        }
+        if (entry.labels) {
+            for (const label of entry.labels) {
+                if (label && label.material) {
+                    if (label.material.diffuseTexture) {
+                        label.material.diffuseTexture.dispose();
+                    }
+                    label.material.dispose();
+                }
+                if (label) label.dispose();
+            }
         }
     }
 }
