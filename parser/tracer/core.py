@@ -17,9 +17,20 @@ def get_text(node, code_bytes: bytes) -> str:
 
 
 def extract_var_name(node, code_bytes: bytes) -> str | None:
-    """Recursively find the first ``identifier`` node and return its text."""
+    """Extract variable name from various declarator types."""
     if node.type == "identifier":
         return get_text(node, code_bytes)
+    elif node.type == "pointer_declarator":
+        for child in node.children:
+            if child.type != "*":
+                return extract_var_name(child, code_bytes)
+    elif node.type == "array_declarator":
+        for child in node.children:
+            if child.type == "identifier":
+                return get_text(child, code_bytes)
+            elif child.type in ("pointer_declarator", "array_declarator"):
+                return extract_var_name(child, code_bytes)
+    # Fallback: recursively search for identifier
     for child in node.children:
         result = extract_var_name(child, code_bytes)
         if result:

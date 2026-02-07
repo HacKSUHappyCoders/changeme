@@ -28,15 +28,19 @@ def _make_error(stage, message, metadata=None, traces=None):
 
 
 def _derived_paths(input_file):
-    """Build output paths next to the input file."""
+    """Build output paths in the 'output' folder."""
     abs_input = os.path.abspath(input_file)
-    directory = os.path.dirname(abs_input)
+    input_directory = os.path.dirname(abs_input)
+    output_directory = os.path.join(input_directory, "output")
+    os.makedirs(output_directory, exist_ok=True)
     basename = os.path.basename(abs_input)
     stem, ext = os.path.splitext(basename)
+    ext_no_dot = ext.lstrip('.')
+    base_name = f"{stem}_{ext_no_dot}"
     return {
-        "instrumented": os.path.join(directory, f"instrumented_{basename}"),
-        "trace": os.path.join(directory, f"{stem}_trace.txt"),
-        "exe": os.path.join(directory, f"{stem}.exe"),
+        "instrumented": os.path.join(output_directory, f"instrumented_{base_name}{ext}"),
+        "trace": os.path.join(output_directory, f"{base_name}_trace.txt"),
+        "exe": os.path.join(output_directory, f"{base_name}.exe"),
         "ext": ext,
     }
 
@@ -61,7 +65,7 @@ def _instrument(input_file):
 
 def _compile(src_path, exe_path):
     proc = subprocess.run(
-        ["gcc", src_path, "-o", exe_path],
+        ["gcc", src_path, "-o", exe_path, "-lm"],
         capture_output=True,
         text=True,
         timeout=30,
@@ -87,6 +91,22 @@ def _normalize(raw_output, seed):
 
 def deal(input, output=None, seed=None):
     paths = _derived_paths(input)
+    
+    # If output path is specified, ensure it goes in the output folder
+    if output:
+        # If it's just a filename or relative path, put it in output folder
+        if not os.path.isabs(output):
+            input_dir = os.path.dirname(os.path.abspath(input))
+            output_dir = os.path.join(input_dir, "output")
+            output = os.path.join(output_dir, os.path.basename(output))
+    else:
+        # If no output specified, create default JSON name based on input file
+        basename = os.path.basename(input)
+        stem, ext = os.path.splitext(basename)
+        ext_no_dot = ext.lstrip('.')
+        input_dir = os.path.dirname(os.path.abspath(input))
+        output_dir = os.path.join(input_dir, "output")
+        output = os.path.join(output_dir, f"{stem}_{ext_no_dot}.json")
 
     # ── Instrument ──────────────────────────────────────────────
     try:
@@ -171,8 +191,6 @@ def main():
         default=False,
     )
     args = ap.parse_args()
-    if not args.output:
-        args.output = ""
 
     if not os.path.exists(args.input_file):
         result = _make_error("input", f"File not found: {args.input_file}")
@@ -196,7 +214,7 @@ def main():
             sys.exit(1)
         seed = int(args.seed)
     else:
-        if os.path.exists(args.output) and not args.random:
+        if args.output and os.path.exists(args.output) and not args.random:
             with open(args.output, "r") as f:
                 existing_data = json.load(f)
             seed = existing_data.get("seed", None)
@@ -208,6 +226,10 @@ def main():
 def _emit(data, output_path):
     text = json.dumps(data, indent=2)
     if output_path:
+        # Ensure output directory exists for the JSON output file
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
         with open(output_path, "w") as f:
             f.write(text)
     else:
