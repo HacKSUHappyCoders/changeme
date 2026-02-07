@@ -1,5 +1,7 @@
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
+RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /srv
 
 ENV UV_COMPILE_BYTECODE=1
@@ -11,6 +13,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 # Copy application code
 COPY app/ app/
+COPY parser/ parser/
 COPY mosiacs/ mosiacs/
 RUN uv sync --frozen --no-dev
 

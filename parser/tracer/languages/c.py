@@ -599,18 +599,58 @@ class CInstrumenter:
                     self._add_before(line, trace)
 
     def _visit_assignment_expression(self, node):
+        left = node.child_by_field_name("left")
+        right = node.child_by_field_name("right")
+
         left_var = None
-        for child in node.children:
-            if child.type == "identifier":
-                left_var = get_text(child, self.code_bytes)
-                break
+        if left and left.type == "identifier":
+            left_var = get_text(left, self.code_bytes)
 
         if not left_var:
             return
 
-        line = node.start_point[0]
-        fmt = _type_fmt(self.symbol_table.get_type(left_var, "int"))
+        # Check for compound assignment (+=, -=, *=, etc.)
+        is_compound = False
+        for child in node.children:
+            if not child.is_named:
+                op = get_text(child, self.code_bytes)
+                if op.endswith("=") and op != "=":
+                    is_compound = True
+                    break
 
+        line = node.start_point[0]
+
+        # Collect reads from the right-hand side
+        read_vars = []
+        if right:
+            if right.type == "identifier":
+                name = get_text(right, self.code_bytes)
+                if name not in KEYWORDS:
+                    read_vars.append(name)
+            else:
+                read_vars = self._collect_reads(right)
+
+        # For compound assignments, the left var is also read
+        if is_compound:
+            read_vars.insert(0, left_var)
+
+        # Emit READ traces before the line
+        for read_var in read_vars:
+            r_fmt = _type_fmt(self.symbol_table.get_type(read_var, "int"))
+            trace = self._make_trace(
+                [
+                    "READ",
+                    read_var,
+                    (r_fmt, read_var),
+                    ("%p", f"&{read_var}"),
+                    str(line + 1),
+                    ("%d", "__stack_depth"),
+                ]
+            )
+            self._add_before(line, trace)
+
+        # Emit ASSIGN trace after the line
+        fmt = _type_fmt(self.symbol_table.get_type(left_var, "int"))
         trace = self._make_trace(
             [
                 "ASSIGN",
@@ -622,21 +662,6 @@ class CInstrumenter:
             ]
         )
         self._add_after(line, trace)
-
-        for read_var in self._collect_reads(node):
-            if read_var != left_var:
-                r_fmt = _type_fmt(self.symbol_table.get_type(read_var, "int"))
-                trace = self._make_trace(
-                    [
-                        "READ",
-                        read_var,
-                        (r_fmt, read_var),
-                        ("%p", f"&{read_var}"),
-                        str(line + 1),
-                        ("%d", "__stack_depth"),
-                    ]
-                )
-                self._add_before(line, trace)
 
     def _visit_return_statement(self, node):
         line = node.start_point[0]

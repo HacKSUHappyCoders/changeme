@@ -61,6 +61,43 @@ document.addEventListener('DOMContentLoaded', () => {
         causalityBtn.textContent = isShowing ? '🕸️ Hide Causality Web' : '🕸️ Show Causality Web';
     });
 
+    // Upload file button
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileUpload');
+    uploadBtn.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select a .c or .py file first.');
+            return;
+        }
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Processing...';
+        CodeParser.upload(file)
+            .then(json => {
+                if (json.success === false) {
+                    const err = json.error || {};
+                    alert(`Error (${err.stage || 'unknown'}): ${err.message || 'Unknown error'}`);
+                    return;
+                }
+                visualizer.visualize(json);
+                // Refresh the trace dropdown
+                return fetch('/api/traces').then(r => r.json()).then(files => {
+                    traceSelect.innerHTML = '';
+                    files.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f;
+                        opt.textContent = f.replace('.json', '');
+                        traceSelect.appendChild(opt);
+                    });
+                });
+            })
+            .catch(err => alert('Upload failed: ' + err.message))
+            .finally(() => {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload & Visualize';
+            });
+    });
+
     // Show welcome message
     console.log('🎨 Code Mosaic Visualizer initialized!');
     console.log('Click "Load Example Code" to see the visualization.');

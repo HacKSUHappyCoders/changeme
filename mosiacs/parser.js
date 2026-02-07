@@ -59,4 +59,16 @@ class CodeParser {
                 return res.json();
             });
     }
+
+    /**
+     * Upload a source file (.c or .py) to the server for processing.
+     * @param {File} file – the File object from an <input type="file">
+     * @returns {Promise<object>} The processed trace JSON
+     */
+    static upload(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        return fetch('/api/upload', { method: 'POST', body: formData })
+            .then(res => res.json());
+    }
 }

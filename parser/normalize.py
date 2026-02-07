@@ -130,7 +130,9 @@ def create_type_RETURN(
     return result
 
 
-def create_type_SWITCH(subject: str, value: str, line_number: int, stack_depth: int) -> dict:
+def create_type_SWITCH(
+    subject: str, value: str, line_number: int, stack_depth: int
+) -> dict:
     return {
         "type": "SWITCH",
         "subject": subject,
@@ -185,9 +187,29 @@ def create_type_UNKNOWN(*args) -> dict:
 
 
 def generate_seed(meta_data: dict[str, str]) -> int:
-    print(meta_data)
+    import hashlib
 
-    return 12345678901234567890
+    hash = hashlib.sha256()
+    hash.update(json.dumps(meta_data, sort_keys=True).encode("utf-8"))
+    hash.digest()
+    hash_int = int.from_bytes(hash.digest(), "big")
+
+    chunks = []
+    for i in range(0, len(str(hash_int)), 20):
+        chunks.append(str(hash_int)[i : i + 20])
+
+    result = 0
+    for c in chunks:
+        result ^= int(c)
+
+    if len(str(result)) > 20:
+        result = int(str(result)[:20])
+    if len(str(result)) < 19:
+        import random
+        random.seed(chunks[0])
+        result = int(str(result).ljust(19, random.choice("0123456789")))
+
+    return result
 
 
 def stdin_to_json(stdin_data: str) -> dict[str, dict[str, str] | list[dict[str, any]]]:
@@ -269,8 +291,21 @@ def read_from_stdin():
 def main():
     ap = argparse.ArgumentParser(description="Instrument source code for tracing.")
     ap.add_argument("json_file", help="Path to the source file")
-    ap.add_argument("-s", "--seed", help="Specify a seed for randomization (optional) [Cannot run with -r]", type=str)
-    ap.add_argument("-r", "--random", help="Overrides the set seed (optional) [Cannot run with -s]", type=bool, nargs='?', const=True, default=False)
+    ap.add_argument(
+        "-s",
+        "--seed",
+        help="Specify a seed for randomization (optional) [Cannot run with -r]",
+        type=str,
+    )
+    ap.add_argument(
+        "-r",
+        "--random",
+        help="Overrides the set seed (optional) [Cannot run with -s]",
+        type=bool,
+        nargs="?",
+        const=True,
+        default=False,
+    )
     args = ap.parse_args()
 
     if not args.json_file:
@@ -285,7 +320,9 @@ def main():
     existing_data = None
     if args.seed is not None:
         if not (len(args.seed) >= 19 and len(args.seed) <= 20):
-            print(f"Error: Invalid seed value of {len(args.seed)}. Seeds are 19 or 20 characters long.")
+            print(
+                f"Error: Invalid seed value of {len(args.seed)}. Seeds are 19 or 20 characters long."
+            )
             sys.exit(1)
         if not args.seed.isdigit():
             print("Error: Seed must be a numeric string of 19 or 20 characters.")

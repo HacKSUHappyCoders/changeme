@@ -6,4 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "flask>=3.1.2",
+    "tree-sitter>=0.25.2",
+    "tree-sitter-c>=0.24.1",
+    "tree-sitter-python>=0.25.0",
 ]
