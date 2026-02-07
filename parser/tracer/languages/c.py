@@ -356,6 +356,14 @@ class CInstrumenter:
         self._add_after(start_line, self._make_trace(parts))
 
     def _visit_parameter_declaration(self, node):
+        parent = node.parent
+        while parent:
+            if parent.type == "function_definition":
+                break
+            parent = parent.parent
+        else:
+            return
+
         var_name = extract_var_name(node, self.code_bytes)
         if var_name:
             line = node.start_point[0]

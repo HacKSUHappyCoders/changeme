@@ -1,4 +1,4 @@
-INPUT  ?= tests/00001.c
+INPUT  ?= tests/00004.c
 OUTPUT := instrumented_$(notdir $(INPUT))
 EXT    := $(suffix $(INPUT))
 
@@ -15,5 +15,8 @@ endif
 $(OUTPUT): $(INPUT)
 	uv run python -m tracer $< -o $@
 
+normalize: all
+	cat trace_output.txt | uv run normalize.py 
+
 clean:
-	rm -f instrumented_*.c instrumented_*.py exe trace_output.txt
+	rm -f instrumented_*.c instrumented_*.py exe trace_output.txt json_output.json
