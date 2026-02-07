@@ -100,6 +100,20 @@ button:active {
         inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
+button.active {
+    background: linear-gradient(
+        135deg,
+        rgba(120, 80, 220, 0.45) 0%,
+        rgba(80, 60, 180, 0.3) 100%
+    );
+    border-color: rgba(160, 120, 255, 0.5);
+    box-shadow:
+        0 0 12px rgba(120, 80, 220, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 1);
+}
+
 select {
     background: linear-gradient(
         135deg,

@@ -38,6 +38,15 @@ class WorldState {
 
         this.processedSteps = [];
 
+        // ─── READ relation tracking ───────────────────────────────
+        // Each entry: { readerName, readerAddress, readValue, line, step, scope }
+        // Accumulated per-line; flushed into readRelations when the
+        // subsequent ASSIGN on the same line appears.
+        this._pendingReads = [];
+
+        // Final read relations: { fromKey (source variable), toKey (target variable), readValue, step }
+        this.readRelations = [];
+
         // Ordered list of entity keys in the order they first appear in the trace.
         // This is used by the renderer to assign spiral slots in trace-order
         // instead of grouping by type.
@@ -64,6 +73,8 @@ class WorldState {
         this.callStack = [];
         this._containerStack = [];
         this.processedSteps = [];
+        this._pendingReads = [];
+        this.readRelations = [];
         this.creationOrder = [];
     }
 
@@ -95,7 +106,9 @@ class WorldState {
             case 'CALL':      this._handleCall(step); break;
             case 'RETURN':    this._handleReturn(step); break;
             case 'DECL':      this._handleDecl(step); break;
+            case 'PARAM':     this._handleDecl(step); break;  // params are variable declarations
             case 'ASSIGN':    this._handleAssign(step); break;
+            case 'READ':      this._handleRead(step); break;
             case 'LOOP':      this._handleLoop(step); break;
             case 'CONDITION': this._handleCondition(step); break;
             case 'BRANCH':    this._handleBranch(step); break;
@@ -218,6 +231,11 @@ class WorldState {
 
             this._registerMemoryNode(step.address, key);
         }
+
+        // Flush pending READs into read relations (DECL with a value is like ASSIGN)
+        if (step.value !== undefined && step.value !== '' && this._pendingReads.length > 0) {
+            this._flushPendingReads(step);
+        }
     }
 
     // ─── ASSIGN ────────────────────────────────────────────────────
@@ -239,6 +257,106 @@ class WorldState {
         } else {
             this._handleDecl({ ...step, type: 'DECL' });
         }
+
+        // Flush pending READs into read relations.
+        // Any READ that occurred on the same line as this ASSIGN fed data into it.
+        this._flushPendingReads(step);
+    }
+
+    // ─── READ — record data-flow relations (no building created) ───
+
+    _handleRead(step) {
+        const scope = this.currentScope();
+        this._pendingReads.push({
+            readerName: step.name,
+            readerAddress: step.address,
+            readValue: step.readValue || step.value || '',
+            line: Number(step.line) || 0,
+            step: this.currentStep,
+            scope
+        });
+
+        // Prune pending reads that are too old (more than 30 steps back)
+        // to prevent unbounded growth
+        if (this._pendingReads.length > 80) {
+            const cutoff = this.currentStep - 30;
+            this._pendingReads = this._pendingReads.filter(pr => pr.step >= cutoff);
+        }
+    }
+
+    /**
+     * Flush pending READs into readRelations when an ASSIGN happens.
+     * Each pending READ whose line matches the ASSIGN line produces a
+     * relation from the read-source variable to the assign-target variable.
+     *
+     * We match reads that occurred on the same line, the line before, OR
+     * within the last 5 trace steps (to handle multi-line expressions
+     * and cases where line numbers are slightly off).
+     */
+    _flushPendingReads(assignStep) {
+        if (this._pendingReads.length === 0) return;
+
+        const scope = this.currentScope();
+        const assignLine = Number(assignStep.line) || 0;
+
+        // Find the target variable house (the one being assigned)
+        let targetKey = null;
+        for (const [k, v] of this.variableHouses) {
+            if (v.name === assignStep.name && v.address === assignStep.address && v.active) {
+                targetKey = k;
+                if (v.scope === scope) break;
+            }
+        }
+        if (!targetKey) {
+            // Don't discard all pending reads — only clear old ones
+            const cutoff = this.currentStep - 20;
+            this._pendingReads = this._pendingReads.filter(pr => pr.step >= cutoff);
+            return;
+        }
+
+        // Match pending reads that are on the same line as this ASSIGN,
+        // within ±2 lines, OR within the last 5 steps (whichever is more generous)
+        const remaining = [];
+        for (const pr of this._pendingReads) {
+            const readLine = Number(pr.line) || 0;
+            const lineDist = Math.abs(assignLine - readLine);
+            const stepDist = this.currentStep - pr.step;
+
+            // Match if: same/adjacent line, or within 5 steps
+            if (lineDist <= 2 || stepDist <= 5) {
+                // Find the source variable house for the read
+                let sourceKey = null;
+                for (const [k, v] of this.variableHouses) {
+                    if (v.name === pr.readerName && v.address === pr.readerAddress && v.active) {
+                        sourceKey = k;
+                        if (v.scope === scope || v.scope === pr.scope) break;
+                    }
+                }
+
+                // If we couldn't match by address, try by name alone within the same scope
+                if (!sourceKey) {
+                    for (const [k, v] of this.variableHouses) {
+                        if (v.name === pr.readerName && v.active) {
+                            sourceKey = k;
+                            if (v.scope === scope) break;
+                        }
+                    }
+                }
+
+                if (sourceKey && sourceKey !== targetKey) {
+                    this.readRelations.push({
+                        fromKey: sourceKey,
+                        toKey: targetKey,
+                        readValue: pr.readValue,
+                        step: pr.step
+                    });
+                }
+                // consumed — don't keep
+            } else {
+                remaining.push(pr);
+            }
+        }
+        this._pendingReads = remaining;
     }
 
     // ─── LOOP — for vs while, new building on first iteration ──────
@@ -388,6 +506,7 @@ class WorldState {
             whileLoops: [...this.whileLoopFactories.values()],
             branches: [...this.branchIntersections.values()],
             memory: [...this.memoryNodes.values()],
+            readRelations: [...this.readRelations],
             callStack: [...this.callStack],
             currentEvent: this.currentStep >= 0 ? this.trace[this.currentStep] : null
         };

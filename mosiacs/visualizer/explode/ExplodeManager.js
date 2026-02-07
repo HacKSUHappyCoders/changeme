@@ -25,7 +25,9 @@ class ExplodeManager {
         /** Double-click detection via delayed single-click pattern */
         this._pendingClickTimer = null;
         this._pendingClickMesh = null;
-        this._dblClickThreshold = 300; // ms
+        this._dblClickThreshold = 350; // ms (slightly generous for reliability)
+        this._lastClickTime = 0;
+        this._lastClickMesh = null;
 
         this._setupPointerObservable();
     }
@@ -48,6 +50,8 @@ class ExplodeManager {
             const pick = pointerInfo.pickInfo;
             if (!pick.hit || !pick.pickedMesh) return;
 
+            const now = Date.now();
+
             // ── Check if a sub-spiral dot was clicked ──
             if (pick.pickedMesh._subSpiralDot) {
                 this._cancelPendingClick();
@@ -57,18 +61,55 @@ class ExplodeManager {
 
             // ── Check if a galaxy building was clicked ──
             if (pick.pickedMesh._isGalaxyBuilding) {
+                const galaxyMesh = pick.pickedMesh;
+
+                // Double-click detection: check if we clicked the same mesh recently
+                const isDoubleClick = (
+                    this._lastClickMesh === galaxyMesh &&
+                    (now - this._lastClickTime) < this._dblClickThreshold
+                );
+
+                this._lastClickTime = now;
+                this._lastClickMesh = galaxyMesh;
+
+                if (isDoubleClick) {
+                    this._cancelPendingClick();
+                    this._closeDotInspector();
+
+                    // Warp deeper if this galaxy building has children
+                    if (this.galaxyWarpManager && this.galaxyWarpManager.canWarp(galaxyMesh)) {
+                        this.galaxyWarpManager.warpTo(galaxyMesh);
+                        return;
+                    }
+                    // Otherwise fall through to single-click (inspector)
+                    this._showGalaxyBuildingInspector(galaxyMesh);
+                    return;
+                }
+
+                // Schedule delayed single-click
                 this._cancelPendingClick();
-                this._showGalaxyBuildingInspector(pick.pickedMesh);
+                this._pendingClickMesh = galaxyMesh;
+                this._pendingClickTimer = setTimeout(() => {
+                    this._pendingClickTimer = null;
+                    this._pendingClickMesh = null;
+                    this._showGalaxyBuildingInspector(galaxyMesh);
+                }, this._dblClickThreshold);
                 return;
             }
 
             const buildingMesh = this._findBuildingMesh(pick.pickedMesh);
             if (!buildingMesh) return;
 
-            // ── Delayed single-click / double-click detection ──
-            // If we already have a pending click on the SAME mesh, this is
-            // the second click → treat as double-click immediately.
-            if (this._pendingClickMesh === buildingMesh && this._pendingClickTimer) {
+            // ── Double-click detection using timestamps ──
+            const isDoubleClick = (
+                this._lastClickMesh === buildingMesh &&
+                (now - this._lastClickTime) < this._dblClickThreshold
+            );
+
+            this._lastClickTime = now;
+            this._lastClickMesh = buildingMesh;
+
+            if (isDoubleClick) {
                 this._cancelPendingClick();
 
                 // Collapse any open inspector first
@@ -121,10 +162,12 @@ class ExplodeManager {
 
     _findBuildingMesh(mesh) {
         let cur = mesh;
-        while (cur) {
+        let depth = 0;
+        while (cur && depth < 10) {
             if (cur._buildingData) return cur;
             if (cur.name && cur.name.startsWith('building_')) return cur;
             cur = cur.parent;
+            depth++;
         }
         return null;
     }

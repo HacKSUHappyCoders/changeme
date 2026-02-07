@@ -22,8 +22,11 @@ class GalaxyWarpManager {
         /** Currently warped galaxy info, or null */
         this.warpedGalaxy = null;
 
+        /** Galaxy stack for recursive warping (each entry = a warpedGalaxy) */
+        this._galaxyStack = [];
+
         // Offset distance — how far from the main spiral the galaxy spawns
-        this.galaxyOffset = 120;
+        this.galaxyOffset = 200;
 
         // Warp line
         this._warpLine = null;
@@ -57,11 +60,20 @@ class GalaxyWarpManager {
 
     /**
      * Check if a building has child steps that can be warped to.
+     * Works for both main-spiral buildings and galaxy buildings.
      */
     canWarp(buildingMesh) {
         if (!buildingMesh || !buildingMesh._entityData) return false;
         const entity = buildingMesh._entityData;
-        return entity.childStepIndices && entity.childStepIndices.length > 0;
+        // Main spiral buildings have childStepIndices
+        if (entity.childStepIndices && entity.childStepIndices.length > 0) return true;
+        // Galaxy buildings have _galaxyChildIndices (relative to their sub-trace)
+        if (buildingMesh._galaxyChildIndices && buildingMesh._galaxyChildIndices.length > 0) return true;
+        // Galaxy buildings for calls/loops/conditions may have step indices that indicate sub-steps
+        if (entity.type === 'call' || entity.type === 'loop' || entity.type === 'condition') {
+            if (entity.stepIndices && entity.stepIndices.length > 1) return true;
+        }
+        return false;
     }
 
     /**
@@ -73,36 +85,98 @@ class GalaxyWarpManager {
 
     /**
      * Warp to the galaxy for the given building.
+     * Supports both main-spiral buildings and galaxy buildings (recursive warp).
      */
     warpTo(buildingMesh) {
         if (!this.canWarp(buildingMesh)) return;
-        if (this.warpedGalaxy) this.returnToMainGalaxy(false);
 
         const entity = buildingMesh._entityData;
-        const trace = this.mainCityRenderer._lastTrace || [];
-        const childIndices = entity.childStepIndices;
         const sourcePos = buildingMesh.position.clone();
 
-        // Determine galaxy center — offset from center along a direction
-        // away from the source building
+        // Determine the sub-trace for this galaxy
+        let subTrace;
+        if (buildingMesh._galaxySubTrace && buildingMesh._galaxyChildIndices && buildingMesh._galaxyChildIndices.length > 0) {
+            // Recursive warp: galaxy building → use its stored sub-trace slice
+            const parentSubTrace = buildingMesh._galaxySubTrace;
+            const childIndices = buildingMesh._galaxyChildIndices;
+            subTrace = childIndices.map(idx => parentSubTrace[idx]).filter(Boolean);
+        } else if (buildingMesh._galaxySubTrace && entity.stepIndices && entity.stepIndices.length > 0) {
+            // Galaxy building without explicit child indices but with stepIndices
+            // Use a broader range: from the first step index to the end of the
+            // entity's scope in the parent sub-trace
+            const parentSubTrace = buildingMesh._galaxySubTrace;
+            const firstIdx = entity.stepIndices[0];
+            
+            // For calls, collect all steps following the call until matching RETURN
+            if (entity.type === 'call') {
+                const callStep = parentSubTrace[firstIdx];
+                const callDepth = Number(callStep && callStep.depth) || 0;
+                const children = [];
+                let callBalance = 1; // We've seen 1 CALL, need to match its RETURN
+                for (let j = firstIdx + 1; j < parentSubTrace.length; j++) {
+                    const step = parentSubTrace[j];
+                    if (!step) continue;
+                    const d = Number(step.depth) || 0;
+                    // Track nested calls to match the right RETURN
+                    if (step.type === 'CALL' && d <= callDepth) callBalance++;
+                    if (step.type === 'RETURN' && d <= callDepth) {
+                        callBalance--;
+                        if (callBalance <= 0) {
+                            children.push(parentSubTrace[j]);
+                            break;
+                        }
+                    }
+                    if (d < callDepth) break;
+                    children.push(parentSubTrace[j]);
+                }
+                subTrace = children;
+            } else {
+                // For loops/conditions, use step indices to gather surrounding steps
+                const minIdx = Math.min(...entity.stepIndices);
+                const maxIdx = Math.max(...entity.stepIndices);
+                // Expand range to include child steps between the entity's steps
+                const expandedEnd = Math.min(maxIdx + 20, parentSubTrace.length - 1);
+                const collected = [];
+                for (let j = minIdx; j <= expandedEnd; j++) {
+                    if (parentSubTrace[j]) collected.push(parentSubTrace[j]);
+                }
+                subTrace = collected;
+            }
+        } else {
+            // Main-spiral building → use the full trace with childStepIndices
+            const trace = this.mainCityRenderer._lastTrace || [];
+            const childIndices = entity.childStepIndices;
+            subTrace = childIndices.map(idx => trace[idx]).filter(Boolean);
+        }
+        if (subTrace.length === 0) return;
+
+        // If already in a galaxy, push current state onto the stack
+        if (this.warpedGalaxy) {
+            this._galaxyStack.push(this.warpedGalaxy);
+            // Don't dispose the current galaxy — just dim it further
+            this._dimGalaxyMeshes(this.warpedGalaxy, 0.15);
+        } else {
+            // First warp — dim the main spiral
+            this._dimMainSpiral(0.3);
+        }
+
+        // Determine galaxy center — offset from source building
+        const stackDepth = this._galaxyStack.length;
         const dirX = sourcePos.x || 1;
         const dirZ = sourcePos.z || 1;
         const dirLen = Math.sqrt(dirX * dirX + dirZ * dirZ) || 1;
+        const offset = this.galaxyOffset + stackDepth * 60;
         const galaxyCenter = new BABYLON.Vector3(
-            (dirX / dirLen) * this.galaxyOffset,
-            sourcePos.y + 5,
-            (dirZ / dirLen) * this.galaxyOffset
+            sourcePos.x + (dirX / dirLen) * offset,
+            sourcePos.y + 10 + stackDepth * 15,
+            sourcePos.z + (dirZ / dirLen) * offset
         );
-
-        // Build sub-trace from child indices
-        const subTrace = childIndices.map(idx => trace[idx]).filter(Boolean);
-        if (subTrace.length === 0) return;
 
         // Get building color for the warp line
         const bd = buildingMesh._buildingData || {};
-        const color = bd.color || { r: 0.8, g: 0.4, b: 1.0 };
+        const color = bd.color || this._colorForType(entity.colorType || entity.type || 'CALL');
 
-        // Create the galaxy
+        // Create the galaxy — pass the subTrace so galaxy buildings can reference it
         const galaxyData = this._buildGalaxy(subTrace, galaxyCenter, entity);
 
         // Create the warp line
@@ -114,9 +188,6 @@ class GalaxyWarpManager {
         // Create label at galaxy
         this._createGalaxyLabel(galaxyCenter, entity);
 
-        // Dim the main spiral slightly
-        this._dimMainSpiral(0.3);
-
         // Store state
         this.warpedGalaxy = {
             buildingMesh,
@@ -124,8 +195,30 @@ class GalaxyWarpManager {
             sourcePos,
             galaxyCenter,
             galaxyData,
-            color
+            color,
+            // Keep references for cleanup
+            galaxyMeshes: [...this._galaxyMeshes],
+            galaxyExtraMeshes: [...this._galaxyExtraMeshes],
+            galaxySpiralTube: this._galaxySpiralTube,
+            warpLine: this._warpLine,
+            warpLineMat: this._warpLineMat,
+            warpParticles: [...this._warpParticles],
+            warpParticleSharedMat: this._warpParticleSharedMat || null,
+            sourceGlow: this._sourceGlow,
+            galaxyLabel: this._galaxyLabel,
+            subTrace  // stored so child galaxies can slice into it
         };
+
+        // Clear current references (they're now owned by the stacked warpedGalaxy)
+        this._galaxyMeshes = [];
+        this._galaxyExtraMeshes = [];
+        this._galaxySpiralTube = null;
+        this._warpLine = null;
+        this._warpLineMat = null;
+        this._warpParticles = [];
+        this._warpParticleSharedMat = null;
+        this._sourceGlow = null;
+        this._galaxyLabel = null;
 
         // Fly the camera to the galaxy
         this._flyCamera(galaxyCenter, true);
@@ -135,7 +228,9 @@ class GalaxyWarpManager {
     }
 
     /**
-     * Return from the warped galaxy back to the main spiral.
+     * Return from the warped galaxy.
+     * If there's a parent galaxy on the stack, go back to it.
+     * Otherwise, return to the main spiral.
      * @param {boolean} animate — whether to animate the camera fly-back
      */
     returnToMainGalaxy(animate = true) {
@@ -149,50 +244,140 @@ class GalaxyWarpManager {
         this._pendingTimers.forEach(id => clearTimeout(id));
         this._pendingTimers = [];
 
-        // Clean up galaxy meshes
-        this._disposeGalaxy();
+        // Clean up the current galaxy's meshes
+        this._disposeWarpedGalaxy(this.warpedGalaxy);
 
-        // Remove warp line
-        this._disposeWarpLine();
+        if (this._galaxyStack.length > 0) {
+            // Pop to parent galaxy
+            const parent = this._galaxyStack.pop();
 
-        // Remove source glow
-        this._disposeSourceGlow();
+            // Restore parent galaxy's references so we can clean them up later
+            this._galaxyMeshes = parent.galaxyMeshes || [];
+            this._galaxyExtraMeshes = parent.galaxyExtraMeshes || [];
+            this._galaxySpiralTube = parent.galaxySpiralTube;
+            this._warpLine = parent.warpLine;
+            this._warpLineMat = parent.warpLineMat;
+            this._warpParticles = parent.warpParticles || [];
+            this._warpParticleSharedMat = parent.warpParticleSharedMat;
+            this._sourceGlow = parent.sourceGlow;
+            this._galaxyLabel = parent.galaxyLabel;
 
-        // Remove galaxy label
-        if (this._galaxyLabel) {
-            this.scene.stopAnimation(this._galaxyLabel);
-            if (this._galaxyLabel.material) {
-                if (this._galaxyLabel.material.diffuseTexture) {
-                    this._galaxyLabel.material.diffuseTexture.dispose();
+            // Restore parent galaxy opacity
+            this._restoreGalaxyMeshes(parent);
+
+            this.warpedGalaxy = parent;
+
+            // Fly camera back to parent galaxy
+            if (animate) {
+                this._flyCamera(parent.galaxyCenter, true);
+            }
+        } else {
+            // Return to main spiral
+            this.warpedGalaxy = null;
+
+            // Restore main spiral opacity
+            this._dimMainSpiral(1.0);
+
+            // Fly camera back
+            if (animate) {
+                this._flyCamera(new BABYLON.Vector3(0, 10, 0), false);
+            }
+
+            // Hide return button
+            this._showReturnButton(false);
+        }
+    }
+
+    /**
+     * Dispose all meshes belonging to a single warpedGalaxy entry.
+     */
+    _disposeWarpedGalaxy(galaxy) {
+        if (!galaxy) return;
+
+        const cachedMats = new Set(this._matCache.values());
+
+        // Dispose galaxy meshes
+        const allMeshes = [...(galaxy.galaxyMeshes || []), ...(galaxy.galaxyExtraMeshes || [])];
+        for (const mesh of allMeshes) {
+            if (mesh && !mesh.isDisposed()) {
+                this.scene.stopAnimation(mesh);
+                if (mesh.material) {
+                    if (!cachedMats.has(mesh.material)) {
+                        if (mesh.material.diffuseTexture) mesh.material.diffuseTexture.dispose();
+                        mesh.material.dispose();
+                    } else {
+                        mesh.material = null;
+                    }
                 }
-                this._galaxyLabel.material.dispose();
+                mesh.dispose();
             }
-            this._galaxyLabel.dispose();
-            this._galaxyLabel = null;
         }
-        // Catch any orphaned galaxy label
-        const orphanLabels = this.scene.meshes.filter(m => m.name === 'galaxyLabel');
-        for (const m of orphanLabels) {
-            this.scene.stopAnimation(m);
-            if (m.material) {
-                if (m.material.diffuseTexture) m.material.diffuseTexture.dispose();
-                m.material.dispose();
+
+        // Dispose warp line
+        if (galaxy.warpLine && !galaxy.warpLine.isDisposed()) {
+            this.scene.stopAnimation(galaxy.warpLine);
+            if (galaxy.warpLine.material) galaxy.warpLine.material.dispose();
+            galaxy.warpLine.dispose();
+        }
+
+        // Dispose warp particles
+        if (galaxy.warpParticles) {
+            for (const p of galaxy.warpParticles) {
+                if (p && !p.isDisposed()) {
+                    this.scene.stopAnimation(p);
+                    p.material = null;
+                    p.dispose();
+                }
             }
-            m.dispose();
+        }
+        if (galaxy.warpParticleSharedMat) {
+            galaxy.warpParticleSharedMat.dispose();
         }
 
-        // Restore main spiral opacity
-        this._dimMainSpiral(1.0);
-
-        // Fly camera back
-        if (animate) {
-            this._flyCamera(new BABYLON.Vector3(0, 10, 0), false);
+        // Dispose source glow
+        if (galaxy.sourceGlow && !galaxy.sourceGlow.isDisposed()) {
+            this.scene.stopAnimation(galaxy.sourceGlow);
+            if (galaxy.sourceGlow.material) galaxy.sourceGlow.material.dispose();
+            galaxy.sourceGlow.dispose();
         }
 
-        this.warpedGalaxy = null;
+        // Dispose galaxy label
+        if (galaxy.galaxyLabel && !galaxy.galaxyLabel.isDisposed()) {
+            this.scene.stopAnimation(galaxy.galaxyLabel);
+            if (galaxy.galaxyLabel.material) {
+                if (galaxy.galaxyLabel.material.diffuseTexture) {
+                    galaxy.galaxyLabel.material.diffuseTexture.dispose();
+                }
+                galaxy.galaxyLabel.material.dispose();
+            }
+            galaxy.galaxyLabel.dispose();
+        }
+    }
 
-        // Hide return button
-        this._showReturnButton(false);
+    /**
+     * Dim the meshes of a galaxy entry (when warping deeper).
+     */
+    _dimGalaxyMeshes(galaxy, alpha) {
+        const allMeshes = [...(galaxy.galaxyMeshes || []), ...(galaxy.galaxyExtraMeshes || [])];
+        for (const mesh of allMeshes) {
+            if (mesh && !mesh.isDisposed() && mesh.material && !mesh.material.isFrozen) {
+                mesh.material.alpha = (mesh.material.alpha || 0.85) * alpha;
+            }
+        }
+    }
+
+    /**
+     * Restore the meshes of a galaxy entry (when returning from a deeper warp).
+     */
+    _restoreGalaxyMeshes(galaxy) {
+        const allMeshes = [...(galaxy.galaxyMeshes || []), ...(galaxy.galaxyExtraMeshes || [])];
+        for (const mesh of allMeshes) {
+            if (mesh && !mesh.isDisposed() && mesh.material) {
+                // Unfreeze so we can modify alpha
+                if (mesh.material.isFrozen) mesh.material.unfreeze();
+                mesh.material.alpha = 0.85;
+            }
+        }
     }
 
     // ─── Galaxy Builder ────────────────────────────────────────────
@@ -220,6 +405,12 @@ class GalaxyWarpManager {
         const angleStep = 0.7;
         const heightStep = 0.08;
 
+        // ── Pre-compute child-step ranges for container entities ──
+        // Walk through the sub-trace to figure out which steps belong
+        // to which container (call, loop, condition). This lets
+        // galaxy buildings have child steps for recursive warping.
+        const entityChildMap = this._computeGalaxyChildMap(subTrace, entities);
+
         for (let i = 0; i < entities.length; i++) {
             const angle = i * angleStep;
             const radius = radiusStart + i * radiusGrowth;
@@ -233,6 +424,15 @@ class GalaxyWarpManager {
 
             const entity = entities[i];
             const mesh = this._createGalaxyBuilding(entity, pos, i, parentEntity.key || 'galaxy');
+
+            // Attach child step data for recursive galaxy warping
+            const childIndices = entityChildMap.get(i);
+            if (childIndices && childIndices.length > 0) {
+                mesh._galaxyChildIndices = childIndices;
+            }
+            // Always attach the sub-trace so recursive warping can use it
+            mesh._galaxySubTrace = subTrace;
+
             meshes.push(mesh);
         }
 
@@ -258,6 +458,13 @@ class GalaxyWarpManager {
 
         this._galaxyMeshes = [...meshes, ...this._galaxyExtraMeshes];
         this._galaxySpiralTube = spiralTube;
+
+        // ── Render a causality web within the galaxy ──
+        const causalityMeshes = this._renderGalaxyCausalityWeb(subTrace, entities, meshes.filter(m => m._isGalaxyBuilding));
+        if (causalityMeshes.length > 0) {
+            this._galaxyMeshes.push(...causalityMeshes);
+            this._galaxyExtraMeshes.push(...causalityMeshes);
+        }
 
         // Clear pending timers from any previous galaxy
         this._pendingTimers.forEach(id => clearTimeout(id));
@@ -285,8 +492,10 @@ class GalaxyWarpManager {
             const timerId = setTimeout(() => {
                 if (!mesh.isDisposed()) {
                     this.scene.beginDirectAnimation(mesh, [popAnim], 0, 15, false, 1.0, () => {
-                        // Freeze world matrix once animation is done for perf
+                        // Ensure final scale is exactly 1 and refresh bounding info for picking
                         if (!mesh.isDisposed()) {
+                            mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+                            mesh.refreshBoundingInfo();
                             mesh.freezeWorldMatrix();
                         }
                     });
@@ -303,6 +512,249 @@ class GalaxyWarpManager {
         }
 
         return { entities, meshes, pathPoints, center };
+    }
+
+    /**
+     * Compute which sub-trace indices belong to each container entity.
+     * Container types (call, loop, condition) own a range of child steps:
+     *   - CALL: from the call step until the matching RETURN (same depth)
+     *   - LOOP: from the loop step until condition_result becomes 0 or a
+     *     different container starts at the same depth
+     *   - CONDITION: from the condition step until the matching BRANCH
+     *
+     * Returns a Map<entityIndex, number[]> of sub-trace child indices.
+     */
+    _computeGalaxyChildMap(subTrace, entities) {
+        const childMap = new Map();
+
+        // Build a quick lookup: sub-trace index → which entity owns it
+        // (entities that are containers we care about)
+        for (let ei = 0; ei < entities.length; ei++) {
+            const entity = entities[ei];
+            const containerTypes = ['call', 'loop', 'condition'];
+            if (!containerTypes.includes(entity.type)) continue;
+
+            const firstStepIdx = entity.stepIndices ? entity.stepIndices[0] : -1;
+            if (firstStepIdx < 0) continue;
+
+            const firstStep = subTrace[firstStepIdx];
+            if (!firstStep) continue;
+
+            const children = [];
+            const startDepth = Number(firstStep.depth) || 0;
+            const entityName = firstStep.name || firstStep.subject || '';
+            let callBalance = 1; // used only for call entities
+
+            // Walk forward from the first step to collect children
+            for (let j = firstStepIdx + 1; j < subTrace.length; j++) {
+                const step = subTrace[j];
+                if (!step) continue;
+
+                const stepDepth = Number(step.depth) || 0;
+
+                // For calls: collect everything until the matching RETURN.
+                // Track nested call balance to handle same-depth recursion.
+                if (entity.type === 'call') {
+                    if (step.type === 'CALL' && stepDepth <= startDepth) {
+                        callBalance++;
+                    }
+                    if (step.type === 'RETURN' && stepDepth <= startDepth) {
+                        callBalance--;
+                        if (callBalance <= 0) {
+                            children.push(j); // include the RETURN itself
+                            break;
+                        }
+                    }
+                    if (stepDepth < startDepth) break;
+                    children.push(j);
+                }
+                // For loops: steps on the same or deeper depth until
+                // we see another loop/call at the same depth
+                else if (entity.type === 'loop') {
+                    if (stepDepth < startDepth) break;
+                    if (stepDepth === startDepth &&
+                        (step.type === 'CALL' || step.type === 'CONDITION') &&
+                        j !== firstStepIdx) break;
+                    // For a new LOOP event at same depth with a different condition, break
+                    if (stepDepth === startDepth && step.type === 'LOOP' &&
+                        j !== firstStepIdx &&
+                        step.condition !== firstStep.condition) break;
+                    children.push(j);
+                }
+                // For conditions: a few steps following the condition
+                else if (entity.type === 'condition') {
+                    if (step.type === 'BRANCH') {
+                        children.push(j);
+                        break;
+                    }
+                    if (stepDepth < startDepth) break;
+                    children.push(j);
+                }
+            }
+
+            if (children.length > 0) {
+                childMap.set(ei, children);
+            }
+        }
+
+        return childMap;
+    }
+
+    /**
+     * Render a causality web within a galaxy.
+     * Finds READ→ASSIGN relationships in the sub-trace and draws arc lines
+     * between the corresponding galaxy building meshes.
+     */
+    _renderGalaxyCausalityWeb(subTrace, entities, buildingMeshes) {
+        const createdMeshes = [];
+        if (!subTrace || subTrace.length === 0 || buildingMeshes.length === 0) return createdMeshes;
+
+        // Build a map: variable name+address → entity index (for variable entities)
+        const varEntityMap = new Map();
+        for (let i = 0; i < entities.length; i++) {
+            const ent = entities[i];
+            if (ent.type === 'variable') {
+                const key = `${ent.subject || ent.label}|${ent.address || ''}`;
+                varEntityMap.set(key, i);
+                // Also map by name alone for broader matching
+                if (!varEntityMap.has(ent.subject || ent.label)) {
+                    varEntityMap.set(ent.subject || ent.label, i);
+                }
+            }
+        }
+
+        // Walk through the sub-trace looking for READ→ASSIGN patterns
+        const links = [];
+        const seen = new Set();
+        const pendingReads = [];
+
+        for (let i = 0; i < subTrace.length; i++) {
+            const step = subTrace[i];
+            if (!step) continue;
+
+            if (step.type === 'READ') {
+                pendingReads.push({
+                    name: step.name || step.subject || '',
+                    address: step.address || '',
+                    line: Number(step.line) || 0,
+                    idx: i
+                });
+            } else if (step.type === 'ASSIGN' || step.type === 'DECL') {
+                const targetName = step.name || step.subject || '';
+                const targetAddr = step.address || '';
+                const targetLine = Number(step.line) || 0;
+
+                // Find the target entity
+                let targetEI = varEntityMap.get(`${targetName}|${targetAddr}`);
+                if (targetEI === undefined) targetEI = varEntityMap.get(targetName);
+                if (targetEI === undefined) continue;
+
+                // Match pending reads
+                const remaining = [];
+                for (const pr of pendingReads) {
+                    const lineDist = Math.abs(targetLine - pr.line);
+                    const stepDist = i - pr.idx;
+                    if (lineDist <= 2 || stepDist <= 5) {
+                        let sourceEI = varEntityMap.get(`${pr.name}|${pr.address}`);
+                        if (sourceEI === undefined) sourceEI = varEntityMap.get(pr.name);
+                        if (sourceEI !== undefined && sourceEI !== targetEI) {
+                            const linkId = `${sourceEI}->${targetEI}`;
+                            if (!seen.has(linkId)) {
+                                seen.add(linkId);
+                                links.push({ fromEI: sourceEI, toEI: targetEI });
+                            }
+                        }
+                    } else if (stepDist <= 20) {
+                        remaining.push(pr);
+                    }
+                    // else too old, discard
+                }
+                pendingReads.length = 0;
+                pendingReads.push(...remaining);
+            }
+        }
+
+        // Also use heuristic: if ASSIGN uses data from variables on the same/adjacent line
+        for (let i = 0; i < subTrace.length; i++) {
+            const step = subTrace[i];
+            if (!step || step.type !== 'ASSIGN') continue;
+            const targetName = step.name || step.subject || '';
+            const targetAddr = step.address || '';
+            const targetLine = Number(step.line) || 0;
+            let targetEI = varEntityMap.get(`${targetName}|${targetAddr}`);
+            if (targetEI === undefined) targetEI = varEntityMap.get(targetName);
+            if (targetEI === undefined) continue;
+
+            for (let j = i - 1; j >= Math.max(0, i - 6); j--) {
+                const prev = subTrace[j];
+                if (!prev) continue;
+                if (prev.type !== 'ASSIGN' && prev.type !== 'DECL') continue;
+                const prevName = prev.name || prev.subject || '';
+                const prevAddr = prev.address || '';
+                const prevLine = Number(prev.line) || 0;
+                if (Math.abs(targetLine - prevLine) > 1) continue;
+
+                let sourceEI = varEntityMap.get(`${prevName}|${prevAddr}`);
+                if (sourceEI === undefined) sourceEI = varEntityMap.get(prevName);
+                if (sourceEI === undefined || sourceEI === targetEI) continue;
+
+                const linkId = `${sourceEI}->${targetEI}`;
+                if (!seen.has(linkId)) {
+                    seen.add(linkId);
+                    links.push({ fromEI: sourceEI, toEI: targetEI });
+                }
+            }
+        }
+
+        if (links.length === 0) return createdMeshes;
+
+        // Render causality arcs
+        const allLines = [];
+        const allColors = [];
+
+        for (const link of links) {
+            const fromMesh = buildingMeshes[link.fromEI];
+            const toMesh = buildingMeshes[link.toEI];
+            if (!fromMesh || !toMesh) continue;
+
+            const fromPos = fromMesh.position;
+            const toPos = toMesh.position;
+
+            const midPoint = BABYLON.Vector3.Lerp(fromPos, toPos, 0.5);
+            const dist = BABYLON.Vector3.Distance(fromPos, toPos);
+            midPoint.y += dist * 0.15 + 0.5;
+
+            // 8-segment Bézier
+            const pts = [];
+            const segments = 8;
+            for (let s = 0; s <= segments; s++) {
+                const t = s / segments;
+                const x = (1 - t) * (1 - t) * fromPos.x + 2 * (1 - t) * t * midPoint.x + t * t * toPos.x;
+                const y = (1 - t) * (1 - t) * fromPos.y + 2 * (1 - t) * t * midPoint.y + t * t * toPos.y;
+                const z = (1 - t) * (1 - t) * fromPos.z + 2 * (1 - t) * t * midPoint.z + t * t * toPos.z;
+                pts.push(new BABYLON.Vector3(x, y, z));
+            }
+            const col = new BABYLON.Color4(0.7, 0.6, 0.9, 0.6);
+            const cols = new Array(pts.length).fill(col);
+            allLines.push(pts);
+            allColors.push(cols);
+        }
+
+        if (allLines.length > 0) {
+            const lineSystem = BABYLON.MeshBuilder.CreateLineSystem('galaxyCausalLines', {
+                lines: allLines,
+                colors: allColors
+            }, this.scene);
+            const lineMat = new BABYLON.StandardMaterial('galaxyCausalLineMat', this.scene);
+            lineMat.emissiveColor = new BABYLON.Color3(0.7, 0.6, 0.9);
+            lineMat.disableLighting = true;
+            lineSystem.material = lineMat;
+            lineSystem.isPickable = false;
+            lineSystem.freezeWorldMatrix();
+            createdMeshes.push(lineSystem);
+        }
+
+        return createdMeshes;
     }
 
     /**
@@ -765,7 +1217,9 @@ class GalaxyWarpManager {
             case 'CALL':      return { r: 0.9, g: 0.3, b: 0.3, a: 0.85 };
             case 'RETURN':    return { r: 0.9, g: 0.6, b: 0.2, a: 0.85 };
             case 'DECL':      return { r: 0.3, g: 0.5, b: 0.9, a: 0.85 };
+            case 'PARAM':     return { r: 0.4, g: 0.6, b: 1.0, a: 0.85 };
             case 'ASSIGN':    return { r: 0.3, g: 0.8, b: 0.9, a: 0.85 };
+            case 'READ':      return { r: 0.2, g: 0.9, b: 0.7, a: 0.85 };
             case 'LOOP':      return { r: 0.7, g: 0.3, b: 0.9, a: 0.85 };
             case 'CONDITION': return { r: 0.9, g: 0.5, b: 0.2, a: 0.85 };
             case 'BRANCH':    return { r: 0.9, g: 0.8, b: 0.2, a: 0.85 };
@@ -926,7 +1380,18 @@ class GalaxyWarpManager {
         this._pendingTimers.forEach(id => clearTimeout(id));
         this._pendingTimers = [];
 
-        // Force dispose everything regardless of warpedGalaxy state
+        // Dispose all galaxies on the stack first
+        for (const galaxy of this._galaxyStack) {
+            this._disposeWarpedGalaxy(galaxy);
+        }
+        this._galaxyStack = [];
+
+        // Dispose current galaxy
+        if (this.warpedGalaxy) {
+            this._disposeWarpedGalaxy(this.warpedGalaxy);
+        }
+
+        // Also run legacy disposal for any orphaned meshes
         this._disposeGalaxy();
         this._disposeWarpLine();
         this._disposeSourceGlow();
@@ -943,13 +1408,22 @@ class GalaxyWarpManager {
             this._galaxyLabel = null;
         }
 
-        // Safety net: dispose any orphaned galaxy label
-        const orphanLabels = this.scene.meshes.filter(m => m.name === 'galaxyLabel');
-        for (const m of orphanLabels) {
+        // Safety net: dispose any orphaned galaxy meshes/labels in the scene
+        const orphans = this.scene.meshes.filter(m =>
+            m.name && (m.name.startsWith('galaxy_') || m.name === 'galaxySpiralTube' ||
+                       m.name === 'galaxyLabel' || m.name === 'warpLine' ||
+                       m.name === 'sourceGlow' || m.name.startsWith('warpParticle_'))
+        );
+        const cachedMats = new Set(this._matCache.values());
+        for (const m of orphans) {
             this.scene.stopAnimation(m);
             if (m.material) {
-                if (m.material.diffuseTexture) m.material.diffuseTexture.dispose();
-                m.material.dispose();
+                if (!cachedMats.has(m.material)) {
+                    if (m.material.diffuseTexture) m.material.diffuseTexture.dispose();
+                    m.material.dispose();
+                } else {
+                    m.material = null;
+                }
             }
             m.dispose();
         }
@@ -959,9 +1433,7 @@ class GalaxyWarpManager {
         this._matCache.clear();
 
         // Restore main spiral opacity if it was dimmed
-        if (this.warpedGalaxy) {
-            this._dimMainSpiral(1.0);
-        }
+        this._dimMainSpiral(1.0);
 
         this.warpedGalaxy = null;
         this._showReturnButton(false);

@@ -1,14 +1,16 @@
 /**
  * CausalityRenderer — Phase 3 Part 3
  *
- * Draws a "causality web" connecting variable values to the values that
- * produced them.  When variable B is assigned on the same line where
- * variable A was last read/assigned, a glowing silk thread is drawn
- * between their buildings.
+ * Draws a "causality web" showing data-flow between variables.
+ * When READ relations are available, precise read→assign links are drawn.
+ * Otherwise, falls back to a heuristic based on line proximity.
  *
- * The web is coloured by blending the colours of the two connected
- * buildings — giving it a stained-glass spider-web aesthetic that
- * floats between the mosaic towers.
+ * Performance notes:
+ *   • Uses simple LineSystem instead of tubes (one draw call for all strands)
+ *   • Shares a single material across all lines
+ *   • Arrowheads use thin-instances on one shared mesh
+ *   • No per-strand DynamicTexture labels (eliminated)
+ *   • No per-strand shimmer animations (eliminated)
  *
  * Togglable on/off via the UI.
  */
@@ -17,32 +19,30 @@ class CausalityRenderer {
         this.scene = scene;
         this.cityRenderer = cityRenderer;
 
-        /** All web strands: { line, mat, from, to } */
-        this._strands = [];
+        /** The single LineSystem mesh for all strands */
+        this._lineSystem = null;
 
-        /** Animated junction dots at intersection points */
-        this._junctions = [];
+        /** Shared material for all strands */
+        this._lineMat = null;
+
+        /** Arrowhead instances root mesh */
+        this._arrowRoot = null;
+        this._arrowMat = null;
+
+        /** Junction dots root mesh */
+        this._junctionRoot = null;
+        this._junctionMat = null;
 
         /** Whether the web is currently visible */
         this._visible = false;
-
-        /** Shared junction material (cached) */
-        this._junctionMat = null;
     }
 
     // ─── Public API ────────────────────────────────────────────────
 
-    /**
-     * Is the web currently showing?
-     */
     isVisible() {
         return this._visible;
     }
 
-    /**
-     * Toggle the causality web on/off.
-     * @returns {boolean} new visibility state
-     */
     toggle() {
         if (this._visible) {
             this.hide();
@@ -52,9 +52,6 @@ class CausalityRenderer {
         return this._visible;
     }
 
-    /**
-     * Build and show the causality web from the current snapshot.
-     */
     show() {
         this.clear();
         const snapshot = this.cityRenderer._lastSnapshot;
@@ -66,32 +63,32 @@ class CausalityRenderer {
         this._visible = true;
     }
 
-    /**
-     * Hide and dispose the causality web.
-     */
     hide() {
         this.clear();
         this._visible = false;
     }
 
-    /**
-     * Dispose all web geometry.
-     */
     clear() {
-        for (const strand of this._strands) {
-            if (strand.mat) strand.mat.dispose();
-            if (strand.line) strand.line.dispose();
+        if (this._lineSystem) {
+            this._lineSystem.dispose();
+            this._lineSystem = null;
         }
-        this._strands = [];
-
-        for (const j of this._junctions) {
-            if (j && !j.isDisposed()) {
-                j.material = null;
-                j.dispose();
-            }
+        if (this._lineMat) {
+            this._lineMat.dispose();
+            this._lineMat = null;
         }
-        this._junctions = [];
-
+        if (this._arrowRoot) {
+            this._arrowRoot.dispose();
+            this._arrowRoot = null;
+        }
+        if (this._arrowMat) {
+            this._arrowMat.dispose();
+            this._arrowMat = null;
+        }
+        if (this._junctionRoot) {
+            this._junctionRoot.dispose();
+            this._junctionRoot = null;
+        }
         if (this._junctionMat) {
             this._junctionMat.dispose();
             this._junctionMat = null;
@@ -101,16 +98,56 @@ class CausalityRenderer {
     // ─── Causality Analysis ────────────────────────────────────────
 
     /**
-     * Walk through the trace and find causal links:
+     * Build causal links from READ relations in the snapshot.
      *
-     * For each ASSIGN event, look backward in the trace (within a small
-     * window) for other variables that were recently assigned or declared
-     * on the same line or an adjacent line.  Those are likely the values
-     * that contributed to the new assignment (e.g.  sum = sum + i).
+     * READ events explicitly tell us which variable was read to produce
+     * which assignment.  Each readRelation is { fromKey, toKey, readValue, step }.
+     * We use these directly — no heuristic needed.
      *
-     * Returns an array of { fromKey, toKey, fromColor, toColor, strength }
+     * Falls back to the old heuristic approach if no readRelations exist
+     * (for backward compatibility with older trace files).
+     *
+     * Returns an array of { fromKey, toKey, strength, readValue }
      */
     _computeCausalLinks(snapshot, trace) {
+        const readRelations = snapshot.readRelations || [];
+
+        if (readRelations.length > 0) {
+            return this._computeLinksFromReads(readRelations);
+        }
+
+        // Fallback: old heuristic approach for traces without READ events
+        return this._computeLinksHeuristic(snapshot, trace);
+    }
+
+    /**
+     * Build links directly from READ relations (precise data-flow).
+     */
+    _computeLinksFromReads(readRelations) {
+        const links = [];
+        const seen = new Set();
+
+        for (const rel of readRelations) {
+            const linkId = `${rel.fromKey}->${rel.toKey}`;
+            if (seen.has(linkId)) continue;
+            seen.add(linkId);
+
+            links.push({
+                fromKey: rel.fromKey,
+                toKey: rel.toKey,
+                strength: 0.8,
+                readValue: rel.readValue || ''
+            });
+        }
+
+        return links;
+    }
+
+    /**
+     * Fallback heuristic: walk through the trace and find causal links
+     * based on line proximity (for traces that don't have READ events).
+     */
+    _computeLinksHeuristic(snapshot, trace) {
         const links = [];
         const seen = new Set();  // deduplicate
 
@@ -191,12 +228,16 @@ class CausalityRenderer {
     // ─── Web Rendering ─────────────────────────────────────────────
 
     /**
-     * Render the causality web as glowing silk strands between buildings.
+     * Render all causality links efficiently:
+     *   1. One LineSystem for all strands (single draw call)
+     *   2. Thin-instanced arrowheads (single draw call)
+     *   3. Thin-instanced junction dots (single draw call)
+     *   4. No per-strand materials, animations, or labels
      */
     _renderWeb(links) {
         if (links.length === 0) return;
 
-        // Collect building positions & colours
+        // ── Collect building positions & colours ──
         const posMap = new Map();
         const colorMap = new Map();
 
@@ -214,14 +255,11 @@ class CausalityRenderer {
         extractFromCache(this.cityRenderer.whileMeshes);
         extractFromCache(this.cityRenderer.branchMeshes);
 
-        // Junction dot material
-        this._junctionMat = new BABYLON.StandardMaterial('causalJunctionMat', this.scene);
-        this._junctionMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
-        this._junctionMat.diffuseColor = new BABYLON.Color3(0.9, 0.85, 1.0);
-        this._junctionMat.alpha = 0.7;
-
-        // Track all unique positions that participate in a link for junction dots
-        const junctionPositions = new Set();
+        // ── Build line paths and colours for LineSystem ──
+        const allLines = [];    // array of point-arrays
+        const allColors = [];   // parallel array of color-arrays
+        const arrowData = [];   // { position, direction } for arrowheads
+        const junctionSet = new Set();
 
         for (let i = 0; i < links.length; i++) {
             const link = links[i];
@@ -232,90 +270,109 @@ class CausalityRenderer {
             const fromColor = colorMap.get(link.fromKey) || { r: 0.5, g: 0.5, b: 0.5 };
             const toColor = colorMap.get(link.toKey) || { r: 0.5, g: 0.5, b: 0.5 };
 
-            // Blend the two colours for the strand
+            // Blend colours
             const blendR = (fromColor.r + toColor.r) / 2;
             const blendG = (fromColor.g + toColor.g) / 2;
             const blendB = (fromColor.b + toColor.b) / 2;
+            const col = new BABYLON.Color4(blendR, blendG, blendB, 0.7);
 
-            // Create a curved path (catenary / drooping silk strand)
+            // Arc midpoint slightly upward
             const midPoint = BABYLON.Vector3.Lerp(fromPos, toPos, 0.5);
-            // Droop the strand slightly below the midpoint for a web effect
             const dist = BABYLON.Vector3.Distance(fromPos, toPos);
-            midPoint.y -= dist * 0.15 + 0.5;
+            midPoint.y += dist * 0.10 + 0.3;
 
-            const pathPoints = this._quadraticBezier(fromPos, midPoint, toPos, 16);
+            // 8-segment Bézier (reduced from 16)
+            const pts = this._quadraticBezier(fromPos, midPoint, toPos, 8);
+            const cols = new Array(pts.length).fill(col);
 
-            // Create the strand as a thin tube
-            const tube = BABYLON.MeshBuilder.CreateTube(`causalStrand_${i}`, {
-                path: pathPoints,
-                radius: 0.04 + link.strength * 0.03,
-                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
-                tessellation: 6
-            }, this.scene);
+            allLines.push(pts);
+            allColors.push(cols);
 
-            const mat = new BABYLON.StandardMaterial(`causalStrandMat_${i}`, this.scene);
-            mat.emissiveColor = new BABYLON.Color3(
-                blendR * 0.7, blendG * 0.7, blendB * 0.7
-            );
-            mat.diffuseColor = new BABYLON.Color3(blendR, blendG, blendB);
-            mat.alpha = 0.35 + link.strength * 0.25;
-            mat.backFaceCulling = false;
-            tube.material = mat;
-            tube.isPickable = false;
-            tube.freezeWorldMatrix();
+            // Arrow data — place near the target end
+            const arrowPos = BABYLON.Vector3.Lerp(midPoint, toPos, 0.85);
+            const dir = toPos.subtract(midPoint).normalize();
+            arrowData.push({ pos: arrowPos, dir });
 
-            this._strands.push({ line: tube, mat, fromKey: link.fromKey, toKey: link.toKey });
-
-            // Track junction points
-            junctionPositions.add(link.fromKey);
-            junctionPositions.add(link.toKey);
+            junctionSet.add(link.fromKey);
+            junctionSet.add(link.toKey);
         }
 
-        // Animate a gentle shimmer across all strands
-        this._animateWebShimmer();
+        if (allLines.length === 0) return;
 
-        // Create junction dots at each participating building
-        for (const key of junctionPositions) {
+        // ── 1) Single LineSystem for all strands ──
+        this._lineSystem = BABYLON.MeshBuilder.CreateLineSystem('causalLines', {
+            lines: allLines,
+            colors: allColors
+        }, this.scene);
+        this._lineMat = new BABYLON.StandardMaterial('causalLineMat', this.scene);
+        this._lineMat.emissiveColor = new BABYLON.Color3(0.7, 0.6, 0.9);
+        this._lineMat.disableLighting = true;
+        this._lineSystem.material = this._lineMat;
+        this._lineSystem.isPickable = false;
+        this._lineSystem.freezeWorldMatrix();
+
+        // ── 2) Thin-instanced arrowheads ──
+        if (arrowData.length > 0) {
+            this._arrowMat = new BABYLON.StandardMaterial('causalArrowMat', this.scene);
+            this._arrowMat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 1.0);
+            this._arrowMat.diffuseColor = new BABYLON.Color3(0.8, 0.7, 1.0);
+            this._arrowMat.alpha = 0.6;
+
+            this._arrowRoot = BABYLON.MeshBuilder.CreateCylinder('causalArrowRoot', {
+                height: 0.3, diameterTop: 0, diameterBottom: 0.18, tessellation: 4
+            }, this.scene);
+            this._arrowRoot.material = this._arrowMat;
+            this._arrowRoot.isPickable = false;
+            this._arrowRoot.isVisible = false; // root hidden; instances are visible
+
+            const up = new BABYLON.Vector3(0, 1, 0);
+            for (let i = 0; i < arrowData.length; i++) {
+                const { pos, dir } = arrowData[i];
+                const mat = BABYLON.Matrix.Identity();
+
+                // Build rotation
+                const axis = BABYLON.Vector3.Cross(up, dir);
+                const axisLen = axis.length();
+                if (axisLen > 0.001) {
+                    axis.scaleInPlace(1 / axisLen);
+                    const angle = Math.acos(Math.max(-1, Math.min(1, BABYLON.Vector3.Dot(up, dir))));
+                    const rot = BABYLON.Matrix.RotationAxis(axis, angle);
+                    mat.copyFrom(rot);
+                }
+                mat.setTranslation(pos);
+
+                this._arrowRoot.thinInstanceAdd(mat);
+            }
+            this._arrowRoot.thinInstanceRefreshBoundingInfo();
+            this._arrowRoot.freezeWorldMatrix();
+        }
+
+        // ── 3) Thin-instanced junction dots ──
+        const junctionPositions = [];
+        for (const key of junctionSet) {
             const pos = posMap.get(key);
-            if (!pos) continue;
-
-            const dot = BABYLON.MeshBuilder.CreateSphere(`causalJunction_${key}`, {
-                diameter: 0.22, segments: 4
-            }, this.scene);
-            dot.position = pos.clone();
-            dot.position.y += 0.3;
-            dot.material = this._junctionMat;
-            dot.isPickable = false;
-            dot.freezeWorldMatrix();
-            this._junctions.push(dot);
+            if (pos) junctionPositions.push(pos);
         }
-    }
 
-    /**
-     * Animate a gentle pulsing shimmer on all web strands.
-     */
-    _animateWebShimmer() {
-        for (let i = 0; i < this._strands.length; i++) {
-            const strand = this._strands[i];
-            if (!strand.line || strand.line.isDisposed()) continue;
+        if (junctionPositions.length > 0) {
+            this._junctionMat = new BABYLON.StandardMaterial('causalJunctionMat', this.scene);
+            this._junctionMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+            this._junctionMat.diffuseColor = new BABYLON.Color3(0.9, 0.85, 1.0);
+            this._junctionMat.alpha = 0.7;
 
-            const baseAlpha = strand.mat.alpha;
-            const anim = new BABYLON.Animation(
-                `causalShimmer_${i}`, 'material.alpha', 30,
-                BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-            );
+            this._junctionRoot = BABYLON.MeshBuilder.CreateSphere('causalJunctionRoot', {
+                diameter: 0.22, segments: 3
+            }, this.scene);
+            this._junctionRoot.material = this._junctionMat;
+            this._junctionRoot.isPickable = false;
+            this._junctionRoot.isVisible = false;
 
-            // Each strand shimmers at a slightly different phase
-            const phase = (i * 7) % 30;
-            anim.setKeys([
-                { frame: 0, value: baseAlpha * 0.6 },
-                { frame: 15 + phase, value: baseAlpha * 1.1 },
-                { frame: 45, value: baseAlpha * 0.8 },
-                { frame: 60, value: baseAlpha * 0.6 }
-            ]);
-
-            this.scene.beginDirectAnimation(strand.line, [anim], 0, 60, true);
+            for (const pos of junctionPositions) {
+                const mat = BABYLON.Matrix.Translation(pos.x, pos.y + 0.3, pos.z);
+                this._junctionRoot.thinInstanceAdd(mat);
+            }
+            this._junctionRoot.thinInstanceRefreshBoundingInfo();
+            this._junctionRoot.freezeWorldMatrix();
         }
     }
 

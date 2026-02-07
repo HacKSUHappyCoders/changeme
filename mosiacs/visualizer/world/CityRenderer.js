@@ -819,34 +819,61 @@ class CityRenderer {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // ─── Memory Layer ──────────────────────────────────────────────
+    // ─── Memory Layer — address-colored rings under variables ───────
     // ═══════════════════════════════════════════════════════════════
 
     _renderMemoryLayer(memoryNodes) {
-        this.memoryLines.forEach(l => l.dispose());
+        this.memoryLines.forEach(l => {
+            if (l.material) l.material.dispose();
+            l.dispose();
+        });
         this.memoryLines = [];
 
+        // For each memory address that has 2+ active variables, draw a
+        // glowing ring under each variable sharing that address. Variables
+        // that share an address get the same colour ring, making the
+        // relationship visible at a glance without confusing floor-lines.
         memoryNodes.forEach(node => {
-            if (node.variables.size < 2) return;
-            const positions = [];
+            // Collect only active variables for this address
+            const activeEntries = [];
             node.variables.forEach(varKey => {
                 const entry = this.variableMeshes.get(varKey);
-                if (entry && entry.mesh) positions.push(entry.mesh.position.clone());
+                if (!entry || !entry.mesh) return;
+                const entityData = entry.mesh._entityData;
+                if (!entityData || !entityData.active) return;
+                activeEntries.push(entry);
             });
-            if (positions.length < 2) return;
+            if (activeEntries.length < 2) return;
 
-            for (let i = 0; i < positions.length - 1; i++) {
-                const p1 = positions[i].clone(); p1.y = -0.5;
-                const p2 = positions[i + 1].clone(); p2.y = -0.5;
-                const line = BABYLON.MeshBuilder.CreateTube(`memLine_${node.address}_${i}`, {
-                    path: [p1, p2], radius: 0.06, sideOrientation: BABYLON.Mesh.DOUBLESIDE
-                }, this.scene);
-                const mat = new BABYLON.StandardMaterial(`memLineMat_${node.address}_${i}`, this.scene);
-                mat.emissiveColor = new BABYLON.Color3(0.3, 0.8, 0.3);
-                mat.alpha = 0.4;
-                line.material = mat;
-                line.isPickable = false;
-                this.memoryLines.push(line);
+            // Deterministic colour for this address
+            const addrColor = ColorHash.color('memory', node.address);
+
+            for (const entry of activeEntries) {
+                const pos = entry.mesh.position;
+                const ring = BABYLON.MeshBuilder.CreateTorus(
+                    `memRing_${node.address}_${entry.mesh.name}`, {
+                        diameter: 2.2,
+                        thickness: 0.12,
+                        tessellation: 16
+                    }, this.scene
+                );
+                ring.position = new BABYLON.Vector3(pos.x, pos.y - 0.8, pos.z);
+                ring.rotation.x = 0; // flat on the ground plane
+
+                const mat = new BABYLON.StandardMaterial(
+                    `memRingMat_${node.address}_${entry.mesh.name}`, this.scene
+                );
+                mat.emissiveColor = new BABYLON.Color3(
+                    addrColor.r * 0.8, addrColor.g * 0.8, addrColor.b * 0.8
+                );
+                mat.diffuseColor = new BABYLON.Color3(addrColor.r, addrColor.g, addrColor.b);
+                mat.alpha = 0.5;
+                mat.freeze();
+                ring.material = mat;
+                ring.isPickable = false;
+                ring.freezeWorldMatrix();
+
+                this.memoryLines.push(ring);
             }
         });
     }
@@ -868,6 +895,7 @@ class CityRenderer {
                             entry.truePath, entry.falsePath];
             for (const m of meshes) {
                 if (m && !m._isFrozen) {
+                    m.computeWorldMatrix(true); // ensure world matrix is up to date
                     m.freezeWorldMatrix();
                     m._isFrozen = true;
                 }

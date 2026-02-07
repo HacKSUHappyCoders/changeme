@@ -133,6 +133,8 @@ class SubSpiralRenderer {
      * mirroring how the main spiral works:
      *  - Variables: one entity per unique (subject+address), with value history
      *  - Loops: one entity per unique condition, with iteration count
+     *  - READ events are skipped (they are data-flow relations, not entities)
+     *  - PARAM events are treated like variable declarations
      *  - Everything else: one entity per occurrence
      *
      * Returns an array of consolidated entity objects, each with:
@@ -147,11 +149,15 @@ class SubSpiralRenderer {
             const step = trace[idx];
             if (!step) continue;
 
+            // Skip READ events — they are data-flow relations rendered
+            // by CausalityRenderer, not standalone entities.
+            if (step.type === 'READ') continue;
+
             // The parsed trace uses "name" (mapped from raw "subject")
             const stepName = step.name || step.subject || '';
 
-            if (step.type === 'DECL' || step.type === 'ASSIGN') {
-                // ── Variable: merge DECL + ASSIGNs by name+address ──
+            if (step.type === 'DECL' || step.type === 'ASSIGN' || step.type === 'PARAM') {
+                // ── Variable: merge DECL + ASSIGN + PARAM by name+address ──
                 const varKey = `${stepName}|${step.address || ''}`;
                 if (varMap.has(varKey)) {
                     const ent = varMap.get(varKey);
@@ -161,7 +167,7 @@ class SubSpiralRenderer {
                 } else {
                     const ent = {
                         type: 'variable',
-                        colorType: 'DECL',
+                        colorType: step.type === 'PARAM' ? 'PARAM' : 'DECL',
                         label: stepName,
                         subject: stepName,
                         address: step.address,
@@ -309,6 +315,8 @@ class SubSpiralRenderer {
             case 'RETURN':    return { r: 0.9, g: 0.6, b: 0.2 };
             case 'DECL':      return { r: 0.3, g: 0.5, b: 0.9 };
             case 'ASSIGN':    return { r: 0.3, g: 0.8, b: 0.9 };
+            case 'PARAM':     return { r: 0.4, g: 0.6, b: 1.0 };  // like DECL but slightly brighter
+            case 'READ':      return { r: 0.2, g: 0.9, b: 0.7 };  // teal — data-flow
             case 'LOOP':      return { r: 0.7, g: 0.3, b: 0.9 };
             case 'CONDITION': return { r: 0.9, g: 0.5, b: 0.2 };
             case 'BRANCH':    return { r: 0.9, g: 0.8, b: 0.2 };

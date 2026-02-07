@@ -25,17 +25,22 @@
             <button id="toggleAnimation">Pause Animation</button>
             <button id="returnToMainGalaxy" style="display:none;">⬅ Return to Main Galaxy</button>
             <button id="toggleCausality">🕸️ Show Causality Web</button>
+            <button id="togglePanoramic">🌌 Panoramic Render</button>
         </div>
 
     </div>
     <div id="info">
         <strong>Controls:</strong><br>
-        • Left mouse: Rotate<br>
-        • Right mouse: Pan<br>
+        • Left mouse: Orbit<br>
+        • Shift + Left mouse: Pan<br>
         • Scroll: Zoom<br>
+        • Numpad 5: Perspective / Ortho<br>
+        • Numpad 1/3/7: Front / Right / Top<br>
+        • Numpad .: Focus on origin<br>
         • <strong>Click a building</strong> to inspect its data<br>
         • <strong>Double-click</strong> to warp into its sub-spiral galaxy<br>
         • Click again or press <strong>Close Inspector</strong> to dismiss<br>
+        • <strong>🌌 Panoramic Render</strong> to see all galaxies at once<br>
         <br>
         <span id="stats"></span>
     </div>
@@ -61,6 +66,7 @@
     <script src="visualizer/world/SubSpiralRenderer.js"></script>
     <script src="visualizer/world/GalaxyWarpManager.js"></script>
     <script src="visualizer/world/CausalityRenderer.js"></script>
+    <script src="visualizer/world/PanoramicRenderer.js"></script>
     <script src="visualizer/world/CityRenderer.js"></script>
 
     <!-- Explode / inspector -->
