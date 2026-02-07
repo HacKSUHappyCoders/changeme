@@ -21,6 +21,7 @@
             <input type="file" id="fileUpload" accept=".c,.py">
             <button id="uploadBtn">Upload & Visualize</button>
             <button id="resetCamera">Reset Camera</button>
+            <button id="toggleInfo">Hide Controls</button>
             <button id="collapseBuilding">Close Inspector</button>
             <button id="toggleAnimation">Pause Animation</button>
             <button id="returnToMainGalaxy" style="display:none;">⬅ Return to Main Galaxy</button>
@@ -31,7 +32,7 @@
 
     </div>
     <div id="info">
-        <button class="inspector-close" onclick="this.parentElement.style.display='none'" title="Close">✕</button>
+        <button class="inspector-close" onclick="this.parentElement.style.display='none'; document.getElementById('toggleInfo').textContent='Show Controls'" title="Close">✕</button>
         <strong>Controls:</strong><br>
         • Left mouse: Orbit<br>
         • Shift + Left mouse: Pan<br>
