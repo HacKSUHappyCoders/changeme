@@ -61,6 +61,7 @@ class CityRenderer {
         this._slotMap  = new Map();
 
         this._spiralTube = null;
+        this._spiralTubeError = null;
 
         // Hover
         this._hoveredLabel = null;
@@ -472,6 +473,7 @@ class CityRenderer {
         for (const [, e] of this.blackHoleMeshes) unfreezeEntry(e);
 
         if (this._spiralTube) this._spiralTube.unfreezeWorldMatrix();
+        if (this._spiralTubeError) this._spiralTubeError.unfreezeWorldMatrix();
     }
 
     clear() {
@@ -485,6 +487,7 @@ class CityRenderer {
         this.blackHoleConnections.forEach(c => c.dispose());
         this.blackHoleConnections = [];
         if (this._spiralTube) { this._spiralTube.dispose(); this._spiralTube = null; }
+        if (this._spiralTubeError) { this._spiralTubeError.dispose(); this._spiralTubeError = null; }
         this._nextSlot = 0;
         this._slotMap.clear();
         this._openSubSpirals.clear();
@@ -1503,8 +1506,9 @@ class CityRenderer {
         for (const [, e] of this.branchMeshes)   freezeEntry(e);
         for (const [, e] of this.blackHoleMeshes) freezeEntry(e);
 
-        // Freeze the spiral tube
+        // Freeze the spiral tubes
         if (this._spiralTube) this._spiralTube.freezeWorldMatrix();
+        if (this._spiralTubeError) this._spiralTubeError.freezeWorldMatrix();
     }
 
     _setInactive(entry) {
