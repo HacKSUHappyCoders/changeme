@@ -42,23 +42,23 @@ class CityRenderer {
         // Mesh caches:  entityKey → { mesh, extras… }
         this.functionMeshes = new Map();
         this.variableMeshes = new Map();
-        this.loopMeshes     = new Map();   // for-loops
-        this.whileMeshes    = new Map();   // while-loops (new)
-        this.branchMeshes   = new Map();
+        this.loopMeshes = new Map();   // for-loops
+        this.whileMeshes = new Map();   // while-loops (new)
+        this.branchMeshes = new Map();
         this.blackHoleMeshes = new Map();  // external function calls
         this.blackHoleConnections = [];    // connection lines from spiral to black holes
         this.consoleBubbles = new Map();   // console output bubbles
-        this.memoryLines    = [];
+        this.memoryLines = [];
 
         // Spiral layout config
-        this.spiralRadiusStart  = SPIRAL_CONFIG.radiusStart;
+        this.spiralRadiusStart = SPIRAL_CONFIG.radiusStart;
         this.spiralRadiusGrowth = SPIRAL_CONFIG.radiusGrowth;
-        this.spiralAngleStep    = SPIRAL_CONFIG.angleStep;
-        this.spiralHeightStep   = SPIRAL_CONFIG.heightStep;
+        this.spiralAngleStep = SPIRAL_CONFIG.angleStep;
+        this.spiralHeightStep = SPIRAL_CONFIG.heightStep;
 
         // Slot management
         this._nextSlot = 0;
-        this._slotMap  = new Map();
+        this._slotMap = new Map();
 
         this._spiralTube = null;
 
@@ -216,9 +216,9 @@ class CityRenderer {
         const radius = this.spiralRadiusStart + slot * this.spiralRadiusGrowth;
         const dTheta = getSpiralAngleStep(slot);
         const dx = -Math.sin(angle) * dTheta * radius
-                  + Math.cos(angle) * this.spiralRadiusGrowth;
-        const dz =  Math.cos(angle) * dTheta * radius
-                  + Math.sin(angle) * this.spiralRadiusGrowth;
+            + Math.cos(angle) * this.spiralRadiusGrowth;
+        const dz = Math.cos(angle) * dTheta * radius
+            + Math.sin(angle) * this.spiralRadiusGrowth;
         return Math.atan2(dx, dz);
     }
 
@@ -331,7 +331,7 @@ class CityRenderer {
         const unfreezeEntry = (entry) => {
             if (!entry) return;
             const meshes = [entry.mesh, entry.cap, entry.roof, entry.chimney,
-                            entry.truePath, entry.falsePath];
+            entry.truePath, entry.falsePath];
             for (const m of meshes) {
                 if (m && m._isFrozen) {
                     m.unfreezeWorldMatrix();
@@ -341,9 +341,9 @@ class CityRenderer {
         };
         for (const [, e] of this.functionMeshes) unfreezeEntry(e);
         for (const [, e] of this.variableMeshes) unfreezeEntry(e);
-        for (const [, e] of this.loopMeshes)     unfreezeEntry(e);
-        for (const [, e] of this.whileMeshes)    unfreezeEntry(e);
-        for (const [, e] of this.branchMeshes)   unfreezeEntry(e);
+        for (const [, e] of this.loopMeshes) unfreezeEntry(e);
+        for (const [, e] of this.whileMeshes) unfreezeEntry(e);
+        for (const [, e] of this.branchMeshes) unfreezeEntry(e);
         for (const [, e] of this.blackHoleMeshes) unfreezeEntry(e);
 
         if (this._spiralTube) this._spiralTube.unfreezeWorldMatrix();
@@ -351,7 +351,7 @@ class CityRenderer {
 
     clear() {
         [this.functionMeshes, this.variableMeshes, this.loopMeshes,
-         this.whileMeshes, this.branchMeshes, this.blackHoleMeshes, this.consoleBubbles].forEach(cache => {
+        this.whileMeshes, this.branchMeshes, this.blackHoleMeshes, this.consoleBubbles].forEach(cache => {
             cache.forEach(entry => this._disposeEntry(entry));
             cache.clear();
         });
@@ -418,7 +418,7 @@ class CityRenderer {
         }, this.scene);
         const mat = new BABYLON.StandardMaterial('spiralMat', this.scene);
         mat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 0.3);
-        mat.diffuseColor  = new BABYLON.Color3(0.9, 0.8, 0.4);
+        mat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.4);
         mat.alpha = 0.55;
         mat.freeze();
         this._spiralTube.material = mat;
@@ -434,7 +434,7 @@ class CityRenderer {
             if (slot === undefined || !entry.mesh) continue;
             const pos = this._spiralPosition(slot);
             entry.mesh.position.copyFrom(pos);
-            if (entry.cap)   { entry.cap.position.set(pos.x, pos.y + entry.height + 0.15, pos.z); }
+            if (entry.cap) { entry.cap.position.set(pos.x, pos.y + entry.height + 0.15, pos.z); }
             if (entry.label) { entry.label.position.set(pos.x, pos.y + entry.height + 0.5, pos.z); }
         }
         // Variables
@@ -443,7 +443,7 @@ class CityRenderer {
             if (slot === undefined || !entry.mesh) continue;
             const pos = this._spiralPosition(slot);
             entry.mesh.position.set(pos.x, pos.y + entry.height / 2, pos.z);
-            if (entry.roof)  { entry.roof.position.set(pos.x, pos.y + entry.height + 0.35, pos.z); }
+            if (entry.roof) { entry.roof.position.set(pos.x, pos.y + entry.height + 0.35, pos.z); }
             if (entry.label) { entry.label.position.set(pos.x, pos.y + entry.height + 1.3, pos.z); }
         }
         // For loops
@@ -600,7 +600,7 @@ class CityRenderer {
         // Enhanced label with subject, line number, and invocation info
         const invLabel = fn.invocation > 1 ? ` #${fn.invocation}` : '';
         const lineInfo = fn.line ? ` @L${fn.line}` : '';
-        const labelText = `📦 ${fn.name}()${invLabel}${lineInfo}`;
+        const labelText = `${fn.name}()${invLabel}${lineInfo}`;
 
         const labelColor = { r: 0.8, g: 0.5, b: 0.95, a: 1.0 };
         const label = this._createFloatingLabel(
@@ -677,7 +677,7 @@ class CityRenderer {
         this._animateScaleIn(cap);
 
         const invLabel = fn.invocation > 1 ? ` #${fn.invocation}` : '';
-        const externalMark = fn.isExternal ? ' 📦' : '';
+        const externalMark = fn.isExternal ? ' ' : '';
         const fileLabel = fn.sourceFile && fn.sourceFile !== 'unknown' ? ` [${fn.sourceFile}]` : '';
         const labelText = `${fn.name}()${invLabel}${externalMark}${fileLabel}`;
         const label = this._createFloatingLabel(
@@ -1019,7 +1019,7 @@ class CityRenderer {
         const labelColor = { r: 0.9, g: 0.95, b: 1.0, a: 1.0 };
         const label = this._createFloatingLabel(
             `consoleLabel_${output.key}`,
-            `💬 ${output.message}`,
+            `${output.message}`,
             bubblePos.clone(),
             0,
             labelColor
@@ -1155,10 +1155,10 @@ class CityRenderer {
                 const pos = entry.mesh.position;
                 const ring = BABYLON.MeshBuilder.CreateTorus(
                     `memRing_${node.address}_${entry.mesh.name}`, {
-                        diameter: 2.2,
-                        thickness: 0.12,
-                        tessellation: 12
-                    }, this.scene
+                    diameter: 2.2,
+                    thickness: 0.12,
+                    tessellation: 12
+                }, this.scene
                 );
                 ring.position = new BABYLON.Vector3(pos.x, pos.y - 0.8, pos.z);
                 ring.rotation.x = 0; // flat on the ground plane
@@ -1195,7 +1195,7 @@ class CityRenderer {
         const freezeEntry = (entry) => {
             if (!entry) return;
             const meshes = [entry.mesh, entry.cap, entry.roof, entry.chimney,
-                            entry.truePath, entry.falsePath];
+            entry.truePath, entry.falsePath];
             for (const m of meshes) {
                 if (m && !m._isFrozen) {
                     m.computeWorldMatrix(true); // ensure world matrix is up to date
@@ -1206,9 +1206,9 @@ class CityRenderer {
         };
         for (const [, e] of this.functionMeshes) freezeEntry(e);
         for (const [, e] of this.variableMeshes) freezeEntry(e);
-        for (const [, e] of this.loopMeshes)     freezeEntry(e);
-        for (const [, e] of this.whileMeshes)    freezeEntry(e);
-        for (const [, e] of this.branchMeshes)   freezeEntry(e);
+        for (const [, e] of this.loopMeshes) freezeEntry(e);
+        for (const [, e] of this.whileMeshes) freezeEntry(e);
+        for (const [, e] of this.branchMeshes) freezeEntry(e);
         for (const [, e] of this.blackHoleMeshes) freezeEntry(e);
 
         // Freeze the spiral tube
@@ -1217,11 +1217,11 @@ class CityRenderer {
 
     _setInactive(entry) {
         if (!entry) return;
-        if (entry.mesh && entry.mesh.material)      entry.mesh.material.alpha = 0.85;
-        if (entry.cap && entry.cap.material)         entry.cap.material.alpha = 0.9;
-        if (entry.roof && entry.roof.material)       entry.roof.material.alpha = 0.9;
+        if (entry.mesh && entry.mesh.material) entry.mesh.material.alpha = 0.85;
+        if (entry.cap && entry.cap.material) entry.cap.material.alpha = 0.9;
+        if (entry.roof && entry.roof.material) entry.roof.material.alpha = 0.9;
         if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = 0.9;
-        if (entry.truePath && entry.truePath.material)   entry.truePath.material.alpha = 0.9;
+        if (entry.truePath && entry.truePath.material) entry.truePath.material.alpha = 0.9;
         if (entry.falsePath && entry.falsePath.material) entry.falsePath.material.alpha = 0.9;
     }
 

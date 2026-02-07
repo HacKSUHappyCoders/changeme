@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const causalityBtn = document.getElementById('toggleCausality');
     causalityBtn.addEventListener('click', () => {
         const isShowing = visualizer.toggleCausality();
-        causalityBtn.textContent = isShowing ? '🕸️ Hide Causality Web' : '🕸️ Show Causality Web';
+        causalityBtn.textContent = isShowing ? '️ Hide Causality Web' : '️ Show Causality Web';
     });
 
     // Upload file button
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     panoramicBtn.addEventListener('click', () => {
         const isActive = visualizer.togglePanoramic();
         // Panoramic toggle
-        panoramicBtn.textContent = isActive ? '🌌 Exit Panoramic' : '🌌 Panoramic Render';
+        panoramicBtn.textContent = isActive ? 'Exit Panoramic' : 'Panoramic Render';
         panoramicBtn.classList.toggle('active', isActive);
     });
 
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (seqBtn) {
         seqBtn.addEventListener('click', () => {
             const active = visualizer.toggleSequencer();
-            seqBtn.textContent = active ? '🎹 Hide Sequencer' : '🎹 Sequencer View';
+            seqBtn.textContent = active ? 'Hide Sequencer' : 'Sequencer View';
             seqBtn.classList.toggle('active', active);
         });
     }
@@ -166,12 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const memoryPoolBtn = document.getElementById('toggleMemoryPool');
     memoryPoolBtn.addEventListener('click', () => {
         const isShowing = visualizer.toggleMemoryPool();
-        memoryPoolBtn.textContent = isShowing ? '🌊 Hide Memory Pool' : '🌊 Show Memory Pool';
+        memoryPoolBtn.textContent = isShowing ? 'Hide Memory Pool' : 'Show Memory Pool';
         memoryPoolBtn.classList.toggle('active', isShowing);
     });
 
     // Show welcome message
-    console.log('🎨 Code Mosaic Visualizer initialized!');
+    console.log('Code Mosaic Visualizer initialized!');
     console.log('Click "Load Example Code" to see the visualization.');
     console.log('Click any building to inspect its data.');
 });
