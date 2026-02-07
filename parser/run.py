@@ -13,7 +13,7 @@ import sys
 
 from tree_sitter import Parser
 
-from normalize import stdin_to_json
+from normalize import fill_json, stdin_to_json
 from tracer import languages as _languages  # noqa: F401
 from tracer.registry import get_language
 
@@ -78,14 +78,14 @@ def _run(cmd, timeout=30):
     return proc.returncode, stdout, stderr
 
 
-def _normalize(raw_output):
+def _normalize(raw_output, seed):
     if not raw_output.strip():
         return {}, []
-    result = json.loads(stdin_to_json(raw_output))
-    return result.get("metadata", {}), result.get("traces", [])
+    result = json.loads(fill_json(stdin_to_json(raw_output), seed))
+    return result.get("metadata", {}), result.get("traces", []), result.get("seed", -1)
 
 
-def deal(input, output=None):
+def deal(input, output=None, seed=None):
     paths = _derived_paths(input)
 
     # ── Instrument ──────────────────────────────────────────────
@@ -129,8 +129,9 @@ def deal(input, output=None):
         f.write(stdout)
 
     # ── Normalize ───────────────────────────────────────────────
+    print(f"hy {seed=}")
     try:
-        metadata, traces = _normalize(stdout)
+        metadata, traces, seed = _normalize(stdout, seed)
     except Exception as e:
         result = _make_error("normalize", f"Failed to parse trace output: {e}")
         _emit(result, output)
@@ -146,7 +147,7 @@ def deal(input, output=None):
         _emit(result, output)
         return 1
 
-    result = {"success": True, "metadata": metadata, "traces": traces}
+    result = {"success": True, "metadata": metadata, "traces": traces, "seed": seed}
     _emit(result, output)
     return 0
 
@@ -155,14 +156,54 @@ def main():
     ap = argparse.ArgumentParser(description="Instrument, compile, run, and normalize.")
     ap.add_argument("input_file", help="Source file (.c or .py)")
     ap.add_argument("-o", "--output", help="Output JSON path (default: stdout)")
+    ap.add_argument(
+        "-s",
+        "--seed",
+        help="Specify a seed for randomization (optional) [Cannot run with -r]",
+        type=str,
+    )
+    ap.add_argument(
+        "-r",
+        "--random",
+        help="Overrides the set seed (optional) [Cannot run with -s]",
+        type=bool,
+        nargs="?",
+        const=True,
+        default=False,
+    )
     args = ap.parse_args()
+    if not args.output:
+        args.output = ""
 
     if not os.path.exists(args.input_file):
         result = _make_error("input", f"File not found: {args.input_file}")
         _emit(result, args.output)
         return 1
+    if args.seed and args.random:
+        print("Error: Cannot use both -s/--seed and -r/--random options together.")
+        return 1
 
-    return deal(args.input_file, args.output)
+    seed = None
+    existing_data = None
+
+    if args.seed is not None:
+        if not (len(args.seed) >= 19 and len(args.seed) <= 20):
+            print(
+                f"Error: Invalid seed value of {len(args.seed)}. Seeds are 19 or 20 characters long."
+            )
+            sys.exit(1)
+        if not args.seed.isdigit():
+            print("Error: Seed must be a numeric string of 19 or 20 characters.")
+            sys.exit(1)
+        seed = int(args.seed)
+    else:
+        if os.path.exists(args.output) and not args.random:
+            with open(args.output, "r") as f:
+                existing_data = json.load(f)
+            seed = existing_data.get("seed", None)
+        else:
+            seed = -1
+    return deal(args.input_file, args.output, seed)
 
 
 def _emit(data, output_path):
