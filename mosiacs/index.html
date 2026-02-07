@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>Code Mosaic Visualizer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -10,7 +11,11 @@
     <canvas id="renderCanvas"></canvas>
     
     <div id="controls">
-        <h2>Code Mosaic</h2>
+        <div id="controls-handle" style="display:flex; align-items:center; gap:0.2em;">
+            <img src="logo-white.svg" alt="Logo" style="height: 1em;">
+            <h2 style="margin:0;">Spiral</h2>
+        </div>
+
         <div>
             <select id="traceFile">
                 <option value="small_test_data.json">Small Test</option>

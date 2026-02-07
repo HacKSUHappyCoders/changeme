@@ -38,7 +38,7 @@ body {
         inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
-#controls div {
+#controls > div:not(#controls-handle) {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -51,6 +51,7 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     font-weight: 600;
     letter-spacing: 0.3px;
+    display: inline;
 }
 
 button {
