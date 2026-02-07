@@ -69,10 +69,6 @@ class ExplodeManager {
 
         const entity = buildingMesh._entityData || {};
 
-        // Dim the building to show it's selected
-        buildingMesh.setEnabled(false);
-        if (bd.capMesh) bd.capMesh.setEnabled(false);
-
         // Build HTML inspector
         const panel = this._buildInspectorHTML(bd, entity);
         document.body.appendChild(panel);
@@ -267,10 +263,6 @@ class ExplodeManager {
         setTimeout(() => {
             if (panel.parentNode) panel.parentNode.removeChild(panel);
         }, 300);
-
-        // Restore building
-        mesh.setEnabled(true);
-        if (buildingData.capMesh) buildingData.capMesh.setEnabled(true);
 
         this.exploded = null;
     }
