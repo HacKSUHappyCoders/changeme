@@ -50,11 +50,12 @@ class SceneManager {
         this.camera.lowerRadiusLimit = 5;
         this.camera.upperRadiusLimit = 500;
         this.camera.wheelPrecision = 3;
-        this.camera.panningSensibility = 200;
+        this.camera.panningSensibility = 60;
 
         // ── Blender-style controls ──
-        // Remove all default mouse inputs so we can reconfigure them
+        // Remove default mouse and keyboard inputs so we can reconfigure them
         this.camera.inputs.removeByType("ArcRotateCameraPointersInput");
+        this.camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
 
         // Re-add pointers input with button mapping:
         //   Left mouse (0) = orbit
@@ -64,7 +65,7 @@ class SceneManager {
         pointersInput.buttons = [0];
         // Shift + left-mouse pans instead of orbiting
         pointersInput._useCtrlForPanning = false;   // don't require Ctrl
-        pointersInput.panningSensibility = 200;
+        pointersInput.panningSensibility = 60;
         this.camera.inputs.add(pointersInput);
 
         // Store reference so we can tweak later if needed
@@ -162,62 +163,75 @@ class SceneManager {
 
     /**
      * Blender-style keyboard shortcuts:
-     *   Numpad 5  — toggle perspective / orthographic
-     *   Numpad .  — focus camera on origin (or selected)
-     *   Numpad 1  — front view
-     *   Numpad 3  — right view
-     *   Numpad 7  — top view
+     *
+     *   Arrow keys        — orbit (rotate alpha / beta)
+     *   Shift + Arrow keys — pan (translate camera target)
+     *   Ctrl modifier      — slow down either mode
      */
     _setupBlenderKeyboardShortcuts() {
+        // Track which arrow keys are currently held
+        const held = new Set();
+        let shiftHeld = false;
+        let ctrlHeld = false;
+
+        const navKeys = new Set(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','PageUp','PageDown']);
         window.addEventListener('keydown', (e) => {
-            switch (e.code) {
-                // Numpad 5 — toggle perspective / orthographic
-                case 'Numpad5': {
-                    e.preventDefault();
-                    const cam = this.camera;
-                    if (cam.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                        // Switch to ortho — compute ortho size from current distance
-                        cam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                        const aspect = this.engine.getAspectRatio(cam);
-                        const halfRadius = cam.radius / 2;
-                        cam.orthoTop = halfRadius;
-                        cam.orthoBottom = -halfRadius;
-                        cam.orthoLeft = -halfRadius * aspect;
-                        cam.orthoRight = halfRadius * aspect;
-                    } else {
-                        cam.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
-                    }
-                    break;
-                }
-                // Numpad . — focus / frame on target
-                case 'NumpadDecimal': {
-                    e.preventDefault();
-                    this.camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-                    // Animate zoom to a comfortable distance
-                    BABYLON.Animation.CreateAndStartAnimation(
-                        'focusZoom', this.camera, 'radius',
-                        60, 15, this.camera.radius, 40,
-                        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-                    );
-                    break;
-                }
-                // Numpad 1 — front view
-                case 'Numpad1': {
-                    e.preventDefault();
-                    this._animateCameraAngle(Math.PI / 2, Math.PI / 2); // alpha, beta
-                    break;
-                }
-                // Numpad 3 — right view
-                case 'Numpad3': {
-                    e.preventDefault();
-                    this._animateCameraAngle(0, Math.PI / 2);
-                    break;
-                }
-                // Numpad 7 — top view
-                case 'Numpad7': {
-                    e.preventDefault();
-                    this._animateCameraAngle(Math.PI / 2, 0.01); // near-zero beta = top-down
-                    break;
+            if (navKeys.has(e.code)) {
+                e.preventDefault();
+                held.add(e.code);
+            }
+            if (e.key === 'Shift')   shiftHeld = true;
+            if (e.key === 'Control') ctrlHeld = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            held.delete(e.code);
+            if (e.key === 'Shift')   shiftHeld = false;
+            if (e.key === 'Control') ctrlHeld = false;
+        });
+        window.addEventListener('blur', () => { held.clear(); shiftHeld = false; ctrlHeld = false; });
+
+        // Apply smooth per-frame movement via the render loop
+        this.scene.onBeforeRenderObservable.add(() => {
+            if (held.size === 0) return;
+
+            const dt = this.engine.getDeltaTime() / 1000; // seconds
+            const slow = ctrlHeld ? 0.25 : 1.0;
+
+            if (shiftHeld) {
+                // Shift + Arrow/PgUp/PgDn = pan relative to camera orientation
+                const cam = this.camera;
+                const panSpeed = 1.8 * (cam.radius / 60) * slow * dt * 60;
+
+                // Forward = camera-to-target direction (full 3D)
+                const fwd = cam.target.subtract(cam.position);
+                fwd.normalize();
+                // Right = cross(forward, worldUp)
+                const right = BABYLON.Vector3.Cross(fwd, BABYLON.Vector3.Up());
+                right.normalize();
+
+                const offset = BABYLON.Vector3.Zero();
+                if (held.has('ArrowLeft'))  offset.addInPlace(right);
+                if (held.has('ArrowRight')) offset.addInPlace(right.scale(-1));
+                if (held.has('ArrowUp'))    offset.y += 1;
+                if (held.has('ArrowDown'))  offset.y -= 1;
+                if (held.has('PageUp'))     offset.addInPlace(fwd);
+                if (held.has('PageDown'))   offset.addInPlace(fwd.scale(-1));
+
+                cam.target.addInPlace(offset.scale(panSpeed));
+            } else {
+                // Arrow = orbit, PgUp/PgDn = forward/back pan
+                const cam = this.camera;
+                const orbitSpeed = 2.0 * slow * dt;
+                if (held.has('ArrowLeft'))  cam.alpha += orbitSpeed;
+                if (held.has('ArrowRight')) cam.alpha -= orbitSpeed;
+                if (held.has('ArrowUp'))    cam.beta = Math.max(0.01, cam.beta - orbitSpeed);
+                if (held.has('ArrowDown'))  cam.beta = Math.min(Math.PI, cam.beta + orbitSpeed);
+
+                if (held.has('PageUp') || held.has('PageDown')) {
+                    const panSpeed = 1.8 * (cam.radius / 60) * slow * dt * 60;
+                    const fwd = cam.target.subtract(cam.position).normalize();
+                    const dir = held.has('PageUp') ? 1 : -1;
+                    cam.target.addInPlace(fwd.scale(dir * panSpeed));
                 }
             }
         });
