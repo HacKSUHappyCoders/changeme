@@ -253,7 +253,7 @@ In this phase we will be creating a lot of different visual features that can be
 
 
 # Part 4 - Low quality total render. 
-- THis one should be a toggle for sure, but I think it would be really awesome to have a total code base spiral render, where all the sub spirals are rendered at the same time. When on this toggle, the user does not need to access data points, or see titles. It is just a purley visual spectical. You can make the camera zoomed out and above to
+- THis one should be a toggle for sure, but I think it would be really awesome to have a total code base spiral render, where all the sub spiral galaxies are rendered at the same time. When on this toggle, the user does not need to access data points, or see titles. It is just a purley visual spectical. You can make the camera zoomed out and above to
 
 
 # Part whenever

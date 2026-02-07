@@ -51,6 +51,9 @@ class CodeVisualizer {
         // Causality web renderer (Phase 3 Part 3)
         this.causalityRenderer = new CausalityRenderer(scene, this.cityRenderer);
 
+        // Panoramic renderer (Phase 3 Part 4) — low-quality total render
+        this.panoramicRenderer = new PanoramicRenderer(scene, this.sceneManager, this.cityRenderer);
+
         return this;
     }
 
@@ -69,6 +72,11 @@ class CodeVisualizer {
         // Clear causality web
         if (this.causalityRenderer) {
             this.causalityRenderer.clear();
+        }
+
+        // Clear panoramic render
+        if (this.panoramicRenderer) {
+            this.panoramicRenderer.clear();
         }
 
         // Parse the trace
@@ -140,6 +148,16 @@ class CodeVisualizer {
 
     isCausalityVisible() {
         return this.causalityRenderer.isVisible();
+    }
+
+    // ─── Panoramic render (Phase 3 Part 4) ─────────────────────────
+
+    togglePanoramic() {
+        return this.panoramicRenderer.toggle();
+    }
+
+    isPanoramicActive() {
+        return this.panoramicRenderer.isActive();
     }
 
     // ─── UI helpers ────────────────────────────────────────────────

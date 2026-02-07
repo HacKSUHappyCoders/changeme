@@ -61,6 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
         causalityBtn.textContent = isShowing ? '🕸️ Hide Causality Web' : '🕸️ Show Causality Web';
     });
 
+    // Toggle panoramic render button (Phase 3 Part 4)
+    const panoramicBtn = document.getElementById('togglePanoramic');
+    panoramicBtn.addEventListener('click', () => {
+        const isActive = visualizer.togglePanoramic();
+        panoramicBtn.textContent = isActive ? '🌌 Exit Panoramic' : '🌌 Panoramic Render';
+        panoramicBtn.classList.toggle('active', isActive);
+    });
+
     // Show welcome message
     console.log('🎨 Code Mosaic Visualizer initialized!');
     console.log('Click "Load Example Code" to see the visualization.');
