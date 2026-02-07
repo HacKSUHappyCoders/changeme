@@ -150,8 +150,8 @@ class CityRenderer {
     _spiralPositionBase(slot) {
         const angle = getSpiralAngle(slot);
         const radius = this.spiralRadiusStart + slot * this.spiralRadiusGrowth;
-        const totalH = Math.max(this._nextSlot, 1) * this.spiralHeightStep;
-        const y = totalH - slot * this.spiralHeightStep;
+        const totalH = getSpiralHeight(Math.max(this._nextSlot, 1));
+        const y = totalH - getSpiralHeight(slot);
         return new BABYLON.Vector3(
             Math.cos(angle) * radius, y, Math.sin(angle) * radius
         );
