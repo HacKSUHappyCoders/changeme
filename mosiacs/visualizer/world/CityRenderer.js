@@ -500,7 +500,6 @@ class CityRenderer {
         const label = this._createFloatingLabel(
             `fnLabel_${fn.key}`, `${fn.name}()${invLabel}`, pos.clone(), height + 0.5, color
         );
-        label.setEnabled(false);
         label.isPickable = false;
 
         mesh._buildingData = {
@@ -592,7 +591,6 @@ class CityRenderer {
 
         const labelText = `${v.name} = ${v.currentValue}`;
         const label = this._createFloatingLabel(`varLabel_${v.key}`, labelText, pos.clone(), height + 1.3, color);
-        label.setEnabled(false);
         label.isPickable = false;
 
         mesh._buildingData = {
@@ -710,7 +708,6 @@ class CityRenderer {
         const typeLabel = loopType.toUpperCase();
         const labelText = `${typeLabel} (${loop.condition}) ×${loop.iterations}`;
         const label = this._createFloatingLabel(`loopLabel_${loop.key}`, labelText, pos.clone(), height + 2, color);
-        label.setEnabled(false);
         label.isPickable = false;
 
         mesh._buildingData = {
@@ -798,7 +795,6 @@ class CityRenderer {
 
         const labelText = `IF (${br.condition}) → ${br.result ? 'true' : 'false'}`;
         const label = this._createFloatingLabel(`brLabel_${br.key}`, labelText, pos.clone(), height + 1, color);
-        label.setEnabled(false);
         label.isPickable = false;
 
         mesh._buildingData = {

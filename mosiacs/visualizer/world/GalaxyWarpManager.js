@@ -494,9 +494,9 @@ class GalaxyWarpManager {
                 tessellation: 8
             }, this.scene);
             const mat = new BABYLON.StandardMaterial('galaxySpiralMat', this.scene);
-            mat.emissiveColor = new BABYLON.Color3(0.6, 0.5, 0.9);
-            mat.diffuseColor = new BABYLON.Color3(0.7, 0.6, 1.0);
-            mat.alpha = 0.55;
+            mat.emissiveColor = new BABYLON.Color3(0.25, 0.2, 0.35);
+            mat.diffuseColor = new BABYLON.Color3(0.35, 0.3, 0.5);
+            mat.alpha = 0.45;
             mat.freeze();
             spiralTube.material = mat;
             spiralTube.isPickable = false;

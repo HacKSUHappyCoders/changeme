@@ -49,7 +49,7 @@ class LabelHelper {
 
         plane._dynTex = dynTex;
         plane._labelColor = color;
-        plane.isVisible = true;  // Ensure visibility is controlled properly
+        plane.isVisible = false;  // Hidden by default, shown on hover
         return plane;
     }
 
