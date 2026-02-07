@@ -12,7 +12,7 @@
  *     (thousands of dots = ~10 draw calls total)
  *   - Spiral paths and warp connections are CreateLines (zero geometry)
  *   - No labels, no hover, no pickability, no animations on meshes
- *   - Flat materials: diffuse only, no emissive, no specular
+ *   - Emissive materials: dots glow their own colour via GlowLayer
  *   - All world matrices frozen immediately
  *   - Camera fly is the only animation
  */
@@ -775,15 +775,17 @@ class PanoramicRenderer {
         }
     }
 
-    // ─── Material Cache (flat, no emissive/specular — max ~10 materials) ──
+    // ─── Material Cache (emissive glow — max ~10 materials) ──
 
     _getCachedMat(colorType) {
         if (this._matCache.has(colorType)) return this._matCache.get(colorType);
         const color = this._colorForType(colorType);
         const mat = new BABYLON.StandardMaterial(`panoMat_${colorType}`, this.scene);
         mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
-        mat.specularColor = BABYLON.Color3.Black();
-        mat.emissiveColor = BABYLON.Color3.Black();
+        mat.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+        mat.emissiveColor = new BABYLON.Color3(
+            color.r * 0.55, color.g * 0.55, color.b * 0.55
+        );
         mat.alpha = color.a !== undefined ? color.a : 0.8;
         mat.disableLighting = false;
         mat.freeze();
