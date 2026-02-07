@@ -110,6 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
         panoramicBtn.classList.toggle('active', isActive);
     });
 
+    // Toggle memory pool button
+    const memoryPoolBtn = document.getElementById('toggleMemoryPool');
+    memoryPoolBtn.addEventListener('click', () => {
+        const isShowing = visualizer.toggleMemoryPool();
+        memoryPoolBtn.textContent = isShowing ? '🌊 Hide Memory Pool' : '🌊 Show Memory Pool';
+        memoryPoolBtn.classList.toggle('active', isShowing);
+    });
+
     // Show welcome message
     console.log('🎨 Code Mosaic Visualizer initialized!');
     console.log('Click "Load Example Code" to see the visualization.');

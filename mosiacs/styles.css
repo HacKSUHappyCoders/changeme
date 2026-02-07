@@ -458,6 +458,49 @@ input[type="file"] {
         inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
+/* ─── Memory Pool toggle button ─── */
+
+#toggleMemoryPool {
+    background: linear-gradient(
+        135deg,
+        rgba(40, 160, 220, 0.25) 0%,
+        rgba(30, 200, 200, 0.15) 50%,
+        rgba(50, 140, 200, 0.25) 100%
+    );
+    border: 1px solid rgba(80, 200, 230, 0.35);
+    color: rgba(200, 240, 255, 0.95);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    transition: all 0.3s ease;
+}
+
+#toggleMemoryPool:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(60, 180, 240, 0.4) 0%,
+        rgba(50, 220, 220, 0.25) 50%,
+        rgba(70, 160, 220, 0.4) 100%
+    );
+    border-color: rgba(100, 220, 250, 0.55);
+    box-shadow:
+        0 0 12px rgba(60, 200, 240, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+#toggleMemoryPool.active {
+    background: linear-gradient(
+        135deg,
+        rgba(40, 180, 220, 0.45) 0%,
+        rgba(30, 200, 200, 0.3) 100%
+    );
+    border-color: rgba(80, 220, 250, 0.5);
+    box-shadow:
+        0 0 12px rgba(60, 200, 240, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 1);
+}
+
 /* ─── Code Panel (source code viewer, left side) ─── */
 
 .code-panel {

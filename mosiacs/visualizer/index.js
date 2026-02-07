@@ -60,6 +60,9 @@ class CodeVisualizer {
         // Panoramic renderer (Phase 3 Part 4) — low-quality total render
         this.panoramicRenderer = new PanoramicRenderer(scene, this.sceneManager, this.cityRenderer);
 
+        // Memory pool renderer — address space underworld
+        this.memoryPoolRenderer = new MemoryPoolRenderer(scene, this.cityRenderer);
+
         return this;
     }
 
@@ -84,6 +87,11 @@ class CodeVisualizer {
         // Clear panoramic render
         if (this.panoramicRenderer) {
             this.panoramicRenderer.clear();
+        }
+
+        // Clear memory pool
+        if (this.memoryPoolRenderer) {
+            this.memoryPoolRenderer.clear();
         }
 
         // Parse the trace
@@ -170,6 +178,16 @@ class CodeVisualizer {
 
     isPanoramicActive() {
         return this.panoramicRenderer.isActive();
+    }
+
+    // ─── Memory Pool ─────────────────────────────────────────────
+
+    toggleMemoryPool() {
+        return this.memoryPoolRenderer.toggle();
+    }
+
+    isMemoryPoolVisible() {
+        return this.memoryPoolRenderer.isVisible();
     }
 
     // ─── UI helpers ────────────────────────────────────────────────
