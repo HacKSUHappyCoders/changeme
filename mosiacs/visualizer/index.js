@@ -23,6 +23,7 @@ class CodeVisualizer {
         this.shapeBuilder = null;
         this.animationController = null;
         this.buildingFactory = null;
+        this.explodeManager = null;
     }
 
     /**
@@ -34,6 +35,7 @@ class CodeVisualizer {
         this.sceneManager.init();
 
         const scene = this.sceneManager.getScene();
+        const camera = this.sceneManager.getCamera();
 
         // Initialize other managers
         this.materialManager = new MaterialManager(scene);
@@ -46,6 +48,7 @@ class CodeVisualizer {
             this.materialManager,
             this.animationController
         );
+        this.explodeManager = new ExplodeManager(scene, camera, this.materialManager);
 
         return this;
     }
@@ -66,38 +69,83 @@ class CodeVisualizer {
 
         // Parse the code
         const trace = this.parser.parse(codeTrace);
-        
+
+        // ── Group child steps under their parent "container" step ────
+        // Container types: CALL, LOOP, IF, ELSE
+        // Everything between a container and the next container (or RETURN
+        // / next container at same depth) belongs to that container.
+        const containerTypes = new Set(['CALL', 'LOOP', 'IF', 'ELSE']);
+        const childMap = this._buildChildMap(trace, containerTypes);
+
         // Create descending spiral path
         const pathPoints = this.spiralPathBuilder.createSpiralPath(trace.length);
 
-        // Track the current parent CALL's building height so children
-        // can "build off" of it visually.
+        // Track the current parent CALL's building height
         let currentCallHeight = 0;
 
         // Create buildings along the path
         trace.forEach((step, index) => {
             const position = pathPoints[index];
             const color = this.parser.getColorForType(step.type);
+            const children = childMap[index] || [];
             
             setTimeout(() => {
                 const buildingData = this.buildingFactory.createBuilding(
-                    index, position, color, step.type, step, currentCallHeight
+                    index, position, color, step.type, step, currentCallHeight, children
                 );
                 this.buildings.push(buildingData);
                 
-                // When we encounter a CALL, update the parent height
                 if (step.type === 'CALL') {
                     currentCallHeight = buildingData.height;
                 }
-            }, index * 100); // Stagger the creation
+            }, index * 100);
         });
 
-        // Update camera target to the middle of the spiral
+        // Update camera target
         const midHeight = ((trace.length - 1) * 0.5) / 2;
         this.sceneManager.setCameraTarget(new BABYLON.Vector3(0, midHeight, 0));
 
-        // Update stats
         this.updateStats(trace.length);
+    }
+
+    /**
+     * Build a map:  parentIndex → [ childStep, childStep, … ]
+     *
+     * A "container" (CALL, LOOP, IF, ELSE) owns every subsequent step
+     * until the next container at the same-or-lesser depth, or a RETURN
+     * that closes the current function.
+     */
+    _buildChildMap(trace, containerTypes) {
+        const childMap = {};        // index → []
+        let currentContainer = -1;  // index of current open container
+
+        trace.forEach((step, i) => {
+            if (containerTypes.has(step.type)) {
+                // This step IS a container — initialise its child list.
+                childMap[i] = childMap[i] || [];
+                currentContainer = i;
+            } else if (step.type === 'RETURN') {
+                // RETURN is its own building; give it an empty child list
+                childMap[i] = childMap[i] || [];
+                // Also add the RETURN as a child of the current container
+                if (currentContainer >= 0) {
+                    childMap[currentContainer] = childMap[currentContainer] || [];
+                    childMap[currentContainer].push(step);
+                }
+                currentContainer = -1; // close container
+            } else {
+                // DECL / ASSIGN / other → belongs to current container
+                if (currentContainer >= 0) {
+                    childMap[currentContainer] = childMap[currentContainer] || [];
+                    childMap[currentContainer].push(step);
+                } else {
+                    // No open container – the step is its own building
+                    childMap[i] = childMap[i] || [];
+                }
+            }
+        });
+
+        return childMap;
     }
 
     /**

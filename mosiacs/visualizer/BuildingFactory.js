@@ -21,16 +21,15 @@ class BuildingFactory {
      * @param {string} type - operation type (CALL, ASSIGN, etc.)
      * @param {object} stepData - the parsed trace step (has depth, name, etc.)
      * @param {number} parentY - the Y offset contributed by the parent CALL building height
+     * @param {Array} childSteps - parsed trace steps that belong inside this building
      */
-    createBuilding(step, position, color, type, stepData, parentY) {
+    createBuilding(step, position, color, type, stepData, parentY, childSteps) {
         const profile = this.shapeBuilder.getShapeProfile(type);
 
         // Create the trapezoid mesh (base is at y=0 in local space)
         const building = this.shapeBuilder.createTrapezoidMesh(`building_${step}`, profile);
 
         // Position: place directly ON the spiral path point.
-        // The mesh's base is at local y=0, so setting position = path point
-        // makes the building sit on the line and rise upward.
         building.position = position.clone();
 
         // For non-CALL operations, stack upward on their parent CALL
@@ -51,6 +50,16 @@ class BuildingFactory {
         // Animate building and cap
         this.animationController.animateScaleIn(building, step);
         this.animationController.animateScaleIn(cap, `cap_${step}`);
+
+        // ── Store metadata on the mesh so ExplodeManager can read it ──
+        building._buildingData = {
+            step: step,
+            stepData: stepData,
+            color: color,
+            type: type,
+            childSteps: childSteps || [],
+            capMesh: cap
+        };
 
         return {
             mesh: building,
