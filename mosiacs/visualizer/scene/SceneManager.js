@@ -45,28 +45,41 @@ class SceneManager {
      * Create scene lights
      */
     _setupLighting() {
-        const hemisphericLight = new BABYLON.HemisphericLight(
+        // Strong ambient light so no building face is ever fully dark
+        const hemi = new BABYLON.HemisphericLight(
             "hemiLight",
             new BABYLON.Vector3(0, 1, 0),
             this.scene
         );
-        hemisphericLight.intensity = 0.6;
+        hemi.intensity = 0.9;
+        hemi.groundColor = new BABYLON.Color3(0.25, 0.25, 0.35);
 
-        const pointLight1 = new BABYLON.PointLight(
+        // Warm key light from above-right
+        const key = new BABYLON.PointLight(
             "pointLight1",
-            new BABYLON.Vector3(10, 30, 10),
+            new BABYLON.Vector3(15, 40, 15),
             this.scene
         );
-        pointLight1.intensity = 0.8;
-        pointLight1.diffuse = new BABYLON.Color3(1, 0.9, 0.7);
+        key.intensity = 1.2;
+        key.diffuse = new BABYLON.Color3(1, 0.95, 0.85);
 
-        const pointLight2 = new BABYLON.PointLight(
+        // Cool fill from opposite side
+        const fill = new BABYLON.PointLight(
             "pointLight2",
-            new BABYLON.Vector3(-10, 25, -10),
+            new BABYLON.Vector3(-12, 30, -12),
             this.scene
         );
-        pointLight2.intensity = 0.6;
-        pointLight2.diffuse = new BABYLON.Color3(0.5, 0.7, 1);
+        fill.intensity = 0.8;
+        fill.diffuse = new BABYLON.Color3(0.55, 0.7, 1);
+
+        // Low directional for underneath surfaces
+        const rim = new BABYLON.PointLight(
+            "rimLight",
+            new BABYLON.Vector3(0, -5, 0),
+            this.scene
+        );
+        rim.intensity = 0.35;
+        rim.diffuse = new BABYLON.Color3(0.6, 0.5, 0.9);
     }
 
     /**
@@ -74,7 +87,7 @@ class SceneManager {
      */
     _setupGlowLayer() {
         const glowLayer = new BABYLON.GlowLayer("glow", this.scene);
-        glowLayer.intensity = 0.5;
+        glowLayer.intensity = 0.7;
     }
 
     /**

@@ -117,10 +117,6 @@ class CodeVisualizer {
         return this.explodeManager.collapseIfExploded();
     }
 
-    toggleDebugColumnMode() {
-        return this.explodeManager.toggleDebugMode();
-    }
-
     // ─── Animation toggle ──────────────────────────────────────────
 
     toggleAnimation() {

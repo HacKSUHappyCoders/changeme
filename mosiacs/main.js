@@ -43,16 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtn.textContent = isAnimating ? 'Pause Animation' : 'Resume Animation';
     });
 
-    // Toggle debug column mode button
-    const debugBtn = document.getElementById('toggleDebugMode');
-    debugBtn.classList.add('active'); // Start with active state since debug mode is ON by default
-    debugBtn.addEventListener('click', () => {
-        const debugMode = visualizer.toggleDebugColumnMode();
-        debugBtn.textContent = debugMode ? '🐛 Debug Column: ON' : '🐛 Debug Column: OFF';
-        debugBtn.classList.toggle('active', debugMode);
-        console.log(`Debug Column Mode: ${debugMode ? 'ON' : 'OFF'}`);
-    });
-
     // ─── Timeline controls ─────────────────────────────────────────
 
     const playPauseBtn = document.getElementById('playPause');
