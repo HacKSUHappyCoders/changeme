@@ -350,3 +350,28 @@ select option {
 .inspector-panel::-webkit-scrollbar-track { background: transparent; }
 .inspector-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
 .inspector-panel::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.35); }
+
+/* ─── Dot inspector (sub-spiral step detail, pinned to left side) ─ */
+
+.dot-inspector {
+    right: auto;
+    left: 20px;
+    width: 280px;
+    transform: translateX(-30px);
+    border: 1px solid rgba(200, 180, 255, 0.3);
+    background: linear-gradient(
+        160deg,
+        rgba(40, 25, 60, 0.75) 0%,
+        rgba(25, 20, 50, 0.68) 50%,
+        rgba(40, 25, 60, 0.72) 100%
+    );
+}
+
+.dot-inspector.open {
+    transform: translateX(0);
+}
+
+.dot-header {
+    background: linear-gradient(135deg, rgba(160, 120, 255, 0.25), rgba(100, 80, 200, 0.15));
+    border-left: 3px solid #a078ff;
+}

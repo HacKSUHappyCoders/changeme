@@ -37,6 +37,12 @@ class ExplodeManager {
             const pick = pointerInfo.pickInfo;
             if (!pick.hit || !pick.pickedMesh) return;
 
+            // ── Check if a sub-spiral dot was clicked ──
+            if (pick.pickedMesh._subSpiralDot) {
+                this._showDotInspector(pick.pickedMesh);
+                return;
+            }
+
             const buildingMesh = this._findBuildingMesh(pick.pickedMesh);
             if (!buildingMesh) return;
 
@@ -257,6 +263,159 @@ class ExplodeManager {
         return `<div class="inspector-row"><span class="inspector-label">${label}</span><span class="inspector-val">${value}</span></div>`;
     }
 
+    // ─── sub-spiral dot inspector ───────────────────────────────────
+
+    /**
+     * Show a small inspector panel for a clicked sub-spiral dot.
+     * This doesn't collapse the parent building inspector — it overlays
+     * a secondary panel with the trace-step data for that dot.
+     */
+    _showDotInspector(dotMesh) {
+        // Remove any existing dot inspector
+        this._closeDotInspector();
+
+        const step = dotMesh._stepData;
+        if (!step) return;
+
+        // Store the consolidated entity so _buildDotInspectorHTML can use it
+        this._currentDotEntity = dotMesh._entityData || null;
+
+        const panel = document.createElement('div');
+        panel.id = 'dotInspectorPanel';
+        panel.className = 'inspector-panel dot-inspector';
+
+        let html = `<button class="inspector-close">✕</button>`;
+        html += this._buildDotInspectorHTML(step, dotMesh._stepIndex);
+        panel.innerHTML = html;
+
+        document.body.appendChild(panel);
+        requestAnimationFrame(() => panel.classList.add('open'));
+
+        panel.querySelector('.inspector-close').addEventListener('click', () => {
+            this._closeDotInspector();
+        });
+
+        this._dotPanel = panel;
+
+        // Briefly highlight the clicked dot
+        const origScale = dotMesh.scaling.clone();
+        dotMesh.scaling = new BABYLON.Vector3(1.4, 1.4, 1.4);
+        setTimeout(() => {
+            if (dotMesh && !dotMesh.isDisposed()) dotMesh.scaling.copyFrom(origScale);
+        }, 300);
+    }
+
+    _closeDotInspector() {
+        if (this._dotPanel) {
+            this._dotPanel.classList.remove('open');
+            const p = this._dotPanel;
+            setTimeout(() => { if (p.parentNode) p.parentNode.removeChild(p); }, 300);
+            this._dotPanel = null;
+        }
+    }
+
+    _buildDotInspectorHTML(step, stepIndex) {
+        // If the dot has a consolidated entity, use it for richer display
+        const entity = this._currentDotEntity;
+
+        let h = '';
+        const icon = this._iconForType(step.type);
+
+        // ── Variable entity (consolidated DECL + ASSIGNs) ──
+        if (entity && entity.type === 'variable') {
+            h += `<div class="inspector-header var-header">
+                <span class="inspector-icon">🏠</span>
+                <span>${entity.subject}</span>
+            </div>`;
+            h += `<div class="inspector-section">`;
+            h += this._row('Type', 'Variable');
+            h += this._row('Current value', `<strong>${entity.currentValue}</strong>`);
+            if (entity.address) h += this._row('Address', entity.address);
+            h += this._row('Assignments', entity.values.length);
+            h += `</div>`;
+
+            if (entity.values.length > 0) {
+                h += `<div class="inspector-subtitle">Value History</div>`;
+                h += `<div class="inspector-section inspector-history">`;
+                entity.values.forEach((entry, i) => {
+                    const isCurrent = (i === entity.values.length - 1);
+                    h += `<div class="history-row ${isCurrent ? 'current' : ''}">
+                        <span class="history-step">step ${entry.step}</span>
+                        <span class="history-arrow">→</span>
+                        <span class="history-value">${entry.value}</span>
+                    </div>`;
+                });
+                h += `</div>`;
+            }
+            return h;
+        }
+
+        // ── Loop entity (consolidated iterations) ──
+        if (entity && entity.type === 'loop') {
+            h += `<div class="inspector-header loop-header">
+                <span class="inspector-icon">🏭</span>
+                <span>${entity.label}</span>
+            </div>`;
+            h += `<div class="inspector-section">`;
+            h += this._row('Type', `${(entity.subtype || 'loop').toUpperCase()} Loop`);
+            h += this._row('Condition', `<code>${entity.condition || '—'}</code>`);
+            h += this._row('Iterations', entity.iterations);
+            h += this._row('Running', entity.running ? '🔄 yes' : '⏹ no');
+            h += `</div>`;
+
+            if (entity.stepIndices.length > 0) {
+                h += `<div class="inspector-subtitle">Iteration Steps</div>`;
+                h += `<div class="inspector-section inspector-history">`;
+                entity.stepIndices.forEach((s, i) => {
+                    const isLast = (i === entity.stepIndices.length - 1);
+                    h += `<div class="history-row ${isLast ? 'current' : ''}">
+                        <span class="history-step">step ${s}</span>
+                        <span class="history-arrow">→</span>
+                        <span class="history-value">iteration ${i + 1}</span>
+                    </div>`;
+                });
+                h += `</div>`;
+            }
+            return h;
+        }
+
+        // ── Default: single-event display ──
+        h += `<div class="inspector-header dot-header">
+            <span class="inspector-icon">${icon}</span>
+            <span>${step.type}</span>
+        </div>`;
+        h += `<div class="inspector-section">`;
+        h += this._row('Event Type', step.type);
+        h += this._row('Trace Step', stepIndex !== undefined ? stepIndex : '—');
+        if (step.subject)     h += this._row('Subject', step.subject);
+        if (step.name)        h += this._row('Name', step.name);
+        if (step.value !== undefined && step.value !== null)
+            h += this._row('Value', `<strong>${step.value}</strong>`);
+        if (step.address)     h += this._row('Address', step.address);
+        if (step.line_number) h += this._row('Line', step.line_number);
+        if (step.stack_depth !== undefined)
+            h += this._row('Stack Depth', step.stack_depth);
+        if (step.condition)   h += this._row('Condition', `<code>${step.condition}</code>`);
+        if (step.condition_result !== undefined)
+            h += this._row('Result', step.condition_result ? '<span class="val-true">TRUE</span>' : '<span class="val-false">FALSE</span>');
+        if (step.subtype)     h += this._row('Subtype', step.subtype);
+        h += `</div>`;
+        return h;
+    }
+
+    _iconForType(type) {
+        switch (type) {
+            case 'CALL':      return '🏛️';
+            case 'RETURN':    return '↩️';
+            case 'DECL':      return '🏠';
+            case 'ASSIGN':    return '📝';
+            case 'LOOP':      return '🏭';
+            case 'CONDITION': return '🔀';
+            case 'BRANCH':    return '🔀';
+            default:          return '📌';
+        }
+    }
+
     // ─── collapse ───────────────────────────────────────────────────
 
     _collapse() {
@@ -269,6 +428,9 @@ class ExplodeManager {
         setTimeout(() => {
             if (panel.parentNode) panel.parentNode.removeChild(panel);
         }, 300);
+
+        // Also close any dot inspector
+        this._closeDotInspector();
 
         // Hide the sub-spiral for this building
         if (this.cityRenderer) {

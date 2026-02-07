@@ -1,13 +1,15 @@
 /**
- * SubSpiralRenderer — Renders sub-spirals that descend downward from
- * container buildings (functions, for-loops, while-loops, branches).
+ * SubSpiralRenderer — Phase 3
  *
- * Sub-spirals are spawned on-demand (when a building is clicked) rather
- * than all at once, so only one is visible at a time.
+ * Renders sub-spirals that wrap UPWARD around container buildings
+ * (functions, for-loops, while-loops, branches).
  *
- * The layout is deliberately TALL and NARROW — a tight helix that drops
- * straight down beneath the parent building, clearly distinct from the
- * wide main spiral.
+ * Sub-spirals circle around the parent building and ascend, creating a
+ * visually striking helix that rises from the building.  The dots are
+ * large enough to be individually clickable.
+ *
+ * When a sub-spiral is opened the main spiral is pushed outward to
+ * make room; when closed the main spiral returns to its original layout.
  *
  * Performance: caches materials per step-type so at most ~8 materials
  * exist regardless of how many dots are rendered.
@@ -17,22 +19,22 @@ class SubSpiralRenderer {
         this.scene = scene;
         this.labelHelper = labelHelper;
 
-        // All rendered sub-spirals: parentKey → { tube, dots[], dotCount }
+        // All rendered sub-spirals: parentKey → { tube, dots[], dotCount, parentPos, boundingRadius }
         this.subSpirals = new Map();
 
-        // ── Sub-spiral layout: tall & narrow ──
-        // Small radius so it stays close to the building column
-        this.radiusStart  = 0.8;
-        this.radiusGrowth = 0.02;       // barely grows outward
-        // Tight winding
-        this.angleStep    = 0.65;
-        // Large vertical drop per step → long / tall spiral
-        this.heightStep   = 0.55;
-        this.tubeRadius   = 0.06;
-        this.dotRadius    = 0.10;
+        // ── Sub-spiral layout: compact helix wrapping UP around building ──
+        this.radiusStart  = 2.0;         // start further from center to wrap around building
+        this.radiusGrowth = 0.03;        // slight outward growth
+        this.angleStep    = 0.65;        // tighter winding so it wraps neatly
+        this.heightStep   = 0.04;        // gentle ascent — mostly horizontal wrapping
+        this.tubeRadius   = 0.08;
+        this.dotRadius    = 0.40;        // big dots — easy to click and inspect
 
         // Shared material cache (stepType → StandardMaterial)
         this._matCache = new Map();
+
+        // Callback for when sub-spiral is opened/closed (set by CityRenderer)
+        this.onSubSpiralToggle = null;
     }
 
     // ─── On-demand API (called by ExplodeManager) ──────────────────
@@ -57,6 +59,11 @@ class SubSpiralRenderer {
             parentKey, childIndices, parentPos, pathColor, trace
         );
         this.subSpirals.set(parentKey, result);
+
+        // Notify CityRenderer to push main spiral outward
+        if (this.onSubSpiralToggle) {
+            this.onSubSpiralToggle('open', parentKey, result.boundingRadius, parentPos);
+        }
     }
 
     /**
@@ -68,6 +75,11 @@ class SubSpiralRenderer {
         if (existing) {
             this._disposeSubSpiral(existing);
             this.subSpirals.delete(parentKey);
+
+            // Notify CityRenderer to restore main spiral
+            if (this.onSubSpiralToggle) {
+                this.onSubSpiralToggle('close', parentKey);
+            }
             return true;
         }
         return false;
@@ -84,14 +96,15 @@ class SubSpiralRenderer {
     // ─── internal ──────────────────────────────────────────────────
 
     /**
-     * Compute sub-spiral position for a given slot, descending from origin.
-     * Slot 0 starts just below the building; subsequent slots drop steeply.
+     * Compute sub-spiral position for a given slot, ascending from origin.
+     * The helix wraps AROUND the building and climbs upward.
+     * Slot 0 starts at the building's base; subsequent slots rise.
      */
     _subSpiralPosition(slot, origin) {
         const angle  = slot * this.angleStep;
         const radius = this.radiusStart + slot * this.radiusGrowth;
-        // Descend straight down beneath the building
-        const y = origin.y - 0.5 - slot * this.heightStep;
+        // Ascend upward from the building
+        const y = origin.y + 0.3 + slot * this.heightStep;
         return new BABYLON.Vector3(
             origin.x + Math.cos(angle) * radius,
             y,
@@ -115,31 +128,148 @@ class SubSpiralRenderer {
         return mat;
     }
 
+    /**
+     * Consolidate raw child trace indices into deduplicated entities,
+     * mirroring how the main spiral works:
+     *  - Variables: one entity per unique (subject+address), with value history
+     *  - Loops: one entity per unique condition, with iteration count
+     *  - Everything else: one entity per occurrence
+     *
+     * Returns an array of consolidated entity objects, each with:
+     *   { type, label, stepIndices[], steps[], color (stepType for material) }
+     */
+    _consolidateChildren(childIndices, trace) {
+        const entities = [];          // final deduplicated list
+        const varMap   = new Map();   // "subject|address" → entity
+        const loopMap  = new Map();   // "subtype|condition" → entity
+
+        for (const idx of childIndices) {
+            const step = trace[idx];
+            if (!step) continue;
+
+            if (step.type === 'DECL' || step.type === 'ASSIGN') {
+                // ── Variable: merge DECL + ASSIGNs by subject+address ──
+                const varKey = `${step.subject}|${step.address || ''}`;
+                if (varMap.has(varKey)) {
+                    const ent = varMap.get(varKey);
+                    ent.stepIndices.push(idx);
+                    ent.values.push({ step: idx, value: step.value });
+                    ent.currentValue = step.value;
+                } else {
+                    const ent = {
+                        type: 'variable',
+                        colorType: 'DECL',
+                        label: step.subject,
+                        subject: step.subject,
+                        address: step.address,
+                        currentValue: step.value,
+                        values: [{ step: idx, value: step.value }],
+                        stepIndices: [idx],
+                        firstStep: step
+                    };
+                    varMap.set(varKey, ent);
+                    entities.push(ent);
+                }
+            } else if (step.type === 'LOOP') {
+                // ── Loop: merge iterations of same condition ──
+                const loopKey = `${step.subtype || 'loop'}|${step.condition || ''}`;
+                if (loopMap.has(loopKey)) {
+                    const ent = loopMap.get(loopKey);
+                    ent.stepIndices.push(idx);
+                    ent.iterations++;
+                    ent.running = !!step.condition_result;
+                } else {
+                    const ent = {
+                        type: 'loop',
+                        colorType: 'LOOP',
+                        label: `${(step.subtype || 'loop').toUpperCase()} (${step.condition || '?'})`,
+                        subtype: step.subtype,
+                        condition: step.condition,
+                        iterations: 1,
+                        running: !!step.condition_result,
+                        stepIndices: [idx],
+                        firstStep: step
+                    };
+                    loopMap.set(loopKey, ent);
+                    entities.push(ent);
+                }
+            } else {
+                // ── CALL, RETURN, CONDITION, BRANCH: one entity each ──
+                entities.push({
+                    type: step.type.toLowerCase(),
+                    colorType: step.type,
+                    label: step.subject || step.subtype || step.type,
+                    stepIndices: [idx],
+                    firstStep: step
+                });
+            }
+        }
+
+        return entities;
+    }
+
     _buildSubSpiral(parentKey, childIndices, origin, pathColor, trace) {
+        // ── Consolidate raw events into deduplicated entities ──
+        const entities = this._consolidateChildren(childIndices, trace);
+
         const dots = [];
         const pathPoints = [];
-        const maxSlots = childIndices.length;
+        const maxSlots = entities.length;
+        let maxRadius = 0;
 
         for (let i = 0; i < maxSlots; i++) {
             const pos = this._subSpiralPosition(i, origin);
             pathPoints.push(pos.clone());
 
-            const stepIndex = childIndices[i];
-            const step = trace[stepIndex];
-            const stepType = step ? step.type : 'UNKNOWN';
+            // Track the maximum distance from origin for bounding radius
+            const dx = pos.x - origin.x;
+            const dz = pos.z - origin.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+            if (dist > maxRadius) maxRadius = dist;
+
+            const entity = entities[i];
 
             const dot = BABYLON.MeshBuilder.CreateSphere(
                 `subDot_${parentKey}_${i}`,
-                { diameter: this.dotRadius * 2, segments: 4 },
+                { diameter: this.dotRadius * 2, segments: 6 },
                 this.scene
             );
             dot.position = pos;
-            dot.isPickable = false;
-            dot.material = this._getCachedMaterial(stepType);
-            dot.freezeWorldMatrix();
+            dot.isPickable = true;
+            dot.material = this._getCachedMaterial(entity.colorType);
+
+            // Attach consolidated entity data for the inspector
+            dot._subSpiralDot = true;
+            dot._parentKey = parentKey;
+            dot._stepIndex = entity.stepIndices[0];
+            dot._stepData = entity.firstStep;
+            dot._entityData = entity;          // full consolidated entity
 
             dots.push(dot);
         }
+
+        // Animate dots appearing one by one with a slight delay
+        dots.forEach((dot, i) => {
+            dot.scaling = new BABYLON.Vector3(0, 0, 0);
+            const anim = new BABYLON.Animation(
+                `subDotScale_${parentKey}_${i}`,
+                'scaling', 30,
+                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+            anim.setKeys([
+                { frame: 0, value: new BABYLON.Vector3(0, 0, 0) },
+                { frame: 8, value: new BABYLON.Vector3(1.1, 1.1, 1.1) },
+                { frame: 12, value: new BABYLON.Vector3(1, 1, 1) }
+            ]);
+            const ease = new BABYLON.CubicEase();
+            ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+            anim.setEasingFunction(ease);
+
+            setTimeout(() => {
+                this.scene.beginDirectAnimation(dot, [anim], 0, 12, false);
+            }, i * 30);
+        });
 
         // Draw the spiral tube
         let tube = null;
@@ -158,10 +288,12 @@ class SubSpiralRenderer {
             tubeMat.freeze();
             tube.material = tubeMat;
             tube.isPickable = false;
-            tube.freezeWorldMatrix();
         }
 
-        return { tube, dots, pathColor, dotCount: maxSlots };
+        // The bounding radius determines how far the main spiral should push out
+        const boundingRadius = maxRadius + this.dotRadius + 0.5;
+
+        return { tube, dots, pathColor, dotCount: maxSlots, parentPos: origin.clone(), boundingRadius };
     }
 
     /**

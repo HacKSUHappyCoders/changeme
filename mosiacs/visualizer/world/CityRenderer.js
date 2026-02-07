@@ -18,6 +18,11 @@ class CityRenderer {
         this.meshFactory = new MeshFactory(scene, this.labelHelper);
         this.subSpiralRenderer = new SubSpiralRenderer(scene, this.labelHelper);
 
+        // Wire up the sub-spiral toggle callback so we know when to push/restore
+        this.subSpiralRenderer.onSubSpiralToggle = (action, key, boundingRadius, parentPos) => {
+            this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
+        };
+
         // Mesh caches:  entityKey → { mesh, extras… }
         this.functionMeshes = new Map();
         this.variableMeshes = new Map();
@@ -41,6 +46,10 @@ class CityRenderer {
         // Hover
         this._hoveredLabel = null;
         this._hoverAttached = false;
+
+        // ── Sub-spiral push-out tracking ──
+        // Maps parentKey → { boundingRadius, parentPos, parentSlot }
+        this._openSubSpirals = new Map();
     }
 
     // ─── Hover ─────────────────────────────────────────────────────
@@ -83,7 +92,10 @@ class CityRenderer {
 
     // ─── Spiral geometry ───────────────────────────────────────────
 
-    _spiralPosition(slot) {
+    /**
+     * Base spiral position (no push-out applied).
+     */
+    _spiralPositionBase(slot) {
         const angle = getSpiralAngle(slot);
         const radius = this.spiralRadiusStart + slot * this.spiralRadiusGrowth;
         const totalH = Math.max(this._nextSlot, 1) * this.spiralHeightStep;
@@ -91,6 +103,52 @@ class CityRenderer {
         return new BABYLON.Vector3(
             Math.cos(angle) * radius, y, Math.sin(angle) * radius
         );
+    }
+
+    /**
+     * Spiral position with push-out offset applied when sub-spirals are open.
+     * Buildings near an open sub-spiral get pushed radially outward to
+     * make room for the sub-spiral helix wrapping around the parent.
+     */
+    _spiralPosition(slot) {
+        const basePos = this._spiralPositionBase(slot);
+
+        if (this._openSubSpirals.size === 0) return basePos;
+
+        // Accumulate push-out from all open sub-spirals
+        let offsetX = 0;
+        let offsetZ = 0;
+
+        for (const [parentKey, info] of this._openSubSpirals) {
+            const parentSlot = this._slotMap.get(parentKey);
+            if (parentSlot === undefined) continue;
+
+            // How far is this slot from the parent slot on the spiral?
+            const slotDist = Math.abs(slot - parentSlot);
+
+            // Only push buildings that are within a neighbourhood of the parent
+            // The push-out influence fades with distance (slots)
+            const influenceRange = 20;  // slots within this range are affected
+            if (slotDist > influenceRange || slotDist === 0) continue;
+
+            // Compute direction from origin to this building's base position
+            const dirX = basePos.x;
+            const dirZ = basePos.z;
+            const dirLen = Math.sqrt(dirX * dirX + dirZ * dirZ);
+            if (dirLen < 0.01) continue;
+
+            // Push-out strength: strongest near the parent, fading out
+            const falloff = 1.0 - (slotDist / influenceRange);
+            const pushStrength = info.boundingRadius * falloff * 0.8;
+
+            // Push radially outward from center
+            offsetX += (dirX / dirLen) * pushStrength;
+            offsetZ += (dirZ / dirLen) * pushStrength;
+        }
+
+        basePos.x += offsetX;
+        basePos.z += offsetZ;
+        return basePos;
     }
 
     _slotFor(key) {
@@ -117,8 +175,9 @@ class CityRenderer {
     render(snapshot) {
         this._ensureHoverObserver();
 
-        // Keep a reference to the trace for on-demand sub-spiral rendering
+        // Keep references for on-demand sub-spiral rendering and re-rendering
         this._lastTrace = snapshot.trace || [];
+        this._lastSnapshot = snapshot;
 
         // Pre-assign spiral slots in trace-creation order so that
         // buildings are interleaved along the spiral based on when they
@@ -171,6 +230,71 @@ class CityRenderer {
         this.subSpiralRenderer.removeSingle(buildingMesh._entityData.key);
     }
 
+    /**
+     * Called by SubSpiralRenderer when a sub-spiral is opened or closed.
+     * Handles pushing the main spiral outward and restoring it.
+     */
+    _onSubSpiralToggle(action, parentKey, boundingRadius, parentPos) {
+        if (action === 'open') {
+            this._openSubSpirals.set(parentKey, {
+                boundingRadius: boundingRadius || 3,
+                parentPos: parentPos ? parentPos.clone() : BABYLON.Vector3.Zero()
+            });
+        } else {
+            this._openSubSpirals.delete(parentKey);
+        }
+
+        // Animate the main spiral to its new pushed / restored positions
+        this._animateMainSpiralPush();
+    }
+
+    /**
+     * Smoothly animate all main-spiral buildings and the spiral tube
+     * to their new positions (pushed out or restored).
+     */
+    _animateMainSpiralPush() {
+        // Unfreeze meshes that will move
+        this._unfreezeAllMeshes();
+
+        // Recompute positions for all buildings
+        this._updateBuildingPositions();
+
+        // Re-draw the spiral path tube to match new positions
+        this._renderSpiralPath();
+
+        // Re-draw memory layer lines
+        if (this._lastSnapshot && this._lastSnapshot.memory) {
+            this._renderMemoryLayer(this._lastSnapshot.memory);
+        }
+
+        // Re-freeze after repositioning
+        this._freezeStaticMeshes();
+    }
+
+    /**
+     * Unfreeze all building meshes so they can be repositioned.
+     */
+    _unfreezeAllMeshes() {
+        const unfreezeEntry = (entry) => {
+            if (!entry) return;
+            const meshes = [entry.mesh, entry.cap, entry.roof, entry.chimney,
+                            entry.truePath, entry.falsePath];
+            for (const m of meshes) {
+                if (m && m._isFrozen) {
+                    m.unfreezeWorldMatrix();
+                    m._isFrozen = false;
+                }
+            }
+        };
+        for (const [, e] of this.functionMeshes) unfreezeEntry(e);
+        for (const [, e] of this.variableMeshes) unfreezeEntry(e);
+        for (const [, e] of this.loopMeshes)     unfreezeEntry(e);
+        for (const [, e] of this.whileMeshes)    unfreezeEntry(e);
+        for (const [, e] of this.branchMeshes)   unfreezeEntry(e);
+
+        if (this._spiralTube) this._spiralTube.unfreezeWorldMatrix();
+    }
+
     clear() {
         [this.functionMeshes, this.variableMeshes, this.loopMeshes,
          this.whileMeshes, this.branchMeshes].forEach(cache => {
@@ -182,6 +306,8 @@ class CityRenderer {
         if (this._spiralTube) { this._spiralTube.dispose(); this._spiralTube = null; }
         this._nextSlot = 0;
         this._slotMap.clear();
+        this._openSubSpirals.clear();
+        this._lastSnapshot = null;
         this.subSpiralRenderer.clear();
     }
 

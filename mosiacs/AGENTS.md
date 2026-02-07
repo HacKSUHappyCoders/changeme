@@ -231,3 +231,12 @@ The 255 values are solid inplace, but the X values can be changed and are determ
 
 ## NEW BIG FEATURE
 Now we want to build a spiral inside of spiral idea. So for example, we have function buildings, and inside of functions there is code. So lets make it so when we click on a function, if statement, for loop and while loop, a new spiral comes out of them that represents the code inside of them. This code inside each would not be displayed in the main spiral, but instead in this mini subversion spiral. Also can you make it so all the spirals are visibly created as the program is run. and also keep all the spiral visible. In addition, each spirals path color should be different too. But essentially I want spirals building off of spirals to make a really cool mosiac.
+
+## Phase 3 Toggled features
+** THIS SECTION IS ALL ABOUT BEAUTY AND FUNCTIONALITY **
+** Trying to make these toggles useful but also beautiful to look at. **
+
+In this phase we will be creating a lot of different visual features that can be toggled on and off, this is to help bring in developer usefulness while also helping to bring about a mosiac asthetic to it.
+
+# Part 1: Revisualizing the way sub spirals are created
+- Instead of having the sub spirals apear going vertically down on building click, I think they should appear to circle around the building and go up. These spirals should be more compact but be bigger, so then you can click on the buildings inside of this sub spiral if deemed necessary. These subspirals should push out the main spiral. So if you open a sub spiral, the main spiral path should be pushed out as to let in room for this new sub spiral, and then when it goes away, the main spiral should go back to its noraml position. 
