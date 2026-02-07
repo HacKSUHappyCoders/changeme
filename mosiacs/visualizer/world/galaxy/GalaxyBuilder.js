@@ -12,20 +12,28 @@ class GalaxyBuilder {
         this.scene = scene;
         this.mainCityRenderer = mainCityRenderer;
         this.labelHelper = labelHelper;
-        
+
         // Material cache for performance
         this._matCache = new Map();
-        
+
         // Meshes created during build
         this._galaxyMeshes = [];
         this._galaxyExtraMeshes = [];
         this._galaxySpiralTube = null;
-        
+
         // Pending animation timers
         this._pendingTimers = [];
 
         // ── Performance: cap galaxy building count ──
         this.maxGalaxyNodes = 80;
+
+        // ── Flow bubble configuration ──
+        this.bubbleCount = 8;             // bubbles per spiral
+        this.bubbleBaseSize = 0.25;       // base diameter (larger for galaxy visibility)
+        this.bubbleSizeVariance = 0.12;   // random size variation
+        this.bubbleDuration = 3000;       // ms to travel full path
+        this.bubbleDurationVariance = 1000; // random speed variation
+        this._bubbles = [];               // active bubble meshes
     }
 
     /**
@@ -124,6 +132,10 @@ class GalaxyBuilder {
         // Animate buildings with staggered pop-in
         this._animateGalaxyBuildings(meshes.filter(m => m._isGalaxyBuilding));
 
+        // ── Create animated flow bubbles traveling down the spiral ──
+        this._bubbles = this._createFlowBubbles(pathPoints);
+        this._galaxyMeshes.push(...this._bubbles);
+
         // Freeze extra meshes
         for (const extra of this._galaxyExtraMeshes) {
             if (extra && !extra.isDisposed()) {
@@ -136,6 +148,7 @@ class GalaxyBuilder {
             meshes: this._galaxyMeshes,
             extraMeshes: this._galaxyExtraMeshes,
             spiralTube: this._galaxySpiralTube,
+            bubbles: this._bubbles,
             pathPoints,
             center
         };
@@ -181,6 +194,106 @@ class GalaxyBuilder {
             }, delay);
             this._pendingTimers.push(timerId);
         });
+    }
+
+    /**
+     * Create animated bubbles that flow DOWN the spiral path to show
+     * directional execution flow.
+     */
+    _createFlowBubbles(pathPoints) {
+        if (pathPoints.length < 2) return [];
+
+        const bubbles = [];
+        const count = Math.min(this.bubbleCount, Math.floor(pathPoints.length / 2));
+
+        // Reverse path so bubbles flow TOP → BOTTOM (down the spiral)
+        const reversedPath = [...pathPoints].reverse();
+
+        // Galaxy spiral color (purple-ish to match the tube)
+        const pathColor = { r: 0.5, g: 0.35, b: 0.7 };
+
+        for (let i = 0; i < count; i++) {
+            const size = this.bubbleBaseSize + Math.random() * this.bubbleSizeVariance;
+            const bubble = BABYLON.MeshBuilder.CreateSphere(
+                `galaxyFlowBubble_${i}`,
+                { diameter: size, segments: 12 },
+                this.scene
+            );
+
+            // Glassy, glowing bubble material
+            const mat = new BABYLON.StandardMaterial(`galaxyBubbleMat_${i}`, this.scene);
+            mat.diffuseColor = new BABYLON.Color3(
+                Math.min(1, pathColor.r + 0.3),
+                Math.min(1, pathColor.g + 0.3),
+                Math.min(1, pathColor.b + 0.3)
+            );
+            mat.emissiveColor = new BABYLON.Color3(
+                pathColor.r * 0.9,
+                pathColor.g * 0.9,
+                pathColor.b * 0.9
+            );
+            mat.specularColor = new BABYLON.Color3(1, 1, 1);
+            mat.specularPower = 64;
+            mat.alpha = 0.7;
+            bubble.material = mat;
+            bubble.isPickable = false;
+
+            // Start at beginning of path
+            bubble.position = reversedPath[0].clone();
+
+            // Create the flowing animation
+            this._animateBubbleAlongPath(bubble, reversedPath, i, count);
+
+            bubbles.push(bubble);
+        }
+
+        return bubbles;
+    }
+
+    /**
+     * Animate a single bubble flowing along the spiral path.
+     */
+    _animateBubbleAlongPath(bubble, pathPoints, index, totalBubbles) {
+        const duration = this.bubbleDuration + Math.random() * this.bubbleDurationVariance;
+        const staggerDelay = (index / totalBubbles) * duration;
+
+        let startTime = null;
+
+        const animate = (time) => {
+            if (bubble.isDisposed()) return;
+
+            if (!startTime) startTime = time - staggerDelay;
+
+            const elapsed = time - startTime;
+            const loopTime = elapsed % duration;
+            const t = loopTime / duration;  // 0 → 1 along path
+
+            // Interpolate position along the path
+            const pathProgress = t * (pathPoints.length - 1);
+            const segmentIndex = Math.floor(pathProgress);
+            const segmentFrac = pathProgress - segmentIndex;
+
+            if (segmentIndex < pathPoints.length - 1) {
+                const p0 = pathPoints[segmentIndex];
+                const p1 = pathPoints[segmentIndex + 1];
+                bubble.position = BABYLON.Vector3.Lerp(p0, p1, segmentFrac);
+            } else {
+                bubble.position = pathPoints[pathPoints.length - 1].clone();
+            }
+
+            // Gentle pulsing scale for organic "floating" feel
+            const pulse = 1 + Math.sin(time * 0.005 + index * 1.5) * 0.25;
+            bubble.scaling.setAll(pulse);
+
+            // Slight alpha variation for shimmer effect
+            if (bubble.material) {
+                bubble.material.alpha = 0.55 + Math.sin(time * 0.003 + index * 0.7) * 0.2;
+            }
+
+            requestAnimationFrame(animate);
+        };
+
+        requestAnimationFrame(animate);
     }
 
     /**
@@ -511,16 +624,16 @@ class GalaxyBuilder {
 
     _colorForType(type) {
         switch (type) {
-            case 'CALL':      return { r: 0.9, g: 0.3, b: 0.3, a: 0.85 };
-            case 'RETURN':    return { r: 0.9, g: 0.6, b: 0.2, a: 0.85 };
-            case 'DECL':      return { r: 0.3, g: 0.5, b: 0.9, a: 0.85 };
-            case 'PARAM':     return { r: 0.4, g: 0.6, b: 1.0, a: 0.85 };
-            case 'ASSIGN':    return { r: 0.3, g: 0.8, b: 0.9, a: 0.85 };
-            case 'READ':      return { r: 0.2, g: 0.9, b: 0.7, a: 0.85 };
-            case 'LOOP':      return { r: 0.7, g: 0.3, b: 0.9, a: 0.85 };
+            case 'CALL': return { r: 0.9, g: 0.3, b: 0.3, a: 0.85 };
+            case 'RETURN': return { r: 0.9, g: 0.6, b: 0.2, a: 0.85 };
+            case 'DECL': return { r: 0.3, g: 0.5, b: 0.9, a: 0.85 };
+            case 'PARAM': return { r: 0.4, g: 0.6, b: 1.0, a: 0.85 };
+            case 'ASSIGN': return { r: 0.3, g: 0.8, b: 0.9, a: 0.85 };
+            case 'READ': return { r: 0.2, g: 0.9, b: 0.7, a: 0.85 };
+            case 'LOOP': return { r: 0.7, g: 0.3, b: 0.9, a: 0.85 };
             case 'CONDITION': return { r: 0.9, g: 0.5, b: 0.2, a: 0.85 };
-            case 'BRANCH':    return { r: 0.9, g: 0.8, b: 0.2, a: 0.85 };
-            default:          return { r: 0.5, g: 0.5, b: 0.5, a: 0.85 };
+            case 'BRANCH': return { r: 0.9, g: 0.8, b: 0.2, a: 0.85 };
+            default: return { r: 0.5, g: 0.5, b: 0.5, a: 0.85 };
         }
     }
 
@@ -538,5 +651,18 @@ class GalaxyBuilder {
     disposeMaterials() {
         this._matCache.forEach(mat => mat.dispose());
         this._matCache.clear();
+    }
+
+    /**
+     * Dispose flow bubbles
+     */
+    disposeBubbles() {
+        for (const bubble of this._bubbles) {
+            if (bubble && !bubble.isDisposed()) {
+                if (bubble.material) bubble.material.dispose();
+                bubble.dispose();
+            }
+        }
+        this._bubbles = [];
     }
 }

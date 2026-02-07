@@ -70,6 +70,14 @@ class CityRenderer {
         // ── Sub-spiral push-out tracking ──
         // Maps parentKey → { boundingRadius, parentPos, parentSlot }
         this._openSubSpirals = new Map();
+
+        // ── Main spiral flow bubbles ──
+        this._mainBubbles = [];           // active bubble meshes
+        this.mainBubbleCount = 1000;       // 10x more bubbles (was 10)
+        this.mainBubbleSize = 1.5;        // LARGER for visibility
+        this.mainBubbleSizeVariance = 0.3;
+        this.mainBubbleDuration = 400000;  
+        this.mainBubbleDurationVariance = 1500000;
     }
 
     // ─── Hover ─────────────────────────────────────────────────────
@@ -494,6 +502,7 @@ class CityRenderer {
         this.subSpiralRenderer.clear();
         this.loopBubbleRenderer.clearAll();
         this.branchTreeRenderer.clearAll();
+        this._disposeMainBubbles();
     }
 
     /**
@@ -558,7 +567,7 @@ class CityRenderer {
             }, this.scene);
             const mat = new BABYLON.StandardMaterial('spiralMat', this.scene);
             mat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 0.3);
-            mat.diffuseColor  = new BABYLON.Color3(0.9, 0.8, 0.4);
+            mat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.4);
             mat.alpha = 0.55;
             mat.freeze();
             this._spiralTube.material = mat;
@@ -581,12 +590,135 @@ class CityRenderer {
             }, this.scene);
             const errorMat = new BABYLON.StandardMaterial('spiralErrorMat', this.scene);
             errorMat.emissiveColor = new BABYLON.Color3(0.9, 0.1, 0.1);
-            errorMat.diffuseColor  = new BABYLON.Color3(1.0, 0.2, 0.2);
+            errorMat.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.2);
             errorMat.alpha = 0.65;
             errorMat.freeze();
             this._spiralTubeError.material = errorMat;
             this._spiralTubeError.isPickable = false;
         }
+
+        // ── Create flow bubbles traveling down the main spiral ──
+        this._disposeMainBubbles();
+        // Combine normal + error points for bubble path (full spiral)
+        const fullPath = [...points, ...errorPoints.slice(1)];
+        if (fullPath.length >= 2) {
+            this._mainBubbles = this._createMainSpiralBubbles(fullPath);
+        }
+    }
+
+    /**
+     * Create animated bubbles that flow DOWN the main spiral path.
+     */
+    _createMainSpiralBubbles(pathPoints) {
+        console.log('[CityRenderer] Creating main spiral bubbles, pathPoints:', pathPoints.length);
+        if (pathPoints.length < 2) {
+            console.log('[CityRenderer] Not enough path points for bubbles');
+            return [];
+        }
+
+        const bubbles = [];
+        const count = Math.min(this.mainBubbleCount, Math.max(3, Math.floor(pathPoints.length / 4)));
+        console.log('[CityRenderer] Creating', count, 'bubbles');
+
+        // Spiral flows downward, so bubbles should follow the same direction
+        // pathPoints[0] is at top, pathPoints[end] is at bottom
+        const pathColor = { r: 0.9, g: 0.75, b: 0.3 }; // Golden to match spiral
+
+        for (let i = 0; i < count; i++) {
+            const size = this.mainBubbleSize + Math.random() * this.mainBubbleSizeVariance;
+            const bubble = BABYLON.MeshBuilder.CreateSphere(
+                `mainFlowBubble_${i}`,
+                { diameter: size, segments: 12 },
+                this.scene
+            );
+
+            // Glassy, glowing bubble material
+            const mat = new BABYLON.StandardMaterial(`mainBubbleMat_${i}`, this.scene);
+            mat.diffuseColor = new BABYLON.Color3(
+                Math.min(1, pathColor.r + 0.15),
+                Math.min(1, pathColor.g + 0.15),
+                Math.min(1, pathColor.b + 0.15)
+            );
+            mat.emissiveColor = new BABYLON.Color3(
+                pathColor.r * 0.7,
+                pathColor.g * 0.7,
+                pathColor.b * 0.5
+            );
+            mat.specularColor = new BABYLON.Color3(1, 1, 0.8);
+            mat.specularPower = 64;
+            mat.alpha = 0.75;
+            bubble.material = mat;
+            bubble.isPickable = false;
+
+            // Start at top of path
+            bubble.position = pathPoints[0].clone();
+
+            // Create the flowing animation
+            this._animateMainBubble(bubble, pathPoints, i, count);
+
+            bubbles.push(bubble);
+        }
+
+        return bubbles;
+    }
+
+    /**
+     * Animate a single bubble flowing along the main spiral path.
+     */
+    _animateMainBubble(bubble, pathPoints, index, totalBubbles) {
+        const duration = this.mainBubbleDuration + Math.random() * this.mainBubbleDurationVariance;
+        const staggerDelay = (index / totalBubbles) * duration;
+
+        let startTime = null;
+
+        const animate = (time) => {
+            if (bubble.isDisposed()) return;
+
+            if (!startTime) startTime = time - staggerDelay;
+
+            const elapsed = time - startTime;
+            const loopTime = elapsed % duration;
+            const t = loopTime / duration;  // 0 → 1 along path (top to bottom)
+
+            // Interpolate position along the path
+            const pathProgress = t * (pathPoints.length - 1);
+            const segmentIndex = Math.floor(pathProgress);
+            const segmentFrac = pathProgress - segmentIndex;
+
+            if (segmentIndex < pathPoints.length - 1) {
+                const p0 = pathPoints[segmentIndex];
+                const p1 = pathPoints[segmentIndex + 1];
+                bubble.position = BABYLON.Vector3.Lerp(p0, p1, segmentFrac);
+            } else {
+                bubble.position = pathPoints[pathPoints.length - 1].clone();
+            }
+
+            // Gentle pulsing scale for organic "floating" feel
+            const pulse = 1 + Math.sin(time * 0.004 + index * 2) * 0.3;
+            bubble.scaling.setAll(pulse);
+
+            // Slight alpha variation for shimmer effect
+            if (bubble.material) {
+                bubble.material.alpha = 0.6 + Math.sin(time * 0.003 + index * 0.8) * 0.2;
+            }
+
+            requestAnimationFrame(animate);
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    /**
+     * Dispose all main spiral bubbles.
+     */
+    _disposeMainBubbles() {
+        for (const bubble of this._mainBubbles) {
+            if (bubble && !bubble.isDisposed()) {
+                if (bubble.material) bubble.material.dispose();
+                bubble.dispose();
+            }
+        }
+        this._mainBubbles = [];
     }
 
     /**

@@ -23,12 +23,12 @@ class SubSpiralRenderer {
         this.subSpirals = new Map();
 
         // ── Sub-spiral layout: compact helix wrapping UP around building ──
-        this.radiusStart  = 2.0;         // start further from center to wrap around building
+        this.radiusStart = 2.0;         // start further from center to wrap around building
         this.radiusGrowth = 0.03;        // slight outward growth
-        this.angleStep    = 0.65;        // tighter winding so it wraps neatly
-        this.heightStep   = 0.04;        // gentle ascent — mostly horizontal wrapping
-        this.tubeRadius   = 0.08;
-        this.dotRadius    = 0.40;        // big dots — easy to click and inspect
+        this.angleStep = 0.65;        // tighter winding so it wraps neatly
+        this.heightStep = 0.04;        // gentle ascent — mostly horizontal wrapping
+        this.tubeRadius = 0.08;
+        this.dotRadius = 0.40;        // big dots — easy to click and inspect
 
         // ── Performance: cap the number of nodes in any sub-spiral ──
         // Large recursive traces can have 100+ children — rendering them
@@ -38,6 +38,14 @@ class SubSpiralRenderer {
 
         // Shared material cache (stepType → StandardMaterial)
         this._matCache = new Map();
+
+        // ── Flow bubble configuration ──
+        this.bubbleCount = 6;             // bubbles per spiral
+        this.bubbleBaseSize = 0.12;       // base diameter
+        this.bubbleSizeVariance = 0.06;   // random size variation
+        this.bubbleDuration = 2500;       // ms to travel full path
+        this.bubbleDurationVariance = 800; // random speed variation
+        this._activeBubbleAnimations = new Map(); // parentKey → animationId[]
 
         // Callback for when sub-spiral is opened/closed (set by CityRenderer)
         this.onSubSpiralToggle = null;
@@ -114,7 +122,7 @@ class SubSpiralRenderer {
      * Slot 0 starts at the building's base; subsequent slots rise.
      */
     _subSpiralPosition(slot, origin) {
-        const angle  = slot * this.angleStep;
+        const angle = slot * this.angleStep;
         const radius = this.radiusStart + slot * this.radiusGrowth;
         // Ascend upward from the building
         const y = origin.y + 0.3 + slot * this.heightStep;
@@ -133,7 +141,7 @@ class SubSpiralRenderer {
 
         const c = this._dotColor({ type: stepType });
         const mat = new BABYLON.StandardMaterial(`subDotMat_${stepType}`, this.scene);
-        mat.diffuseColor  = new BABYLON.Color3(c.r, c.g, c.b);
+        mat.diffuseColor = new BABYLON.Color3(c.r, c.g, c.b);
         mat.emissiveColor = new BABYLON.Color3(c.r * 0.5, c.g * 0.5, c.b * 0.5);
         mat.alpha = 0.9;
         mat.freeze();
@@ -155,8 +163,8 @@ class SubSpiralRenderer {
      */
     _consolidateChildren(childIndices, trace) {
         const entities = [];          // final deduplicated list
-        const varMap   = new Map();   // "name|address" → entity
-        const loopMap  = new Map();   // "subtype|condition" → entity
+        const varMap = new Map();   // "name|address" → entity
+        const loopMap = new Map();   // "subtype|condition" → entity
 
         for (const idx of childIndices) {
             const step = trace[idx];
@@ -346,7 +354,7 @@ class SubSpiralRenderer {
                 sideOrientation: BABYLON.Mesh.DOUBLESIDE
             }, this.scene);
             const tubeMat = new BABYLON.StandardMaterial(`subTubeMat_${parentKey}`, this.scene);
-            tubeMat.diffuseColor  = new BABYLON.Color3(pathColor.r, pathColor.g, pathColor.b);
+            tubeMat.diffuseColor = new BABYLON.Color3(pathColor.r, pathColor.g, pathColor.b);
             tubeMat.emissiveColor = new BABYLON.Color3(
                 pathColor.r * 0.4, pathColor.g * 0.4, pathColor.b * 0.4
             );
@@ -359,7 +367,10 @@ class SubSpiralRenderer {
         // The bounding radius determines how far the main spiral should push out
         const boundingRadius = maxRadius + this.dotRadius + 0.5;
 
-        return { tube, dots, labels, pathColor, dotCount: maxSlots, parentPos: origin.clone(), boundingRadius };
+        // ── Create animated flow bubbles traveling down the spiral ──
+        const bubbles = this._createFlowBubbles(parentKey, pathPoints, pathColor);
+
+        return { tube, dots, labels, bubbles, pathColor, dotCount: maxSlots, parentPos: origin.clone(), boundingRadius };
     }
 
     /**
@@ -368,18 +379,130 @@ class SubSpiralRenderer {
     _dotColor(step) {
         if (!step) return { r: 0.5, g: 0.5, b: 0.5 };
         switch (step.type) {
-            case 'CALL':      return { r: 0.9, g: 0.3, b: 0.3 };
-            case 'RETURN':    return { r: 0.9, g: 0.6, b: 0.2 };
-            case 'DECL':      return { r: 0.3, g: 0.5, b: 0.9 };
-            case 'ASSIGN':    return { r: 0.3, g: 0.8, b: 0.9 };
-            case 'PARAM':     return { r: 0.4, g: 0.6, b: 1.0 };  // like DECL but slightly brighter
-            case 'READ':      return { r: 0.2, g: 0.9, b: 0.7 };  // teal — data-flow
-            case 'LOOP':      return { r: 0.7, g: 0.3, b: 0.9 };
+            case 'CALL': return { r: 0.9, g: 0.3, b: 0.3 };
+            case 'RETURN': return { r: 0.9, g: 0.6, b: 0.2 };
+            case 'DECL': return { r: 0.3, g: 0.5, b: 0.9 };
+            case 'ASSIGN': return { r: 0.3, g: 0.8, b: 0.9 };
+            case 'PARAM': return { r: 0.4, g: 0.6, b: 1.0 };  // like DECL but slightly brighter
+            case 'READ': return { r: 0.2, g: 0.9, b: 0.7 };  // teal — data-flow
+            case 'LOOP': return { r: 0.7, g: 0.3, b: 0.9 };
             case 'CONDITION': return { r: 0.9, g: 0.5, b: 0.2 };
-            case 'BRANCH':    return { r: 0.9, g: 0.8, b: 0.2 };
-            case 'SUMMARY':   return { r: 0.6, g: 0.6, b: 0.6 };  // grey for truncation node
-            default:          return { r: 0.5, g: 0.5, b: 0.5 };
+            case 'BRANCH': return { r: 0.9, g: 0.8, b: 0.2 };
+            case 'SUMMARY': return { r: 0.6, g: 0.6, b: 0.6 };  // grey for truncation node
+            default: return { r: 0.5, g: 0.5, b: 0.5 };
         }
+    }
+
+    /**
+     * Create animated bubbles that flow DOWN the spiral path to show
+     * directional execution flow (returning from sub-calls).
+     */
+    _createFlowBubbles(parentKey, pathPoints, pathColor) {
+        if (pathPoints.length < 2) return [];
+
+        const bubbles = [];
+        const animationIds = [];
+        const count = Math.min(this.bubbleCount, Math.floor(pathPoints.length / 2));
+
+        // Reverse path so bubbles flow TOP → BOTTOM (down the spiral)
+        const reversedPath = [...pathPoints].reverse();
+
+        for (let i = 0; i < count; i++) {
+            const size = this.bubbleBaseSize + Math.random() * this.bubbleSizeVariance;
+            const bubble = BABYLON.MeshBuilder.CreateSphere(
+                `flowBubble_${parentKey}_${i}`,
+                { diameter: size, segments: 10 },
+                this.scene
+            );
+
+            // Glassy, glowing bubble material
+            const mat = new BABYLON.StandardMaterial(`bubbleMat_${parentKey}_${i}`, this.scene);
+            mat.diffuseColor = new BABYLON.Color3(
+                Math.min(1, pathColor.r + 0.2),
+                Math.min(1, pathColor.g + 0.2),
+                Math.min(1, pathColor.b + 0.2)
+            );
+            mat.emissiveColor = new BABYLON.Color3(
+                pathColor.r * 0.8,
+                pathColor.g * 0.8,
+                pathColor.b * 0.8
+            );
+            mat.specularColor = new BABYLON.Color3(1, 1, 1);
+            mat.specularPower = 128;
+            mat.alpha = 0.65;
+            bubble.material = mat;
+            bubble.isPickable = false;
+
+            // Start at beginning of path
+            bubble.position = reversedPath[0].clone();
+
+            // Create the flowing animation
+            const animId = this._animateBubbleAlongPath(
+                bubble, reversedPath, i, count, parentKey
+            );
+            animationIds.push(animId);
+
+            bubbles.push(bubble);
+        }
+
+        // Store animation IDs so we can cancel them on dispose
+        this._activeBubbleAnimations.set(parentKey, animationIds);
+
+        return bubbles;
+    }
+
+    /**
+     * Animate a single bubble flowing along the spiral path.
+     * Uses requestAnimationFrame for smooth interpolation.
+     * Returns an object with a cancel method.
+     */
+    _animateBubbleAlongPath(bubble, pathPoints, index, totalBubbles, parentKey) {
+        const duration = this.bubbleDuration + Math.random() * this.bubbleDurationVariance;
+        const staggerDelay = (index / totalBubbles) * duration;
+
+        let startTime = null;
+        let cancelled = false;
+
+        const animate = (time) => {
+            if (cancelled || bubble.isDisposed()) return;
+
+            if (!startTime) startTime = time - staggerDelay;
+
+            const elapsed = time - startTime;
+            const loopTime = elapsed % duration;
+            const t = loopTime / duration;  // 0 → 1 along path
+
+            // Interpolate position along the path
+            const pathProgress = t * (pathPoints.length - 1);
+            const segmentIndex = Math.floor(pathProgress);
+            const segmentFrac = pathProgress - segmentIndex;
+
+            if (segmentIndex < pathPoints.length - 1) {
+                const p0 = pathPoints[segmentIndex];
+                const p1 = pathPoints[segmentIndex + 1];
+                bubble.position = BABYLON.Vector3.Lerp(p0, p1, segmentFrac);
+            } else {
+                bubble.position = pathPoints[pathPoints.length - 1].clone();
+            }
+
+            // Gentle pulsing scale for organic "floating" feel
+            const pulse = 1 + Math.sin(time * 0.006 + index) * 0.2;
+            bubble.scaling.setAll(pulse);
+
+            // Slight alpha variation for shimmer effect
+            if (bubble.material) {
+                bubble.material.alpha = 0.5 + Math.sin(time * 0.004 + index * 0.5) * 0.2;
+            }
+
+            requestAnimationFrame(animate);
+        };
+
+        requestAnimationFrame(animate);
+
+        // Return cancel handle
+        return {
+            cancel: () => { cancelled = true; }
+        };
     }
 
     _disposeSubSpiral(entry) {
@@ -409,6 +532,16 @@ class SubSpiralRenderer {
                     label.material.dispose();
                 }
                 if (label) label.dispose();
+            }
+        }
+
+        // ── Dispose flow bubbles and cancel their animations ──
+        if (entry.bubbles) {
+            // Cancel any running animations for these bubbles
+            // (The animation loop checks isDisposed(), so disposing the bubble stops them)
+            for (const bubble of entry.bubbles) {
+                if (bubble.material) bubble.material.dispose();
+                bubble.dispose();
             }
         }
     }
