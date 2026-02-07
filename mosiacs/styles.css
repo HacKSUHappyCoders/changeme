@@ -15,20 +15,29 @@ body {
 
 #controls {
     position: absolute;
-    top: 20px;
+    display: flex;
+    flex-direction: column;
+    bottom: 20px;
     left: 20px;
+    gap: 6px;
     background: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 8px;
     color: white;
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 215, 0, 0.3);
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
 }
 
+#controls div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 #controls h2 {
-    margin: 0 0 15px 0;
-    font-size: 18px;
+    margin: 0;
+    font-size: 14px;
     color: #ffd700;
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
@@ -37,12 +46,11 @@ button {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     color: white;
-    padding: 10px 20px;
-    margin: 5px 0;
+    padding: 6px 12px;
     border-radius: 5px;
     cursor: pointer;
-    width: 100%;
-    font-size: 14px;
+    font-size: 12px;
+    white-space: nowrap;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
