@@ -32,6 +32,59 @@ class CityRenderer {
         this._slotMap = new Map();
 
         this._spiralTube = null;
+
+        // Hover label tracking
+        this._hoveredLabel = null;
+        this._setupHoverObserver();
+    }
+
+    // ─── Hover observer — show/hide floating labels ────────────────
+
+    _setupHoverObserver() {
+        // Delayed — scene may not exist yet in constructor, so we
+        // attach on first render call instead.
+        this._hoverAttached = false;
+    }
+
+    _ensureHoverObserver() {
+        if (this._hoverAttached) return;
+        this._hoverAttached = true;
+
+        this.scene.onPointerObservable.add((pointerInfo) => {
+            if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE) return;
+
+            const pick = this.scene.pick(
+                this.scene.pointerX,
+                this.scene.pointerY,
+                (m) => m._buildingData != null
+            );
+
+            if (pick && pick.hit && pick.pickedMesh && pick.pickedMesh._buildingData) {
+                const entry = this._entryForMesh(pick.pickedMesh);
+                if (entry && entry.label) {
+                    if (this._hoveredLabel && this._hoveredLabel !== entry.label) {
+                        this._hoveredLabel.setEnabled(false);
+                    }
+                    entry.label.setEnabled(true);
+                    this._hoveredLabel = entry.label;
+                }
+            } else {
+                if (this._hoveredLabel) {
+                    this._hoveredLabel.setEnabled(false);
+                    this._hoveredLabel = null;
+                }
+            }
+        });
+    }
+
+    /** Look up the cache entry that owns a given building mesh. */
+    _entryForMesh(mesh) {
+        for (const cache of [this.functionMeshes, this.variableMeshes, this.loopMeshes, this.branchMeshes]) {
+            for (const [, entry] of cache) {
+                if (entry.mesh === mesh) return entry;
+            }
+        }
+        return null;
     }
 
     // ─── Spiral geometry ───────────────────────────────────────────
@@ -58,6 +111,7 @@ class CityRenderer {
     // ─── Main render entry ─────────────────────────────────────────
 
     render(snapshot) {
+        this._ensureHoverObserver();
         this._renderFunctions(snapshot.functions, snapshot.callStack);
         this._renderVariables(snapshot.variables);
         this._renderLoops(snapshot.loops);
@@ -148,6 +202,9 @@ class CityRenderer {
         this._animateScaleIn(mesh);
         this._animateScaleIn(cap);
 
+        const label = this._createFloatingLabel(`fnLabel_${fn.key}`, fn.name, pos.clone(), height + 0.5, color);
+        label.setEnabled(false);
+
         mesh._buildingData = {
             step: fn.enterStep,
             stepData: { type: 'CALL', name: fn.name, depth: fn.depth, line: 0 },
@@ -158,7 +215,7 @@ class CityRenderer {
         mesh._trapHeight = height;
         mesh._entityData = fn;
 
-        return { mesh, cap, height, color, type: 'function' };
+        return { mesh, cap, label, height, color, type: 'function' };
     }
 
     _fnChildSteps(fn) {
@@ -179,6 +236,10 @@ class CityRenderer {
         if (entry.cap && entry.cap.material) entry.cap.material.alpha = alpha;
         if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = this._fnChildSteps(fn);
+        }
+        // Update label text
+        if (fn.returnValue !== null && fn.returnValue !== undefined) {
+            this._updateLabelText(entry.label, `${fn.name} → ${fn.returnValue}`);
         }
     }
 
@@ -227,6 +288,10 @@ class CityRenderer {
         this._animateScaleIn(mesh);
         this._animateScaleIn(roof);
 
+        const labelText = `${v.name} = ${v.currentValue}`;
+        const label = this._createFloatingLabel(`varLabel_${v.key}`, labelText, pos.clone(), height + 1.3, color);
+        label.setEnabled(false);
+
         mesh._buildingData = {
             step: v.declStep,
             stepData: { type: 'DECL', name: v.name, value: v.currentValue, address: v.address, line: 0 },
@@ -237,7 +302,7 @@ class CityRenderer {
         mesh._trapHeight = height;
         mesh._entityData = v;
 
-        return { mesh, roof, height, color, type: 'variable' };
+        return { mesh, roof, label, height, color, type: 'variable' };
     }
 
     _varChildSteps(v) {
@@ -261,6 +326,9 @@ class CityRenderer {
         if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = this._varChildSteps(v);
             entry.mesh._buildingData.stepData.value = v.currentValue;
+        }
+        if (entry.label) {
+            this._updateLabelText(entry.label, `${v.name} = ${v.currentValue}`);
         }
     }
 
@@ -307,6 +375,10 @@ class CityRenderer {
         this._animateScaleIn(mesh);
         this._animateScaleIn(chimney);
 
+        const labelText = `${loop.subtype.toUpperCase()} (${loop.condition}) ×${loop.iterations}`;
+        const label = this._createFloatingLabel(`loopLabel_${loop.key}`, labelText, pos.clone(), height + 2, color);
+        label.setEnabled(false);
+
         mesh._buildingData = {
             step: loop.steps[0] || 0,
             stepData: { type: 'LOOP', name: '', subtype: loop.subtype, condition: loop.condition, line: 0 },
@@ -317,7 +389,7 @@ class CityRenderer {
         mesh._trapHeight = height;
         mesh._entityData = loop;
 
-        return { mesh, chimney, height, color, type: 'loop' };
+        return { mesh, chimney, label, height, color, type: 'loop' };
     }
 
     _loopChildSteps(loop) {
@@ -340,6 +412,9 @@ class CityRenderer {
         if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = alpha;
         if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = this._loopChildSteps(loop);
+        }
+        if (entry.label) {
+            this._updateLabelText(entry.label, `${loop.subtype.toUpperCase()} (${loop.condition}) ×${loop.iterations}`);
         }
     }
 
@@ -381,6 +456,10 @@ class CityRenderer {
 
         this._animateScaleIn(mesh);
 
+        const labelText = `IF (${br.condition}) → ${br.result ? 'true' : 'false'}`;
+        const label = this._createFloatingLabel(`brLabel_${br.key}`, labelText, pos.clone(), height + 1, color);
+        label.setEnabled(false);
+
         mesh._buildingData = {
             step: br.step,
             stepData: { type: 'CONDITION', name: br.condition, conditionResult: br.result, line: 0 },
@@ -394,7 +473,7 @@ class CityRenderer {
         mesh._trapHeight = height;
         mesh._entityData = br;
 
-        return { mesh, truePath, falsePath, height, color, type: 'branch' };
+        return { mesh, truePath, falsePath, label, height, color, type: 'branch' };
     }
 
     _createPathIndicator(name, basePos, length, angle, isTrue) {
@@ -420,6 +499,9 @@ class CityRenderer {
             entry.truePath.material.alpha = br.result ? 0.9 : 0.15;
         if (entry.falsePath && entry.falsePath.material)
             entry.falsePath.material.alpha = br.result ? 0.15 : 0.9;
+        if (entry.label) {
+            this._updateLabelText(entry.label, `IF (${br.condition}) → ${br.result ? 'true' : 'false'}`);
+        }
     }
 
     // ─── Memory Layer ──────────────────────────────────────────────
@@ -576,11 +658,12 @@ class CityRenderer {
         if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = alpha;
         if (entry.truePath && entry.truePath.material) entry.truePath.material.alpha = alpha;
         if (entry.falsePath && entry.falsePath.material) entry.falsePath.material.alpha = alpha;
+        if (entry.label) entry.label.setEnabled(false);
     }
 
     _disposeEntry(entry) {
         if (!entry) return;
-        const disposable = ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath'];
+        const disposable = ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath', 'label'];
         disposable.forEach(k => {
             if (entry[k]) {
                 if (entry[k].material) entry[k].material.dispose();
