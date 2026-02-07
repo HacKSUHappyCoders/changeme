@@ -66,5 +66,3 @@ RETURN|literal|0|0|7|1
 - Different visualization themes
 
 ---
-
-Built with 💎 and ✨ for beautiful code visualization
