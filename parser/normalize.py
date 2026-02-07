@@ -88,37 +88,34 @@ def create_type_RETURN(subtype: str, value: str, address: str = "", format_spec:
     return result
 
 
-def std_to_json(json_str: str):
-    tags = json_str.split("|")
-
-    json_obj = json.loads(json_str)
-    return json.dumps(json_obj, indent=4)
+def stdin_to_json(stdin_data: str):
+    lines = stdin_data.strip().split('\n')
+    results = []
+    
+    for line in lines:
+        # Split by null character to get fields
+        fields = line.split('\0')
+        print(f"Fields: {fields}")
+        results.append(fields)
+    
+    return json.dumps(results, indent=4)
 
 def read_from_stdin():
     print("Reading input from stdin...")
+    all_lines = []
     for line in sys.stdin:
         # Process each line of input as it comes
-        processed_line = line.strip().upper()
+        processed_line = line.strip()
         print(f"Processed line: {processed_line}")
+        all_lines.append(processed_line)
     print("Finished reading input.")
-    return processed_line
+    return '\n'.join(all_lines)
 
-def main():
-
-    parser = argparse.ArgumentParser(description="Result of tracing.")
-    parser.add_argument("-n", "--nostdin", action="store_true", help="Runs code without stdin")
-    args = parser.parse_args()
-
-    
+def main():    
     output_path = "json_output.json"
 
-
     with open(output_path, "w") as f:
-        if(args.nostdin):
-            f.write(json.dumps(json.loads('{"name":"John", "age":30, "city":"New York"}'), indent=4))
-        else:
-            stdin = read_from_stdin()
-            f.write(std_to_json(stdin))
+        f.write(stdin_to_json(read_from_stdin()))
 
 if __name__ == "__main__":
     main()
