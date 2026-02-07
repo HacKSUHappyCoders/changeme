@@ -400,6 +400,9 @@ class CInstrumenter:
 
         start_line = body.start_point[0]
 
+        if func_name == "main":
+            self._add_after(start_line, "    setbuf(stdout, NULL);")
+
         if func_name == "main" and self.metadata:
             for key, val in self.metadata.items():
                 trace = self._make_trace(["META", str(key), str(val)])

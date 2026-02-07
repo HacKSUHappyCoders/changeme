@@ -68,14 +68,14 @@ def _compile(src_path, exe_path):
         ["gcc", src_path, "-o", exe_path, "-lm"],
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=10,
     )
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip())
     return exe_path
 
 
-def _run(cmd, timeout=30):
+def _run(cmd, timeout=10):
     proc = subprocess.run(cmd, capture_output=True, timeout=timeout)
     stdout = proc.stdout.decode("utf-8", errors="replace").replace("\r\n", "\n")
     stderr = proc.stderr.decode("utf-8", errors="replace").strip()
@@ -84,7 +84,7 @@ def _run(cmd, timeout=30):
 
 def _normalize(raw_output, seed):
     if not raw_output.strip():
-        return {}, []
+        return {}, [], None
     result = json.loads(fill_json(stdin_to_json(raw_output), seed))
     return result.get("metadata", {}), result.get("traces", []), result.get("seed", -1)
 
@@ -149,17 +149,22 @@ def deal(input, output=None, seed=None):
         f.write(stdout)
 
     # ── Normalize ───────────────────────────────────────────────
+    # ── Normalize ───────────────────────────────────────────────
+    # Always try to normalize stdout, even if there was a runtime error
     try:
         metadata, traces, seed = _normalize(stdout, seed)
     except Exception as e:
+        # If normalization fails, we can't do much with the traces
         result = _make_error("normalize", f"Failed to parse trace output: {e}")
         _emit(result, output)
         return 1
 
-    if stderr:
+    if stderr or rc != 0:
+        # Runtime error occurred, but we might have partial traces
+        msg = stderr if stderr else f"Program exited with code {rc}"
         result = _make_error(
             "runtime",
-            stderr,
+            msg,
             metadata=metadata,
             traces=traces,
         )
