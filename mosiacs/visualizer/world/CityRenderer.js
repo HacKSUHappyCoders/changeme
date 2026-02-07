@@ -558,21 +558,22 @@ class CityRenderer {
     _createFloatingLabel(name, text, pos, yOffset, color, scale) {
         scale = scale || 1;
         const planeSize = 3 * scale;
-        const plane = BABYLON.MeshBuilder.CreatePlane(name, { width: planeSize, height: planeSize * 0.4 }, this.scene);
+        const plane = BABYLON.MeshBuilder.CreatePlane(name, { width: planeSize, height: planeSize * 0.5 }, this.scene);
         plane.position = pos.clone();
         plane.position.y += yOffset;
         plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
         const mat = new BABYLON.StandardMaterial(name + '_mat', this.scene);
-        const texSize = 512;
-        const dynTex = new BABYLON.DynamicTexture(name + '_tex', texSize, this.scene, false);
+        const texW = 512;
+        const texH = 256;
+        const dynTex = new BABYLON.DynamicTexture(name + '_tex', { width: texW, height: texH }, this.scene, false);
         const ctx = dynTex.getContext();
 
         ctx.fillStyle = `rgba(${Math.floor(color.r * 200)}, ${Math.floor(color.g * 200)}, ${Math.floor(color.b * 200)}, 0.75)`;
-        ctx.fillRect(0, 0, texSize, texSize);
+        ctx.fillRect(0, 0, texW, texH);
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 4;
-        ctx.strokeRect(4, 4, texSize - 8, texSize - 8);
+        ctx.strokeRect(4, 4, texW - 8, texH - 8);
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 36px monospace';
         ctx.textAlign = 'center';
@@ -583,13 +584,13 @@ class CityRenderer {
         let cur = '';
         words.forEach(w => {
             const test = cur ? cur + ' ' + w : w;
-            if (ctx.measureText(test).width > texSize - 40 && cur) { lines.push(cur); cur = w; }
+            if (ctx.measureText(test).width > texW - 40 && cur) { lines.push(cur); cur = w; }
             else cur = test;
         });
         if (cur) lines.push(cur);
         const lineH = 42;
-        const startY = texSize / 2 - ((lines.length - 1) * lineH) / 2;
-        lines.forEach((line, i) => ctx.fillText(line, texSize / 2, startY + i * lineH));
+        const startY = texH / 2 - ((lines.length - 1) * lineH) / 2;
+        lines.forEach((line, i) => ctx.fillText(line, texW / 2, startY + i * lineH));
 
         dynTex.update();
         mat.diffuseTexture = dynTex;
@@ -608,14 +609,15 @@ class CityRenderer {
         const dynTex = plane._dynTex;
         const color = plane._labelColor;
         const ctx = dynTex.getContext();
-        const texSize = 512;
+        const texW = 512;
+        const texH = 256;
 
-        ctx.clearRect(0, 0, texSize, texSize);
+        ctx.clearRect(0, 0, texW, texH);
         ctx.fillStyle = `rgba(${Math.floor(color.r * 200)}, ${Math.floor(color.g * 200)}, ${Math.floor(color.b * 200)}, 0.75)`;
-        ctx.fillRect(0, 0, texSize, texSize);
+        ctx.fillRect(0, 0, texW, texH);
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 4;
-        ctx.strokeRect(4, 4, texSize - 8, texSize - 8);
+        ctx.strokeRect(4, 4, texW - 8, texH - 8);
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 36px monospace';
         ctx.textAlign = 'center';
@@ -626,13 +628,13 @@ class CityRenderer {
         let cur = '';
         words.forEach(w => {
             const test = cur ? cur + ' ' + w : w;
-            if (ctx.measureText(test).width > texSize - 40 && cur) { lines.push(cur); cur = w; }
+            if (ctx.measureText(test).width > texW - 40 && cur) { lines.push(cur); cur = w; }
             else cur = test;
         });
         if (cur) lines.push(cur);
         const lineH = 42;
-        const startY = texSize / 2 - ((lines.length - 1) * lineH) / 2;
-        lines.forEach((line, i) => ctx.fillText(line, texSize / 2, startY + i * lineH));
+        const startY = texH / 2 - ((lines.length - 1) * lineH) / 2;
+        lines.forEach((line, i) => ctx.fillText(line, texW / 2, startY + i * lineH));
 
         dynTex.update();
     }
