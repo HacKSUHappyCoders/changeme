@@ -127,6 +127,53 @@ def create_type_RETURN(
     return result
 
 
+def create_type_SWITCH(
+    subject: str, value: str, line_number: int, stack_depth: int
+):
+    return {
+        "type": "SWITCH",
+        "subject": subject,
+        "value": value,
+        "line_number": line_number,
+        "stack_depth": stack_depth,
+    }
+
+
+def create_type_CASE(label: str, line_number: int, stack_depth: int):
+    return {
+        "type": "CASE",
+        "label": label,
+        "line_number": line_number,
+        "stack_depth": stack_depth,
+    }
+
+
+def create_type_UPDATE(
+    subject: str, operator: str, value: str, address: str, line_number: int, stack_depth: int
+):
+    return {
+        "type": "UPDATE",
+        "subject": subject,
+        "operator": operator,
+        "value": value,
+        "address": address,
+        "line_number": line_number,
+        "stack_depth": stack_depth,
+    }
+
+
+def create_type_TERNARY(
+    subject: str, condition_result: int, line_number: int, stack_depth: int
+):
+    return {
+        "type": "TERNARY",
+        "subject": subject,
+        "condition_result": condition_result,
+        "line_number": line_number,
+        "stack_depth": stack_depth,
+    }
+
+
 def create_type_UNKNOWN(*args):
     return {"type": "UNKNOWN", "args": args}
 
@@ -141,12 +188,16 @@ def stdin_to_json(stdin_data: str):
         "ASSIGN": create_type_ASSIGN,
         "BRANCH": create_type_BRANCH,
         "CALL": create_type_CALL,
+        "CASE": create_type_CASE,
         "CONDITION": create_type_CONDITION,
         "DECL": create_type_DECL,
         "LOOP": create_type_LOOP,
         "PARAM": create_type_PARAM,
         "READ": create_type_READ,
         "RETURN": create_type_RETURN,
+        "SWITCH": create_type_SWITCH,
+        "TERNARY": create_type_TERNARY,
+        "UPDATE": create_type_UPDATE,
     }
 
     for line in lines:
