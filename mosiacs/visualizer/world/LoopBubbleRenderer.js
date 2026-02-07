@@ -619,12 +619,8 @@ class LoopBubbleRenderer {
 
         mesh.position = position.clone();
 
-        // Material with glow
-        const mat = new BABYLON.StandardMaterial(`${name}_mat`, this.scene);
-        mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
-        mat.emissiveColor = new BABYLON.Color3(color.r * 0.5, color.g * 0.5, color.b * 0.5);
-        mat.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-        mesh.material = mat;
+        // Use cached material to avoid leaking thousands of duplicate materials
+        mesh.material = this._getCachedNodeMat(nodeType, color);
 
         // Scale-in animation
         mesh.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
@@ -689,7 +685,7 @@ class LoopBubbleRenderer {
                 `${parentKey}_conn_${i}`,
                 fromNode.position,
                 toNode.position,
-                fromNode.mesh.material.diffuseColor
+                fromNode.mesh?.material?.diffuseColor ?? new BABYLON.Color3(1, 1, 1)
             );
 
             connections.push({
@@ -735,7 +731,7 @@ class LoopBubbleRenderer {
                     { points: [fromNode.position, toNode.position], updatable: false },
                     this.scene
                 );
-                const col = fromNode.mesh.material.diffuseColor;
+                const col = fromNode.mesh?.material?.diffuseColor ?? new BABYLON.Color3(1, 1, 1);
                 causalityLine.color = new BABYLON.Color3(col.r, col.g, col.b);
                 causalityLine.alpha = 0.4;
                 causalityLine.isPickable = false;

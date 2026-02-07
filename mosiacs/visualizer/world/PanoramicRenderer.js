@@ -37,6 +37,9 @@ class PanoramicRenderer {
         this._savedCameraTarget = null;
         this._mainSpiralHidden = false;
 
+        /** Saved original alpha values before dimming, keyed by material instance */
+        this._savedAlphas = new Map();
+
         // ── Galaxy spiral layout ──
         this._galaxyRadiusStart = 3.0;
         this._galaxyRadiusGrowth = 0.18;
@@ -656,14 +659,23 @@ class PanoramicRenderer {
 
     _dimMainSpiral(alpha) {
         this._mainSpiralHidden = true;
+        this._savedAlphas.clear();
         const cr = this.cityRenderer;
+
+        const saveAndDim = (mat) => {
+            if (!mat) return;
+            if (!this._savedAlphas.has(mat)) {
+                this._savedAlphas.set(mat, mat.alpha);
+            }
+            if (mat.isFrozen) mat.unfreeze();
+            mat.alpha *= alpha;
+        };
 
         const dimEntry = (entry) => {
             if (!entry) return;
             for (const part of ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath']) {
                 if (entry[part] && entry[part].material) {
-                    if (entry[part].material.isFrozen) entry[part].material.unfreeze();
-                    entry[part].material.alpha *= alpha;
+                    saveAndDim(entry[part].material);
                 }
             }
             // Hide labels entirely in panoramic mode
@@ -678,14 +690,8 @@ class PanoramicRenderer {
 
         // Dim black holes and accretion disks
         for (const [, e] of cr.blackHoleMeshes) {
-            if (e.mesh && e.mesh.material) {
-                if (e.mesh.material.isFrozen) e.mesh.material.unfreeze();
-                e.mesh.material.alpha *= alpha;
-            }
-            if (e.disk && e.disk.material) {
-                if (e.disk.material.isFrozen) e.disk.material.unfreeze();
-                e.disk.material.alpha *= alpha;
-            }
+            if (e.mesh && e.mesh.material) saveAndDim(e.mesh.material);
+            if (e.disk && e.disk.material) saveAndDim(e.disk.material);
             if (e.label) e.label.setEnabled(false);
             if (e.typeLabel) e.typeLabel.setEnabled(false);
         }
@@ -695,18 +701,22 @@ class PanoramicRenderer {
 
         // Dim connection lines
         for (const conn of cr.blackHoleConnections) {
-            if (conn) conn.alpha *= alpha;
+            if (conn) {
+                if (!this._savedAlphas.has(conn)) {
+                    this._savedAlphas.set(conn, conn.alpha);
+                }
+                conn.alpha *= alpha;
+            }
         }
 
         if (cr._spiralTube && cr._spiralTube.material) {
-            if (cr._spiralTube.material.isFrozen) cr._spiralTube.material.unfreeze();
-            cr._spiralTube.material.alpha *= alpha;
+            saveAndDim(cr._spiralTube.material);
         }
 
         // Hide memory rings
         for (const ring of cr.memoryLines) {
             if (ring && ring.material) {
-                if (ring.material.isFrozen) ring.material.unfreeze();
+                saveAndDim(ring.material);
                 ring.material.alpha = 0;
             }
         }
@@ -717,16 +727,20 @@ class PanoramicRenderer {
         this._mainSpiralHidden = false;
         const cr = this.cityRenderer;
 
+        const restoreMat = (mat) => {
+            if (!mat) return;
+            const saved = this._savedAlphas.get(mat);
+            if (saved !== undefined) {
+                if (mat.isFrozen) mat.unfreeze();
+                mat.alpha = saved;
+            }
+        };
+
         const restoreEntry = (entry) => {
             if (!entry) return;
-            if (entry.mesh && entry.mesh.material) {
-                if (entry.mesh.material.isFrozen) entry.mesh.material.unfreeze();
-                entry.mesh.material.alpha = 0.85;
-            }
-            for (const part of ['cap', 'roof', 'chimney', 'truePath', 'falsePath']) {
+            for (const part of ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath']) {
                 if (entry[part] && entry[part].material) {
-                    if (entry[part].material.isFrozen) entry[part].material.unfreeze();
-                    entry[part].material.alpha = 0.9;
+                    restoreMat(entry[part].material);
                 }
             }
             // Re-enable labels
@@ -741,14 +755,8 @@ class PanoramicRenderer {
 
         // Restore black holes and accretion disks
         for (const [, e] of cr.blackHoleMeshes) {
-            if (e.mesh && e.mesh.material) {
-                if (e.mesh.material.isFrozen) e.mesh.material.unfreeze();
-                e.mesh.material.alpha = 0.95;
-            }
-            if (e.disk && e.disk.material) {
-                if (e.disk.material.isFrozen) e.disk.material.unfreeze();
-                e.disk.material.alpha = 0.7;
-            }
+            if (e.mesh && e.mesh.material) restoreMat(e.mesh.material);
+            if (e.disk && e.disk.material) restoreMat(e.disk.material);
             if (e.label) e.label.setEnabled(true);
             if (e.typeLabel) e.typeLabel.setEnabled(true);
         }
@@ -758,21 +766,22 @@ class PanoramicRenderer {
 
         // Restore connection lines
         for (const conn of cr.blackHoleConnections) {
-            if (conn) conn.alpha = 0.4;
+            if (conn) {
+                const saved = this._savedAlphas.get(conn);
+                if (saved !== undefined) conn.alpha = saved;
+            }
         }
 
         if (cr._spiralTube && cr._spiralTube.material) {
-            if (cr._spiralTube.material.isFrozen) cr._spiralTube.material.unfreeze();
-            cr._spiralTube.material.alpha = 0.55;
+            restoreMat(cr._spiralTube.material);
         }
 
         // Restore memory rings
         for (const ring of cr.memoryLines) {
-            if (ring && ring.material) {
-                if (ring.material.isFrozen) ring.material.unfreeze();
-                ring.material.alpha = 0.5;
-            }
+            if (ring && ring.material) restoreMat(ring.material);
         }
+
+        this._savedAlphas.clear();
     }
 
     // ─── Material Cache (flat, no emissive/specular — max ~10 materials) ──

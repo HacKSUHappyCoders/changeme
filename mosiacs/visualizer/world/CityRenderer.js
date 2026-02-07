@@ -73,6 +73,7 @@ class CityRenderer {
 
         // ── Main spiral flow bubbles ──
         this._mainBubbles = [];           // active bubble meshes
+        this._mainBubbleRAFs = [];        // RAF IDs for cancellation
         this.mainBubbleCount = 1000;       // 10x more bubbles (was 10)
         this.mainBubbleSize = 1.5;        // LARGER for visibility
         this.mainBubbleSizeVariance = 0.3;
@@ -689,6 +690,7 @@ class CityRenderer {
         const staggerDelay = (index / totalBubbles) * duration;
 
         let startTime = null;
+        let rafId = null;
 
         const animate = (time) => {
             if (bubble.isDisposed()) return;
@@ -721,16 +723,23 @@ class CityRenderer {
                 bubble.material.alpha = 0.6 + Math.sin(time * 0.003 + index * 0.8) * 0.2;
             }
 
-            requestAnimationFrame(animate);
+            rafId = requestAnimationFrame(animate);
         };
 
-        requestAnimationFrame(animate);
+        rafId = requestAnimationFrame(animate);
+        this._mainBubbleRAFs.push(() => cancelAnimationFrame(rafId));
     }
 
     /**
      * Dispose all main spiral bubbles.
      */
     _disposeMainBubbles() {
+        // Cancel all RAF loops first to prevent ghost animations
+        for (const cancel of this._mainBubbleRAFs) {
+            cancel();
+        }
+        this._mainBubbleRAFs = [];
+
         for (const bubble of this._mainBubbles) {
             if (bubble && !bubble.isDisposed()) {
                 if (bubble.material) bubble.material.dispose();
