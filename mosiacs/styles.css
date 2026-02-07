@@ -563,7 +563,7 @@ input[type="file"] {
     border-radius: 6px;
 }
 
-/* Editor wrap: gutter + textarea side by side */
+/* Editor wrap: gutter + editor stack side by side */
 .code-editor-wrap {
     display: flex;
     flex: 1;
@@ -586,24 +586,84 @@ input[type="file"] {
     color: #ffe600;
     font-weight: bold;
     text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
+    background: rgba(255, 230, 0, 0.08);
 }
 
-.code-textarea {
+/* Editor stack: syntax overlay behind transparent textarea */
+.code-editor-stack {
+    position: relative;
     flex: 1;
-    resize: none;
-    border: none;
-    outline: none;
+    overflow: hidden;
     background: rgba(0, 0, 0, 0.15);
-    color: rgba(255, 255, 255, 0.65);
+}
+
+.code-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.85);
     font: 12px/1.7 'Consolas', 'Courier New', monospace;
     padding: 0 14px;
     tab-size: 4;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+    z-index: 1;
 }
 
-.code-textarea::-webkit-scrollbar { width: 6px; }
+.code-hl-line {
+    transition: background-color 0.15s ease;
+}
+
+.code-hl-line.highlighted {
+    background: rgba(255, 230, 0, 0.1);
+    box-shadow: inset 0 0 40px rgba(255, 230, 0, 0.05);
+    animation: hlPulse 1.5s ease-in-out 1;
+}
+
+@keyframes hlPulse {
+    0%, 100% { background: rgba(255, 230, 0, 0.1); }
+    50%      { background: rgba(255, 230, 0, 0.18); }
+}
+
+.code-textarea {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    resize: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: transparent;
+    caret-color: #fff;
+    font: 12px/1.7 'Consolas', 'Courier New', monospace;
+    padding: 0 14px;
+    tab-size: 4;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+    overflow: auto;
+    z-index: 2;
+}
+
+.code-textarea::selection { background: rgba(100, 150, 255, 0.3); }
+.code-textarea::-webkit-scrollbar { width: 6px; height: 6px; }
 .code-textarea::-webkit-scrollbar-track { background: transparent; }
 .code-textarea::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 3px; }
 .code-textarea::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+/* Syntax highlight colors (VS Code dark inspired) */
+.hl-kw  { color: #c586c0; }
+.hl-ty  { color: #4ec9b0; }
+.hl-str { color: #ce9178; }
+.hl-cmt { color: #6a9955; font-style: italic; }
+.hl-num { color: #b5cea8; }
+.hl-fn  { color: #dcdcaa; }
+.hl-pre { color: #9cdcfe; }
 
 .code-panel-content {
     flex: 1;
