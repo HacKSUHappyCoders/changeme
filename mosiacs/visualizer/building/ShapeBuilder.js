@@ -10,42 +10,58 @@ class ShapeBuilder {
      * Get the shape profile (size/height) for each operation type.
      * 
      * Hierarchy (biggest → smallest):
-     *   CALL     — tallest & widest (function entry, the "cathedral tower")
-     *   RETURN   — tall but narrower (function exit, the "capstone")
-     *   LOOP     — medium-large (loop structure, repeating motif)
-     *   IF/ELSE  — medium (branching decisions)
-     *   DECL     — medium-small (variable birth)
-     *   ASSIGN   — smallest (incremental change, builds off parent)
+     *   CALL      — tallest & widest (function entry, the "cathedral tower")
+     *   RETURN    — tall but narrower (function exit, the "capstone")
+     *   LOOP      — medium-large (loop structure, repeating motif)
+     *   CONDITION — medium (evaluation of a predicate)
+     *   BRANCH    — medium (branch taken — if/else path)
+     *   IF/ELSE   — medium (legacy branching decisions)
+     *   DECL      — medium-small (variable birth)
+     *   ASSIGN    — smallest (incremental change, builds off parent)
      */
     getShapeProfile(type) {
         const profiles = {
             'CALL': {
                 heightMin: 4.0, heightMax: 5.5,
-                topWidthMin: 0.4, topWidthMax: 0.6,    // Much narrower top
-                bottomWidthMin: 2.2, bottomWidthMax: 3.0, // Much wider base
+                topWidthMin: 0.4, topWidthMax: 0.6,
+                bottomWidthMin: 2.2, bottomWidthMax: 3.0,
                 depthMin: 1.8, depthMax: 2.4,
-                shape: 'trapezoidTower' // wide base, narrow top — grand tower
+                shape: 'trapezoidTower'
             },
             'RETURN': {
                 heightMin: 3.0, heightMax: 4.0,
-                topWidthMin: 1.2, topWidthMax: 1.6,    // Wide top
-                bottomWidthMin: 0.6, bottomWidthMax: 0.8, // Narrow base
+                topWidthMin: 1.2, topWidthMax: 1.6,
+                bottomWidthMin: 0.6, bottomWidthMax: 0.8,
                 depthMin: 1.2, depthMax: 1.6,
-                shape: 'invertedTrapezoid' // narrow base, wide top — capstone
+                shape: 'invertedTrapezoid'
             },
             'LOOP': {
                 heightMin: 2.5, heightMax: 3.5,
                 topWidthMin: 0.4, topWidthMax: 0.6,
                 bottomWidthMin: 1.6, bottomWidthMax: 2.2,
                 depthMin: 1.4, depthMax: 1.8,
-                shape: 'trapezoidWide' // wide and squat — repeating block
+                shape: 'trapezoidWide'
+            },
+            'CONDITION': {
+                heightMin: 2.0, heightMax: 3.0,
+                topWidthMin: 0.3, topWidthMax: 0.5,
+                bottomWidthMin: 1.2, bottomWidthMax: 1.6,
+                depthMin: 1.0, depthMax: 1.4,
+                shape: 'trapezoidAngled'
+            },
+            'BRANCH': {
+                heightMin: 1.8, heightMax: 2.8,
+                topWidthMin: 0.3, topWidthMax: 0.5,
+                bottomWidthMin: 1.2, bottomWidthMax: 1.6,
+                depthMin: 1.0, depthMax: 1.4,
+                shape: 'trapezoidAngled'
             },
             'IF': {
                 heightMin: 2.0, heightMax: 3.0,
                 topWidthMin: 0.3, topWidthMax: 0.5,
                 bottomWidthMin: 1.2, bottomWidthMax: 1.6,
                 depthMin: 1.0, depthMax: 1.4,
-                shape: 'trapezoidAngled' // asymmetric trapezoid — decision
+                shape: 'trapezoidAngled'
             },
             'ELSE': {
                 heightMin: 1.8, heightMax: 2.8,

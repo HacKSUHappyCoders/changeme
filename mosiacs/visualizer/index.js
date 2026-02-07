@@ -71,10 +71,10 @@ class CodeVisualizer {
         const trace = this.parser.parse(codeTrace);
 
         // ── Group child steps under their parent "container" step ────
-        // Container types: CALL, LOOP, IF, ELSE
+        // Container types: CALL, LOOP, CONDITION, BRANCH  (and legacy IF/ELSE)
         // Everything between a container and the next container (or RETURN
         // / next container at same depth) belongs to that container.
-        const containerTypes = new Set(['CALL', 'LOOP', 'IF', 'ELSE']);
+        const containerTypes = new Set(['CALL', 'LOOP', 'CONDITION', 'BRANCH', 'IF', 'ELSE']);
         const childMap = this._buildChildMap(trace, containerTypes);
 
         // Create descending spiral path
@@ -149,13 +149,24 @@ class CodeVisualizer {
     }
 
     /**
-     * Update statistics display
+     * Update statistics display, including metadata when available.
      */
     updateStats(count) {
         const statsElement = document.getElementById('stats');
-        if (statsElement) {
-            statsElement.innerHTML = `<strong>Visualizing:</strong><br>${count} execution steps`;
+        if (!statsElement) return;
+
+        let html = `<strong>Visualizing:</strong><br>${count} execution steps`;
+
+        const meta = this.parser.metadata;
+        if (meta) {
+            if (meta.file_name)  html += `<br>File: ${meta.file_name}`;
+            if (meta.language)   html += ` (${meta.language})`;
+            if (meta.total_lines) html += `<br>${meta.total_lines} lines`;
+            if (meta.num_functions) html += `, ${meta.num_functions} function(s)`;
+            if (meta.num_variables) html += `, ${meta.num_variables} vars`;
         }
+
+        statsElement.innerHTML = html;
     }
 
     /**
@@ -163,6 +174,22 @@ class CodeVisualizer {
      */
     resetCamera() {
         this.sceneManager.resetCamera();
+    }
+
+    /**
+     * Collapse any currently exploded building and restore camera
+     */
+    collapseExplodedBuilding() {
+        return this.explodeManager.collapseIfExploded();
+    }
+
+    /**
+     * Toggle debug column mode for shattered pieces
+     * When enabled: shards fly to side column in front of camera for easy debugging
+     * When disabled: shards explode in rings around the building (original behavior)
+     */
+    toggleDebugColumnMode() {
+        return this.explodeManager.toggleDebugMode();
     }
 
     /**

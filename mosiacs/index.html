@@ -14,7 +14,9 @@
         <div>
             <button id="loadExample">Load Example Code</button>
             <button id="resetCamera">Reset Camera</button>
+            <button id="collapseBuilding">De-Explode Building</button>
             <button id="toggleAnimation">Pause Animation</button>
+            <button id="toggleDebugMode" class="debug-btn">🐛 Debug Column: ON</button>
         </div>
     </div>
     <div id="info">
@@ -23,7 +25,8 @@
         • Right mouse: Pan<br>
         • Scroll: Zoom<br>
         • <strong>Click a building</strong> to shatter &amp; inspect variables<br>
-        • Click again to collapse<br>
+        • Click building again OR use <strong>De-Explode button</strong> to collapse<br>
+        • <strong>Debug Column Mode:</strong> Shards fly to screen edge for easy viewing<br>
         <br>
         <span id="stats"></span>
     </div>
@@ -33,14 +36,25 @@
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     <script src="parser.js"></script>
-    <!-- Visualizer modules -->
-    <script src="visualizer/SceneManager.js"></script>
-    <script src="visualizer/MaterialManager.js"></script>
-    <script src="visualizer/SpiralPathBuilder.js"></script>
-    <script src="visualizer/ShapeBuilder.js"></script>
-    <script src="visualizer/AnimationController.js"></script>
-    <script src="visualizer/ExplodeManager.js"></script>
-    <script src="visualizer/BuildingFactory.js"></script>
+
+    <!-- Scene modules -->
+    <script src="visualizer/scene/SceneManager.js"></script>
+    <script src="visualizer/scene/MaterialManager.js"></script>
+
+    <!-- Building modules -->
+    <script src="visualizer/building/SpiralPathBuilder.js"></script>
+    <script src="visualizer/building/ShapeBuilder.js"></script>
+    <script src="visualizer/building/AnimationController.js"></script>
+    <script src="visualizer/building/BuildingFactory.js"></script>
+
+    <!-- Explode modules -->
+    <script src="visualizer/explode/StepLabelHelper.js"></script>
+    <script src="visualizer/explode/ShardFactory.js"></script>
+    <script src="visualizer/explode/ShardAnimator.js"></script>
+    <script src="visualizer/explode/ExplodeCameraController.js"></script>
+    <script src="visualizer/explode/ExplodeManager.js"></script>
+
+    <!-- Main visualizer -->
     <script src="visualizer/index.js"></script>
     <script src="main.js"></script>
 </body>

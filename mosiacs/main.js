@@ -10,19 +10,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the visualizer
     visualizer.init();
 
-    // Load example code by default
-    const exampleTrace = CodeParser.getExampleTrace();
-    visualizer.visualize(exampleTrace);
+    // Load trace data from the API on startup
+    CodeParser.getExampleTrace()
+        .then(json => visualizer.visualize(json))
+        .catch(err => console.error('Failed to load trace data:', err));
 
-    // Load example button
+    // Load example button — re-fetches from the API so you can
+    // swap out data/test_data.json while the server is running
     document.getElementById('loadExample').addEventListener('click', () => {
-        const exampleTrace = CodeParser.getExampleTrace();
-        visualizer.visualize(exampleTrace);
+        CodeParser.getExampleTrace()
+            .then(json => visualizer.visualize(json))
+            .catch(err => console.error('Failed to load trace data:', err));
     });
 
     // Reset camera button
     document.getElementById('resetCamera').addEventListener('click', () => {
         visualizer.resetCamera();
+    });
+
+    // Collapse/De-explode building button
+    document.getElementById('collapseBuilding').addEventListener('click', () => {
+        const wasCollapsed = visualizer.collapseExplodedBuilding();
+        if (!wasCollapsed) {
+            console.log('No building is currently exploded.');
+        }
     });
 
     // Toggle animation button
@@ -32,7 +43,19 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtn.textContent = isAnimating ? 'Pause Animation' : 'Resume Animation';
     });
 
+    // Toggle debug column mode button
+    const debugBtn = document.getElementById('toggleDebugMode');
+    debugBtn.classList.add('active'); // Start with active state since debug mode is ON by default
+    debugBtn.addEventListener('click', () => {
+        const debugMode = visualizer.toggleDebugColumnMode();
+        debugBtn.textContent = debugMode ? '🐛 Debug Column: ON' : '🐛 Debug Column: OFF';
+        debugBtn.classList.toggle('active', debugMode);
+        console.log(`Debug Column Mode: ${debugMode ? 'ON' : 'OFF'}`);
+    });
+
     // Show welcome message
     console.log('🎨 Code Mosaic Visualizer initialized!');
     console.log('Click "Load Example Code" to see the visualization.');
+    console.log('Click any building to explode and see variable data.');
+    console.log('Debug Column Mode is ON by default - shards will fly to the side of your screen!');
 });

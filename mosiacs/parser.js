@@ -1,32 +1,48 @@
 /**
  * Parser for the C code runtime model
- * Format: TYPE|name|value|address|line|depth
+ * Accepts JSON trace data with metadata and traces arrays.
+ *
+ * Input JSON shape:
+ *   { metadata: { … }, traces: [ { type, subject, value, address, line_number, stack_depth, … }, … ] }
+ *
+ * Each trace entry is normalised into a step object that the rest of
+ * the visualizer understands.
  */
 class CodeParser {
     constructor() {
         this.executionTrace = [];
+        this.metadata = null;
     }
 
     /**
-     * Parse the raw code trace string
-     * @param {string} codeTrace - Multi-line string of execution trace
+     * Parse a JSON code-trace.
+     * @param {object|string} jsonData – the full JSON object (or a JSON string)
      * @returns {Array} Parsed execution steps
      */
-    parse(codeTrace) {
-        const lines = codeTrace.trim().split('\n');
-        this.executionTrace = lines.map((line, index) => {
-            const parts = line.split('|');
+    parse(jsonData) {
+        const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+
+        this.metadata = data.metadata || null;
+
+        const traces = data.traces || [];
+
+        this.executionTrace = traces.map((t, index) => {
             return {
-                step: index,
-                type: parts[0],
-                name: parts[1],
-                value: parts[2],
-                address: parts[3],
-                line: parseInt(parts[4]) || 0,
-                depth: parseInt(parts[5]) || 0,
-                raw: line
+                step:       index,
+                type:       t.type,                          // CALL, DECL, LOOP, ASSIGN, RETURN, CONDITION, BRANCH
+                name:       t.subject || '',                 // primary identifier
+                value:      t.value !== undefined ? String(t.value) : '',
+                address:    t.address || '0',
+                line:       t.line_number || 0,
+                depth:      t.stack_depth || 0,
+                // New fields from JSON
+                subtype:    t.subtype || '',                 // e.g. "for", "else", "literal"
+                condition:  t.condition || '',               // e.g. "i<5", "sum < 10"
+                conditionResult: t.condition_result !== undefined ? t.condition_result : null,
+                raw:        t
             };
         });
+
         return this.executionTrace;
     }
 
@@ -35,93 +51,31 @@ class CodeParser {
      */
     getColorForType(type) {
         const colors = {
-            'CALL': { r: 0.8, g: 0.2, b: 0.2, a: 0.8 },      // Ruby red
-            'DECL': { r: 0.2, g: 0.4, b: 0.8, a: 0.8 },      // Sapphire blue
-            'LOOP': { r: 0.6, g: 0.2, b: 0.8, a: 0.8 },      // Amethyst purple
-            'ASSIGN': { r: 0.2, g: 0.8, b: 0.4, a: 0.8 },    // Emerald green
-            'RETURN': { r: 0.9, g: 0.7, b: 0.1, a: 0.8 },    // Amber gold
-            'IF': { r: 0.9, g: 0.4, b: 0.2, a: 0.8 },        // Topaz orange
-            'ELSE': { r: 0.4, g: 0.7, b: 0.9, a: 0.8 },      // Aquamarine
-            'DEFAULT': { r: 0.7, g: 0.7, b: 0.7, a: 0.8 }    // Crystal clear
+            'CALL':      { r: 0.8, g: 0.2, b: 0.2, a: 0.8 },   // Ruby red
+            'DECL':      { r: 0.2, g: 0.4, b: 0.8, a: 0.8 },   // Sapphire blue
+            'LOOP':      { r: 0.6, g: 0.2, b: 0.8, a: 0.8 },   // Amethyst purple
+            'ASSIGN':    { r: 0.2, g: 0.8, b: 0.4, a: 0.8 },   // Emerald green
+            'RETURN':    { r: 0.9, g: 0.7, b: 0.1, a: 0.8 },   // Amber gold
+            'CONDITION': { r: 0.9, g: 0.4, b: 0.2, a: 0.8 },   // Topaz orange
+            'BRANCH':    { r: 0.4, g: 0.7, b: 0.9, a: 0.8 },   // Aquamarine
+            'IF':        { r: 0.9, g: 0.4, b: 0.2, a: 0.8 },   // Topaz orange  (legacy)
+            'ELSE':      { r: 0.4, g: 0.7, b: 0.9, a: 0.8 },   // Aquamarine    (legacy)
+            'DEFAULT':   { r: 0.7, g: 0.7, b: 0.7, a: 0.8 }    // Crystal clear
         };
         return colors[type] || colors['DEFAULT'];
     }
 
     /**
-     * Get example code trace
+     * Fetch trace data from the Flask API.
+     * @param {string} [filename='test_data.json'] – JSON file in data/
+     * @returns {Promise<object>} The trace JSON object
      */
-    static getExampleTrace() {
-        return `CALL|main|||1
-DECL|sum|0|00000049923FF88C|2|1
-LOOP|iter|3|1
-DECL|i|0|00000049923FF888|3|1
-ASSIGN|sum|0|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|1|00000049923FF888|3|1
-ASSIGN|sum|1|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|2|00000049923FF888|3|1
-ASSIGN|sum|3|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|3|00000049923FF888|3|1
-ASSIGN|sum|6|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|4|00000049923FF888|3|1
-ASSIGN|sum|10|00000049923FF88C|4|1
-RETURN|literal|0|0|7|1
-CALL|main|||1
-DECL|sum|0|00000049923FF88C|2|1
-LOOP|iter|3|1
-DECL|i|0|00000049923FF888|3|1
-ASSIGN|sum|0|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|1|00000049923FF888|3|1
-ASSIGN|sum|1|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|2|00000049923FF888|3|1
-ASSIGN|sum|3|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|3|00000049923FF888|3|1
-ASSIGN|sum|6|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|4|00000049923FF888|3|1
-ASSIGN|sum|10|00000049923FF88C|4|1
-RETURN|literal|0|0|7|1
-CALL|main|||1
-DECL|sum|0|00000049923FF88C|2|1
-LOOP|iter|3|1
-DECL|i|0|00000049923FF888|3|1
-ASSIGN|sum|0|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|1|00000049923FF888|3|1
-ASSIGN|sum|1|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|2|00000049923FF888|3|1
-ASSIGN|sum|3|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|3|00000049923FF888|3|1
-ASSIGN|sum|6|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|4|00000049923FF888|3|1
-ASSIGN|sum|10|00000049923FF88C|4|1
-RETURN|literal|0|0|7|1
-CALL|main|||1
-DECL|sum|0|00000049923FF88C|2|1
-LOOP|iter|3|1
-DECL|i|0|00000049923FF888|3|1
-ASSIGN|sum|0|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|1|00000049923FF888|3|1
-ASSIGN|sum|1|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|2|00000049923FF888|3|1
-ASSIGN|sum|3|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|3|00000049923FF888|3|1
-ASSIGN|sum|6|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|4|00000049923FF888|3|1
-ASSIGN|sum|10|00000049923FF88C|4|1
-RETURN|literal|0|0|7|1`;
+    static getExampleTrace(filename) {
+        const url = filename ? `/api/trace/${filename}` : '/api/trace';
+        return fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(`Failed to load trace: ${res.status}`);
+                return res.json();
+            });
     }
 }
