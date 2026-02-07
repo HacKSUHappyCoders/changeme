@@ -21,11 +21,11 @@ class CityRenderer {
         this.branchMeshes = new Map();
         this.memoryLines = [];
 
-        // Spiral layout config
-        this.spiralRadiusStart = 3;
-        this.spiralRadiusGrowth = 0.35;
-        this.spiralAngleStep = 0.55;
-        this.spiralHeightStep = 0.45;
+        // Spiral layout config (from centralized SpiralConfig.js)
+        this.spiralRadiusStart = SPIRAL_CONFIG.radiusStart;
+        this.spiralRadiusGrowth = SPIRAL_CONFIG.radiusGrowth;
+        this.spiralAngleStep = SPIRAL_CONFIG.angleStep;
+        this.spiralHeightStep = SPIRAL_CONFIG.heightStep;
 
         // Slot management
         this._nextSlot = 0;
@@ -130,6 +130,9 @@ class CityRenderer {
         this._renderVariables(snapshot.variables);
         this._renderLoops(snapshot.loops);
         this._renderBranches(snapshot.branches);
+        // Reposition all buildings now that _nextSlot is finalized,
+        // so every building sits at the correct Y on the spiral.
+        this._updateBuildingPositions();
         this._renderMemoryLayer(snapshot.memory);
         this._renderSpiralPath();
     }
@@ -167,6 +170,99 @@ class CityRenderer {
         mat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.4);
         mat.alpha = 0.55;
         this._spiralTube.material = mat;
+    }
+
+    // ─── Reposition buildings to final spiral Y ──────────────────
+
+    _updateBuildingPositions() {
+        // Function Districts (base baked at y=0 local)
+        for (const [key, entry] of this.functionMeshes) {
+            const slot = this._slotMap.get(key);
+            if (slot === undefined || !entry.mesh) continue;
+            const pos = this._spiralPosition(slot);
+            entry.mesh.position.x = pos.x;
+            entry.mesh.position.y = pos.y;
+            entry.mesh.position.z = pos.z;
+            if (entry.cap) {
+                entry.cap.position.x = pos.x;
+                entry.cap.position.y = pos.y + entry.height + 0.15;
+                entry.cap.position.z = pos.z;
+            }
+            if (entry.label) {
+                entry.label.position.x = pos.x;
+                entry.label.position.y = pos.y + entry.height + 0.5;
+                entry.label.position.z = pos.z;
+            }
+        }
+
+        // Variable Houses (box centered, shifted up by height/2)
+        for (const [key, entry] of this.variableMeshes) {
+            const slot = this._slotMap.get(key);
+            if (slot === undefined || !entry.mesh) continue;
+            const pos = this._spiralPosition(slot);
+            entry.mesh.position.x = pos.x;
+            entry.mesh.position.y = pos.y + entry.height / 2;
+            entry.mesh.position.z = pos.z;
+            if (entry.roof) {
+                entry.roof.position.x = pos.x;
+                entry.roof.position.y = pos.y + entry.height + 0.35;
+                entry.roof.position.z = pos.z;
+            }
+            if (entry.label) {
+                entry.label.position.x = pos.x;
+                entry.label.position.y = pos.y + entry.height + 1.3;
+                entry.label.position.z = pos.z;
+            }
+        }
+
+        // Loop Factories (cylinder centered, shifted up by height/2)
+        for (const [key, entry] of this.loopMeshes) {
+            const slot = this._slotMap.get(key);
+            if (slot === undefined || !entry.mesh) continue;
+            const pos = this._spiralPosition(slot);
+            const tangentAngle = this._spiralTangentAngle(slot);
+            entry.mesh.position.x = pos.x;
+            entry.mesh.position.y = pos.y + entry.height / 2;
+            entry.mesh.position.z = pos.z;
+            if (entry.chimney) {
+                entry.chimney.position.x = pos.x + 0.7 * Math.cos(tangentAngle);
+                entry.chimney.position.y = pos.y + entry.height + 0.65;
+                entry.chimney.position.z = pos.z + 0.7 * Math.sin(tangentAngle);
+            }
+            if (entry.label) {
+                entry.label.position.x = pos.x;
+                entry.label.position.y = pos.y + entry.height + 2;
+                entry.label.position.z = pos.z;
+            }
+        }
+
+        // Branch Intersections (base baked at y=0 local)
+        for (const [key, entry] of this.branchMeshes) {
+            const slot = this._slotMap.get(key);
+            if (slot === undefined || !entry.mesh) continue;
+            const pos = this._spiralPosition(slot);
+            const tangentAngle = this._spiralTangentAngle(slot);
+            entry.mesh.position.x = pos.x;
+            entry.mesh.position.y = pos.y;
+            entry.mesh.position.z = pos.z;
+            if (entry.truePath) {
+                const tAngle = tangentAngle + Math.PI / 6;
+                entry.truePath.position.x = pos.x + Math.cos(tAngle) * 0.8;
+                entry.truePath.position.y = pos.y + 0.1;
+                entry.truePath.position.z = pos.z + Math.sin(tAngle) * 0.8;
+            }
+            if (entry.falsePath) {
+                const fAngle = tangentAngle - Math.PI / 6;
+                entry.falsePath.position.x = pos.x + Math.cos(fAngle) * 0.8;
+                entry.falsePath.position.y = pos.y + 0.1;
+                entry.falsePath.position.z = pos.z + Math.sin(fAngle) * 0.8;
+            }
+            if (entry.label) {
+                entry.label.position.x = pos.x;
+                entry.label.position.y = pos.y + entry.height + 1;
+                entry.label.position.z = pos.z;
+            }
+        }
     }
 
     // ─── Function Districts ────────────────────────────────────────
