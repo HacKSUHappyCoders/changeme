@@ -40,6 +40,15 @@ def create_type_CALL(*fields):
         result["args"] = params
     return result
 
+def create_type_EXTERNAL_CALL(
+    subject: str, line_number: int, stack_depth: int
+) -> dict:
+    return {
+        "type": "EXTERNAL_CALL",
+        "subject": subject,
+        "line_number": line_number,
+        "stack_depth": stack_depth,
+    }
 
 def create_type_CONDITION(
     subject: str, condition_result: int, line_number: int, stack_depth: int
@@ -225,6 +234,7 @@ def stdin_to_json(stdin_data: str) -> dict[str, dict[str, str] | list[dict[str, 
         "CASE": create_type_CASE,
         "CONDITION": create_type_CONDITION,
         "DECL": create_type_DECL,
+        "EXTERNAL_CALL": create_type_EXTERNAL_CALL,
         "LOOP": create_type_LOOP,
         "PARAM": create_type_PARAM,
         "READ": create_type_READ,

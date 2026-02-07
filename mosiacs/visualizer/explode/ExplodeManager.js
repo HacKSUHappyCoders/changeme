@@ -8,7 +8,7 @@
  */
 class ExplodeManager {
     constructor(scene, cityRenderer) {
-        this.scene  = scene;
+        this.scene = scene;
 
         /** Reference to CityRenderer for on-demand sub-spiral rendering */
         this.cityRenderer = cityRenderer || null;
@@ -55,7 +55,7 @@ class ExplodeManager {
 
         const mat = new BABYLON.StandardMaterial('selectionRingMat', this.scene);
         mat.emissiveColor = new BABYLON.Color3(0.2, 1.0, 1.0);
-        mat.diffuseColor  = new BABYLON.Color3(0.1, 0.7, 1.0);
+        mat.diffuseColor = new BABYLON.Color3(0.1, 0.7, 1.0);
         mat.specularColor = new BABYLON.Color3(0.3, 0.9, 1.0);
         mat.alpha = 0.95;
         mat.disableLighting = true;
@@ -71,7 +71,7 @@ class ExplodeManager {
             BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
         );
         pulseAnim.setKeys([
-            { frame: 0,  value: 0.95 },
+            { frame: 0, value: 0.95 },
             { frame: 30, value: 0.65 },
             { frame: 60, value: 0.95 }
         ]);
@@ -729,7 +729,7 @@ class ExplodeManager {
     _buildFunctionInspector(bd, fn) {
         let h = '';
         h += `<div class="inspector-header fn-header">
-            <span class="inspector-icon">🏛️</span>
+            <span class="inspector-icon">️</span>
             <span>${fn.name || bd.stepData.name}()</span>
         </div>`;
         h += `<div class="inspector-section">`;
@@ -767,7 +767,7 @@ class ExplodeManager {
     _buildExternalCallInspector(bd, fn) {
         let h = '';
         h += `<div class="inspector-header" style="background: linear-gradient(135deg, #1a0033 0%, #4a148c 100%);">
-            <span class="inspector-icon">📦</span>
+            <span class="inspector-icon"></span>
             <span>${fn.name}()</span>
             <span style="opacity: 0.7; font-size: 0.9em; margin-left: 8px;">EXTERNAL</span>
         </div>`;
@@ -830,7 +830,7 @@ class ExplodeManager {
     _buildVariableInspector(bd, v) {
         let h = '';
         h += `<div class="inspector-header var-header">
-            <span class="inspector-icon">🏠</span>
+            <span class="inspector-icon"></span>
             <span>${v.name || bd.stepData.name}</span>
         </div>`;
         h += `<div class="inspector-section">`;
@@ -865,14 +865,14 @@ class ExplodeManager {
     _buildLoopInspector(bd, loop) {
         let h = '';
         h += `<div class="inspector-header loop-header">
-            <span class="inspector-icon">🏭</span>
+            <span class="inspector-icon"></span>
             <span>${(loop.subtype || 'loop').toUpperCase()}</span>
         </div>`;
         h += `<div class="inspector-section">`;
         h += this._row('Type', (loop.subtype || 'loop').toUpperCase() + ' Loop');
         h += this._row('Condition', `<code>${loop.condition || bd.stepData.condition || '—'}</code>`);
         h += this._row('Iterations', loop.iterations !== undefined ? loop.iterations : '—');
-        h += this._row('Running', loop.running ? '🔄 yes' : '⏹ no');
+        h += this._row('Running', loop.running ? 'yes' : '⏹ no');
         h += this._row('Active', loop.active ? '✓ yes' : '✗ no');
         h += `</div>`;
 
@@ -899,7 +899,7 @@ class ExplodeManager {
     _buildBranchInspector(bd, br) {
         let h = '';
         h += `<div class="inspector-header cond-header">
-            <span class="inspector-icon">🔀</span>
+            <span class="inspector-icon"></span>
             <span>CONDITION</span>
         </div>`;
         h += `<div class="inspector-section">`;
@@ -978,7 +978,7 @@ class ExplodeManager {
         // ── Variable entity ──
         if (entity.type === 'variable') {
             h += `<div class="inspector-header var-header">
-                <span class="inspector-icon">🏠</span>
+                <span class="inspector-icon"></span>
                 <span>${entity.subject || entity.label}</span>
             </div>`;
             h += `<div class="inspector-section">`;
@@ -1007,14 +1007,14 @@ class ExplodeManager {
         // ── Loop entity ──
         if (entity.type === 'loop') {
             h += `<div class="inspector-header loop-header">
-                <span class="inspector-icon">🏭</span>
+                <span class="inspector-icon"></span>
                 <span>${entity.label || 'Loop'}</span>
             </div>`;
             h += `<div class="inspector-section">`;
             h += this._row('Type', `${(entity.subtype || 'loop').toUpperCase()} Loop`);
             h += this._row('Condition', `<code>${entity.condition || '—'}</code>`);
             h += this._row('Iterations', entity.iterations || '—');
-            h += this._row('Running', entity.running ? '🔄 yes' : '⏹ no');
+            h += this._row('Running', entity.running ? 'yes' : '⏹ no');
             h += `</div>`;
 
             if (entity.stepIndices && entity.stepIndices.length > 0) {
@@ -1035,7 +1035,7 @@ class ExplodeManager {
 
         // ── Call / Return entity ──
         if (entity.type === 'call' || entity.type === 'return') {
-            const icon = entity.type === 'call' ? '🏛️' : '↩️';
+            const icon = entity.type === 'call' ? '️' : '↩️';
             h += `<div class="inspector-header fn-header">
                 <span class="inspector-icon">${icon}</span>
                 <span>${entity.label || entity.type.toUpperCase()}</span>
@@ -1044,7 +1044,7 @@ class ExplodeManager {
             h += this._row('Type', entity.type === 'call' ? 'Function Call' : 'Return');
             if (entity.firstStep) {
                 const step = entity.firstStep;
-                if (step.name)    h += this._row('Name', step.name);
+                if (step.name) h += this._row('Name', step.name);
                 if (step.value !== undefined && step.value !== null)
                     h += this._row('Value', `<strong>${step.value}</strong>`);
                 if (step.depth !== undefined)
@@ -1059,7 +1059,7 @@ class ExplodeManager {
         // ── Condition / Branch entity ──
         if (entity.type === 'condition' || entity.type === 'branch') {
             h += `<div class="inspector-header cond-header">
-                <span class="inspector-icon">🔀</span>
+                <span class="inspector-icon"></span>
                 <span>${entity.label || 'Condition'}</span>
             </div>`;
             h += `<div class="inspector-section">`;
@@ -1088,10 +1088,10 @@ class ExplodeManager {
         h += this._row('Type', entity.type || '—');
         if (entity.firstStep) {
             const step = entity.firstStep;
-            if (step.name)        h += this._row('Name', step.name);
+            if (step.name) h += this._row('Name', step.name);
             if (step.value !== undefined && step.value !== null)
                 h += this._row('Value', `<strong>${step.value}</strong>`);
-            if (step.line)        h += this._row('Line', step.line);
+            if (step.line) h += this._row('Line', step.line);
         }
         if (entity.stepIndices)
             h += this._row('Steps', entity.stepIndices.length);
@@ -1236,7 +1236,7 @@ class ExplodeManager {
                     h += this._row('Current value', `<code>${entity.currentValue}</code>`);
                     if (entity.address) h += this._row('Address', entity.address);
                     h += this._row('Assignments', entity.values.length);
-                    
+
                     if (entity.values.length > 1) {
                         h += `</div>`;
                         h += `<div class="inspector-subtitle">Value History</div>`;
@@ -1365,7 +1365,7 @@ class ExplodeManager {
         // ── Variable entity (consolidated DECL + ASSIGNs) ──
         if (entity && entity.type === 'variable') {
             h += `<div class="inspector-header var-header">
-                <span class="inspector-icon">🏠</span>
+                <span class="inspector-icon"></span>
                 <span>${entity.subject || entity.label || 'Variable'}</span>
             </div>`;
             h += `<div class="inspector-section">`;
@@ -1394,14 +1394,14 @@ class ExplodeManager {
         // ── Loop entity (consolidated iterations) ──
         if (entity && entity.type === 'loop') {
             h += `<div class="inspector-header loop-header">
-                <span class="inspector-icon">🏭</span>
+                <span class="inspector-icon"></span>
                 <span>${entity.label}</span>
             </div>`;
             h += `<div class="inspector-section">`;
             h += this._row('Type', `${(entity.subtype || 'loop').toUpperCase()} Loop`);
             h += this._row('Condition', `<code>${entity.condition || '—'}</code>`);
             h += this._row('Iterations', entity.iterations);
-            h += this._row('Running', entity.running ? '🔄 yes' : '⏹ no');
+            h += this._row('Running', entity.running ? 'yes' : '⏹ no');
             h += `</div>`;
 
             if (entity.stepIndices.length > 0) {
@@ -1428,17 +1428,17 @@ class ExplodeManager {
         h += `<div class="inspector-section">`;
         h += this._row('Event Type', step.type);
         h += this._row('Trace Step', stepIndex !== undefined ? stepIndex : '—');
-        if (step.name)        h += this._row('Name', step.name);
+        if (step.name) h += this._row('Name', step.name);
         if (step.value !== undefined && step.value !== null)
             h += this._row('Value', `<strong>${step.value}</strong>`);
-        if (step.address)     h += this._row('Address', step.address);
-        if (step.line)        h += this._row('Line', step.line);
+        if (step.address) h += this._row('Address', step.address);
+        if (step.line) h += this._row('Line', step.line);
         if (step.depth !== undefined)
             h += this._row('Stack Depth', step.depth);
-        if (step.condition)   h += this._row('Condition', `<code>${step.condition}</code>`);
+        if (step.condition) h += this._row('Condition', `<code>${step.condition}</code>`);
         if (step.conditionResult !== undefined)
             h += this._row('Result', step.conditionResult ? '<span class="val-true">TRUE</span>' : '<span class="val-false">FALSE</span>');
-        if (step.subtype)     h += this._row('Subtype', step.subtype);
+        if (step.subtype) h += this._row('Subtype', step.subtype);
         h += `</div>`;
         return h;
     }
@@ -1501,14 +1501,14 @@ class ExplodeManager {
 
     _iconForType(type) {
         switch (type) {
-            case 'CALL':      return '🏛️';
-            case 'RETURN':    return '↩️';
-            case 'DECL':      return '🏠';
-            case 'ASSIGN':    return '📝';
-            case 'LOOP':      return '🏭';
-            case 'CONDITION': return '🔀';
-            case 'BRANCH':    return '🔀';
-            default:          return '📌';
+            case 'CALL': return '️';
+            case 'RETURN': return '↩️';
+            case 'DECL': return '';
+            case 'ASSIGN': return '';
+            case 'LOOP': return '';
+            case 'CONDITION': return '';
+            case 'BRANCH': return '';
+            default: return '';
         }
     }
 

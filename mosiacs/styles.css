@@ -748,3 +748,112 @@ input[type="file"] {
 .code-line.highlighted {
     animation: highlightPulse 1.5s ease-in-out 1;
 }
+
+/* ─── Sequencer Panel (Timeline) ─── */
+
+.sequencer-panel {
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    width: 800px;
+    height: 400px;
+    min-width: 400px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(
+        160deg,
+        rgba(15, 18, 30, 0.95) 0%,
+        rgba(10, 12, 22, 0.95) 100%
+    );
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    z-index: 90;
+    box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.6),
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    /* opacity/transform handled by JS class toggle for show/hide if needed, 
+       but we can just use display:none or similar.
+       Let's use a class 'open' similar to other panels. */
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.sequencer-panel.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.sequencer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px 12px 0 0;
+    cursor: grab;
+    flex-shrink: 0;
+}
+
+.sequencer-header:active {
+    cursor: grabbing;
+}
+
+.sequencer-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sequencer-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 18px;
+    padding: 0;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.sequencer-close:hover {
+    color: #fff;
+    background: none;
+    box-shadow: none;
+    transform: none;
+}
+
+.sequencer-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0 0 12px 12px;
+}
+
+.sequencer-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.sequencer-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sequencer-btn {
+    padding: 2px 8px;
+    font-size: 10px;
+    background: rgba(255, 255, 255, 0.1);
+}

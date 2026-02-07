@@ -101,10 +101,13 @@ class PythonMetadataCollector:
         self.num_comments = 0
         self.max_depth = 0
         self.function_names: list[str] = []
+        self.imports: list[str] = []
+        self.defined_functions: set[str] = set()
 
     def collect(self) -> dict:
         code_text = self.code_bytes.decode("utf-8")
         tree = self.ts_parser.parse(self.code_bytes)
+        self._extract_imports(tree.root_node)
         self._walk(tree.root_node, depth=0)
 
         st = os.stat(self.source_file)
@@ -132,14 +135,35 @@ class PythonMetadataCollector:
             "num_loops": self.num_loops,
             "num_branches": self.num_branches,
             "max_nesting_depth": self.max_depth,
+            "imports": ",".join(self.imports),
+            "defined_functions": ",".join(sorted(self.defined_functions)),
         }
+
+    def _extract_imports(self, node):
+        """Walk the AST and extract imported module names."""
+        if node.type == "import_statement":
+            # import module or import module as alias
+            for child in node.children:
+                if child.type == "dotted_name" or child.type == "identifier":
+                    module_name = get_text(child, self.code_bytes)
+                    self.imports.append(module_name)
+        elif node.type == "import_from_statement":
+            # from module import ...
+            module_node = node.child_by_field_name("module_name")
+            if module_node:
+                module_name = get_text(module_node, self.code_bytes)
+                self.imports.append(module_name)
+        for child in node.children:
+            self._extract_imports(child)
 
     def _walk(self, node, depth):
         if node.type == "function_definition":
             self.num_functions += 1
             name_node = node.child_by_field_name("name")
             if name_node:
-                self.function_names.append(get_text(name_node, self.code_bytes))
+                func_name = get_text(name_node, self.code_bytes)
+                self.function_names.append(func_name)
+                self.defined_functions.add(func_name)
         elif node.type == "assignment":
             self.num_variables += 1
             self.num_assignments += 1
@@ -188,6 +212,12 @@ class PythonInstrumenter:
         self.insertions: dict[int, list[str]] = {}
         self.pre_insertions: dict[int, list[str]] = {}
         self.seen_vars: set[str] = set()
+        # Parse defined functions from metadata
+        self.defined_functions = set()
+        if metadata and "defined_functions" in metadata:
+            func_str = metadata["defined_functions"]
+            if func_str:
+                self.defined_functions = set(func_str.split(","))
 
     def instrument(self) -> str:
         tree = self.ts_parser.parse(self.code_bytes)
@@ -274,6 +304,20 @@ class PythonInstrumenter:
                         parent
                         and parent.type == "call"
                         and parent.child_by_field_name("function") == n
+                    ):
+                        pass
+                    # Skip attribute names in attribute access (e.g., 'now' in 'datetime.now')
+                    elif (
+                        parent
+                        and parent.type == "attribute"
+                        and parent.child_by_field_name("attribute") == n
+                    ):
+                        pass
+                    # Skip keyword argument names (e.g., 'reverse' in 'sorted(..., reverse=True)')
+                    elif (
+                        parent
+                        and parent.type == "keyword_argument"
+                        and parent.child_by_field_name("name") == n
                     ):
                         pass
                     else:
@@ -675,6 +719,46 @@ class PythonInstrumenter:
                 self._add_before(line, trace)
 
         self._add_before(line, f"{' ' * col}__tracer_depth -= 1")
+
+    def _visit_call(self, node):
+        """Handle function calls - mark external calls with EXTERNAL_CALL trace."""
+        func_node = node.child_by_field_name("function")
+        if not func_node:
+            return
+        
+        # Get the function name (handle identifiers and attribute access)
+        func_name = None
+        if func_node.type == "identifier":
+            func_name = get_text(func_node, self.code_bytes)
+        elif func_node.type == "attribute":
+            # For module.function() calls, get just the function name
+            attr_node = func_node.child_by_field_name("attribute")
+            if attr_node:
+                func_name = get_text(attr_node, self.code_bytes)
+        
+        if not func_name:
+            return
+        
+        # Skip if it's a known keyword or built-in
+        if func_name in KEYWORDS:
+            return
+        
+        # Check if this is an external function (not defined in current file)
+        if func_name not in self.defined_functions:
+            line = node.start_point[0]
+            # Get indentation of the current line
+            line_text = self.lines[line]
+            indent = len(line_text) - len(line_text.lstrip())
+            trace = self._make_trace(
+                [
+                    "EXTERNAL_CALL",
+                    func_name,
+                    str(line + 1),
+                    ("__tracer_depth",),
+                ],
+                indent,
+            )
+            self._add_before(line, trace)
 
 
 # ── Registration ─────────────────────────────────────────────────────

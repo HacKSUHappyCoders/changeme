@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,10 @@
     <title>Code Mosaic Visualizer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <canvas id="renderCanvas"></canvas>
-    
+
     <div id="controls">
         <div id="controls-handle" style="display:flex; align-items:center; gap:0.2em;">
             <img src="logo-white.svg" alt="Logo" style="height: 1em;">
@@ -32,14 +34,17 @@
             <button id="toggleInfo">Hide Controls</button>
             <button id="toggleAnimation">Pause Animation</button>
             <button id="returnToMainGalaxy" style="display:none;">⬅ Return to Main Galaxy</button>
-            <button id="toggleCausality">🕸️ Show Causality Web</button>
-            <button id="togglePanoramic">🌌 Panoramic Render</button>
-            <button id="toggleMemoryPool">🌊 Show Memory Pool</button>
+            <button id="toggleCausality">️ Show Causality Web</button>
+            <button id="togglePanoramic">Panoramic Render</button>
+            <button id="toggleSequencer">Sequencer View</button>
+            <button id="toggleMemoryPool">Show Memory Pool</button>
         </div>
 
     </div>
     <div id="info">
-        <button class="inspector-close" onclick="this.parentElement.style.display='none'; document.getElementById('toggleInfo').textContent='Show Controls'" title="Close">✕</button>
+        <button class="inspector-close"
+            onclick="this.parentElement.style.display='none'; document.getElementById('toggleInfo').textContent='Show Controls'"
+            title="Close">✕</button>
         <strong>Controls:</strong><br>
         • Left mouse: Orbit<br>
         • Shift + Left mouse: Pan<br>
@@ -50,7 +55,7 @@
         • <strong>W</strong>: Warp into selected node's sub-galaxy<br>
         • <strong>S</strong>: Warp back out to parent level<br>
         • Click again or press <strong>Close Inspector</strong> to dismiss<br>
-        • <strong>🌌 Panoramic Render</strong> to see all galaxies at once<br>
+        • <strong>Panoramic Render</strong> to see all galaxies at once<br>
         <br>
         <span id="stats"></span>
     </div>
@@ -78,15 +83,16 @@
     <script src="visualizer/world/SubSpiralRenderer.js"></script>
     <script src="visualizer/world/LoopBubbleRenderer.js"></script>
     <script src="visualizer/world/BranchTreeRenderer.js"></script>
-    
+
     <!-- Galaxy warp modules (refactored) -->
     <script src="visualizer/world/galaxy/GalaxyBuilder.js"></script>
     <script src="visualizer/world/galaxy/WarpEffects.js"></script>
     <script src="visualizer/world/galaxy/GalaxyWarpManager.js"></script>
-    
+
     <script src="visualizer/world/CausalityRenderer.js"></script>
     <script src="visualizer/world/PanoramicRenderer.js"></script>
     <script src="visualizer/world/MemoryPoolRenderer.js"></script>
+    <script src="visualizer/world/SequencerRenderer.js"></script>
     <script src="visualizer/world/CityRenderer.js"></script>
 
     <!-- Explode / inspector -->
@@ -99,4 +105,5 @@
     <script src="visualizer/index.js"></script>
     <script src="main.js"></script>
 </body>
+
 </html>

@@ -10,11 +10,11 @@ This project creates a 3D visualization of code execution traces, displaying the
 
 - **Spiral Path Visualization**: Code execution flows along a spiral path
 - **Stained Glass Buildings**: Each operation type has its own color:
-  - 🔴 CALL - Ruby Red
-  - 🔵 DECL - Sapphire Blue
-  - 🟣 LOOP - Amethyst Purple
-  - 🟢 ASSIGN - Emerald Green
-  - 🟡 RETURN - Amber Gold
+  - CALL - Ruby Red
+  - DECL - Sapphire Blue
+  - LOOP - Amethyst Purple
+  - ASSIGN - Emerald Green
+  - RETURN - Amber Gold
 - **Interactive 3D**: Rotate, pan, and zoom to explore the visualization
 - **Animated**: Buildings appear with smooth animations and floating effects
 - **Glow Effects**: Enhanced with glow layers for that magical stained-glass look

@@ -60,6 +60,11 @@ class CodeVisualizer {
         // Panoramic renderer (Phase 3 Part 4) — low-quality total render
         this.panoramicRenderer = new PanoramicRenderer(scene, this.sceneManager, this.cityRenderer);
 
+
+
+        // Sequencer view (Phase 5)
+        this.sequencerRenderer = new SequencerRenderer(scene, this.cityRenderer);
+
         // Memory pool renderer — address space underworld
         this.memoryPoolRenderer = new MemoryPoolRenderer(scene, this.cityRenderer);
 
@@ -87,6 +92,11 @@ class CodeVisualizer {
         // Clear panoramic render
         if (this.panoramicRenderer) {
             this.panoramicRenderer.clear();
+        }
+
+        // Clear sequencer
+        if (this.sequencerRenderer) {
+            this.sequencerRenderer.clear();
         }
 
         // Clear memory pool
@@ -164,12 +174,12 @@ class CodeVisualizer {
 
     toggleCausality() {
         const result = this.causalityRenderer.toggle();
-        
+
         // Phase 4: Also toggle causality within bubbles
         if (this.cityRenderer && this.cityRenderer.loopBubbleRenderer) {
             this.cityRenderer.loopBubbleRenderer.setCausalityVisible(result);
         }
-        
+
         return result;
     }
 
@@ -185,6 +195,22 @@ class CodeVisualizer {
 
     isPanoramicActive() {
         return this.panoramicRenderer.isActive();
+    }
+
+    // ─── Sequencer View ────────────────────────────────────────────
+
+    toggleSequencer() {
+        if (this.sequencerRenderer.isVisible()) {
+            this.sequencerRenderer.hide();
+
+            // Show city again? 
+            // The city renderer doesn't have a simple hide/show. It's always there.
+            // We can just rely on the sequencer overlapping or being separate.
+            return false;
+        } else {
+            this.sequencerRenderer.show();
+            return true;
+        }
     }
 
     // ─── Memory Pool ─────────────────────────────────────────────
@@ -207,7 +233,7 @@ class CodeVisualizer {
         const meta = this.parser.metadata;
         if (meta) {
             if (meta.file_name) html += `<br>File: ${meta.file_name}`;
-            if (meta.language)  html += ` (${meta.language})`;
+            if (meta.language) html += ` (${meta.language})`;
             if (meta.total_lines) html += `<br>${meta.total_lines} lines`;
             if (meta.num_functions) html += `, ${meta.num_functions} fn(s)`;
             if (meta.num_variables) html += `, ${meta.num_variables} vars`;
@@ -272,7 +298,7 @@ class CodeVisualizer {
         const updateEditor = () => {
             const lines = textarea.value.split('\n');
             gutter.innerHTML = lines.map((_, i) =>
-                `<div class="code-gutter-line" id="gutterLine${i+1}">${i+1}</div>`
+                `<div class="code-gutter-line" id="gutterLine${i + 1}">${i + 1}</div>`
             ).join('');
             overlay.innerHTML = this._syntaxHighlight(textarea.value);
         };
@@ -330,19 +356,19 @@ class CodeVisualizer {
             let out = '', i = 0;
             if (inBlock) {
                 const end = line.indexOf('*/');
-                if (end === -1) return `<div class="code-hl-line" id="hlLine${idx+1}"><span class="hl-cmt">${esc(line) || ' '}</span></div>`;
+                if (end === -1) return `<div class="code-hl-line" id="hlLine${idx + 1}"><span class="hl-cmt">${esc(line) || ' '}</span></div>`;
                 out += `<span class="hl-cmt">${esc(line.slice(0, end + 2))}</span>`;
                 i = end + 2; inBlock = false;
             }
             while (i < line.length) {
                 const c = line[i];
-                if (!isPy && c === '/' && line[i+1] === '*') {
+                if (!isPy && c === '/' && line[i + 1] === '*') {
                     const end = line.indexOf('*/', i + 2);
                     if (end === -1) { out += `<span class="hl-cmt">${esc(line.slice(i))}</span>`; inBlock = true; break; }
                     out += `<span class="hl-cmt">${esc(line.slice(i, end + 2))}</span>`; i = end + 2; continue;
                 }
                 if (isPy && c === '#') { out += `<span class="hl-cmt">${esc(line.slice(i))}</span>`; break; }
-                if (!isPy && c === '/' && line[i+1] === '/') { out += `<span class="hl-cmt">${esc(line.slice(i))}</span>`; break; }
+                if (!isPy && c === '/' && line[i + 1] === '/') { out += `<span class="hl-cmt">${esc(line.slice(i))}</span>`; break; }
                 if (c === '"' || c === "'") {
                     let j = i + 1;
                     while (j < line.length && line[j] !== c) { if (line[j] === '\\') j++; j++; }
@@ -350,7 +376,7 @@ class CodeVisualizer {
                     out += `<span class="hl-str">${esc(line.slice(i, j))}</span>`; i = j; continue;
                 }
                 if (!isPy && c === '#' && !line.slice(0, i).trim()) { out += `<span class="hl-pre">${esc(line.slice(i))}</span>`; break; }
-                if (/\d/.test(c) && (i === 0 || !/\w/.test(line[i-1]))) {
+                if (/\d/.test(c) && (i === 0 || !/\w/.test(line[i - 1]))) {
                     let j = i; while (j < line.length && /[\da-fA-FxX.eE]/.test(line[j])) j++;
                     out += `<span class="hl-num">${esc(line.slice(i, j))}</span>`; i = j; continue;
                 }
@@ -365,7 +391,7 @@ class CodeVisualizer {
                 }
                 out += esc(c); i++;
             }
-            return `<div class="code-hl-line" id="hlLine${idx+1}">${out || ' '}</div>`;
+            return `<div class="code-hl-line" id="hlLine${idx + 1}">${out || ' '}</div>`;
         }).join('');
     }
 
