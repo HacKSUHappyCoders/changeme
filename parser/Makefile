@@ -1,4 +1,4 @@
-INPUT  ?= tests/00005.c
+INPUT  ?= tests/00004.c
 OUTPUT := instrumented_$(notdir $(INPUT))
 
 .PHONY: all clean
@@ -15,4 +15,4 @@ normalize:
 	./exe | uv run normalize.py > Untitled-3.txt
 
 clean:
-	rm -f instrumented_*.c exe trace_output.txt
+	rm -f instrumented_*.c exe trace_output.txt Untitled-3.txt
