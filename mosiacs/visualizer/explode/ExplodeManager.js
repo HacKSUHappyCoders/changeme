@@ -112,10 +112,16 @@ class ExplodeManager {
         // ── create shards ───────────────────────────────────────────
         const shards = [];
 
-        // Header
+        // Header – show the step type, name, and extra context (subtype, condition)
+        const sd = bd.stepData;
+        let headerLabel = `${sd.type}  ${sd.name || ''}`;
+        if (sd.subtype)   headerLabel += `  [${sd.subtype}]`;
+        if (sd.condition)  headerLabel += `  (${sd.condition})`;
+        if (sd.line > 0)   headerLabel += `   L${sd.line}`;
+
         shards.push(this.shardFactory.createShard(
             `shard_header_${bd.step}`,
-            `${bd.stepData.type}  ${bd.stepData.name || ''}`,
+            headerLabel.trim(),
             centerPos, 0, totalShards, height,
             bd.color, true, 0,
             cameraViewInfo.direction,
@@ -138,7 +144,7 @@ class ExplodeManager {
             if (child.address && child.address !== '0') {
                 shards.push(this.shardFactory.createShard(
                     `shard_${bd.step}_${i}_addr`,
-                    `@${child.address.substring(0, 12)}...`,
+                    `@${child.address.substring(0, 16)}`,
                     centerPos, idx++, totalShards, height,
                     StepLabelHelper.colorForChild(child), false, 1,
                     cameraViewInfo.direction,
