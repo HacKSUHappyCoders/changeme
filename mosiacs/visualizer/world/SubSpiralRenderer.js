@@ -94,7 +94,7 @@ class SubSpiralRenderer {
     removeSingle(parentKey) {
         const existing = this.subSpirals.get(parentKey);
         if (existing) {
-            this._disposeSubSpiral(existing);
+            this._disposeSubSpiral(existing, parentKey);
             this.subSpirals.delete(parentKey);
 
             // Notify CityRenderer to restore main spiral
@@ -108,7 +108,7 @@ class SubSpiralRenderer {
 
     /** Remove ALL sub-spirals (used when the whole city is cleared). */
     clear() {
-        this.subSpirals.forEach(s => this._disposeSubSpiral(s));
+        this.subSpirals.forEach((s, key) => this._disposeSubSpiral(s, key));
         this.subSpirals.clear();
         this._matCache.forEach(m => m.dispose());
         this._matCache.clear();
@@ -505,7 +505,7 @@ class SubSpiralRenderer {
         };
     }
 
-    _disposeSubSpiral(entry) {
+    _disposeSubSpiral(entry, parentKey) {
         if (entry.tube) {
             if (entry.tube.material) entry.tube.material.dispose();
             entry.tube.dispose();
@@ -523,22 +523,17 @@ class SubSpiralRenderer {
             dot.material = null;   // don't dispose shared cached materials
             dot.dispose();
         }
-        if (entry.labels) {
-            for (const label of entry.labels) {
-                if (label && label.material) {
-                    if (label.material.diffuseTexture) {
-                        label.material.diffuseTexture.dispose();
-                    }
-                    label.material.dispose();
-                }
-                if (label) label.dispose();
-            }
-        }
+        // Labels already disposed above via dot._label (same objects as entry.labels)
 
-        // ── Dispose flow bubbles and cancel their animations ──
+        // ── Cancel bubble animations and dispose flow bubbles ──
+        if (parentKey && this._activeBubbleAnimations.has(parentKey)) {
+            const anims = this._activeBubbleAnimations.get(parentKey);
+            for (const anim of anims) {
+                anim.cancel();
+            }
+            this._activeBubbleAnimations.delete(parentKey);
+        }
         if (entry.bubbles) {
-            // Cancel any running animations for these bubbles
-            // (The animation loop checks isDisposed(), so disposing the bubble stops them)
             for (const bubble of entry.bubbles) {
                 if (bubble.material) bubble.material.dispose();
                 bubble.dispose();
