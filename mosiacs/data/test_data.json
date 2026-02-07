@@ -1,28 +1,39 @@
 {
     "metadata": {
-        "file_name": "00001.c",
-        "file_path": "C:/Users/TJ/Documents/Code/Projects/changeme/parser/tests/00001.c",
-        "file_size": 198,
+        "file_name": "expanded_test.c",
+        "file_path": "C:/Users/TJ/Documents/Code/Projects/changeme/parser/tests/expanded_test.c",
+        "file_size": 4200,
         "file_mode": "-rw-rw-rw-",
         "modified": "2026-02-06 18:16:23",
         "accessed": "2026-02-06 18:43:30",
         "created": "2026-02-06 17:23:04",
         "language": "C",
-        "total_lines": 18,
-        "non_blank_lines": 12,
-        "num_includes": 0,
-        "num_comments": 0,
-        "num_functions": 1,
+        "total_lines": 110,
+        "non_blank_lines": 93,
+        "num_includes": 1,
+        "num_comments": 5,
+        "num_functions": 10,
         "function_names": [
-            "main"
+            "main",
+            "factorial",
+            "fibonacci",
+            "sum_array",
+            "bubble_sort",
+            "power",
+            "gcd",
+            "is_prime",
+            "matrix_multiply",
+            "string_length",
+            "binary_search",
+            "collatz"
         ],
-        "num_variables": 2,
-        "num_assignments": 3,
-        "num_calls": 0,
-        "num_returns": 1,
-        "num_loops": 1,
-        "num_branches": 1,
-        "max_nesting_depth": 2
+        "num_variables": 25,
+        "num_assignments": 238,
+        "num_calls": 26,
+        "num_returns": 26,
+        "num_loops": 181,
+        "num_branches": 128,
+        "max_nesting_depth": 8
     },
     "traces": [
         {
@@ -35,382 +46,6893 @@
             "type": "DECL",
             "subject": "sum",
             "value": 0,
-            "address": "000000660F5FF91C",
+            "address": "000000660F5FF900",
+            "line_number": 2,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "result",
+            "value": 0,
+            "address": "000000660F5FF901",
+            "line_number": 3,
+            "stack_depth": 1
+        },
+        {
+            "type": "DECL",
+            "subject": "total",
+            "value": 0,
+            "address": "000000660F5FF902",
             "line_number": 4,
             "stack_depth": 1
         },
         {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
             "type": "DECL",
-            "subject": "i",
-            "value": 0,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 0,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
+            "subject": "flag",
             "value": 1,
-            "address": "000000660F5FF918",
+            "address": "000000660F5FF903",
             "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 1,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 2,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 3,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 3,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 6,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 4,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 10,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "CONDITION",
-            "subject": "sum < 10",
-            "condition_result": 0,
-            "line_number": 9,
-            "stack_depth": 1
-        },
-        {
-            "type": "BRANCH",
-            "subtype": "else",
-            "condition": "sum < 10",
-            "line_number": 11,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 11,
-            "address": "000000660F5FF91C",
-            "line_number": 12,
-            "stack_depth": 1
-        },
-        {
-            "type": "RETURN",
-            "subtype": "literal",
-            "value": 0,
-            "address": "0",
-            "line_number": 16,
             "stack_depth": 1
         },
         {
             "type": "CALL",
-            "subject": "main",
-            "line_number": 1,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "sum",
-            "value": 0,
-            "address": "000000660F5FF91C",
-            "line_number": 4,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 0,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 2,
-            "address": "000000660F5FF91C",
+            "subject": "factorial",
             "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
+            "stack_depth": 2
         },
         {
             "type": "DECL",
-            "subject": "i",
-            "value": 1,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 4,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 2,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 7,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 3,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 11,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "LOOP",
-            "subtype": "for",
-            "condition": "i<5",
-            "condition_result": 1,
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "i",
-            "value": 4,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 16,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
-        },
-        {
-            "type": "CONDITION",
-            "subject": "sum < 10",
-            "condition_result": 0,
-            "line_number": 9,
-            "stack_depth": 1
-        },
-        {
-            "type": "BRANCH",
-            "subtype": "else",
-            "condition": "sum < 10",
-            "line_number": 11,
-            "stack_depth": 1
-        },
-        {
-            "type": "ASSIGN",
-            "subject": "sum",
-            "value": 17,
-            "address": "000000660F5FF91C",
-            "line_number": 12,
-            "stack_depth": 1
-        },
-        {
-            "type": "RETURN",
-            "subtype": "literal",
-            "value": 0,
-            "address": "0",
-            "line_number": 16,
-            "stack_depth": 1
-        },
-        {
-            "type": "CALL",
-            "subject": "main",
-            "line_number": 1,
-            "stack_depth": 1
-        },
-        {
-            "type": "DECL",
-            "subject": "sum",
+            "subject": "n",
             "value": 5,
-            "address": "000000660F5FF91C",
-            "line_number": 4,
+            "address": "000000660F5FF904",
+            "line_number": 7,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "fact_result",
+            "value": 1,
+            "address": "000000660F5FF905",
+            "line_number": 8,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<=n",
+            "condition_result": 1,
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 1,
+            "address": "000000660F5FF906",
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "fact_result",
+            "value": 1,
+            "address": "000000660F5FF905",
+            "line_number": 10,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<=n",
+            "condition_result": 1,
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 2,
+            "address": "000000660F5FF906",
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "fact_result",
+            "value": 2,
+            "address": "000000660F5FF905",
+            "line_number": 10,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<=n",
+            "condition_result": 1,
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 3,
+            "address": "000000660F5FF906",
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "fact_result",
+            "value": 6,
+            "address": "000000660F5FF905",
+            "line_number": 10,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<=n",
+            "condition_result": 1,
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 4,
+            "address": "000000660F5FF906",
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "fact_result",
+            "value": 24,
+            "address": "000000660F5FF905",
+            "line_number": 10,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<=n",
+            "condition_result": 1,
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 5,
+            "address": "000000660F5FF906",
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "fact_result",
+            "value": 120,
+            "address": "000000660F5FF905",
+            "line_number": 10,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<=n",
+            "condition_result": 0,
+            "line_number": 9,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 120,
+            "address": "0",
+            "line_number": 11,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "result",
+            "value": 120,
+            "address": "000000660F5FF901",
+            "line_number": 12,
             "stack_depth": 1
+        },
+        {
+            "type": "CALL",
+            "subject": "fibonacci",
+            "line_number": 13,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "n",
+            "value": 8,
+            "address": "000000660F5FF907",
+            "line_number": 14,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "a",
+            "value": 0,
+            "address": "000000660F5FF908",
+            "line_number": 15,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "b",
+            "value": 1,
+            "address": "000000660F5FF909",
+            "line_number": 16,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "temp",
+            "value": 0,
+            "address": "000000660F5FF90A",
+            "line_number": 17,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
         },
         {
             "type": "DECL",
             "subject": "i",
             "value": 0,
-            "address": "000000660F5FF918",
-            "line_number": 5,
-            "stack_depth": 1
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
         },
         {
             "type": "ASSIGN",
-            "subject": "sum",
+            "subject": "temp",
+            "value": 1,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 1,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 1,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 1,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
+            "value": 2,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 1,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 2,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 2,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
+            "value": 3,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 2,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 3,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 3,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
+            "value": 5,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 3,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 5,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 4,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
             "value": 8,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 5,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 8,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 5,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
+            "value": 13,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 8,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 13,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 6,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
+            "value": 21,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 13,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 21,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 1,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 7,
+            "address": "000000660F5FF90B",
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "temp",
+            "value": 34,
+            "address": "000000660F5FF90A",
+            "line_number": 19,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 21,
+            "address": "000000660F5FF908",
+            "line_number": 20,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 34,
+            "address": "000000660F5FF909",
+            "line_number": 21,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n",
+            "condition_result": 0,
+            "line_number": 18,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 34,
+            "address": "0",
+            "line_number": 22,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "total",
+            "value": 34,
+            "address": "000000660F5FF902",
+            "line_number": 23,
             "stack_depth": 1
+        },
+        {
+            "type": "CALL",
+            "subject": "sum_array",
+            "line_number": 24,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "size",
+            "value": 10,
+            "address": "000000660F5FF90C",
+            "line_number": 25,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "arr_sum",
+            "value": 0,
+            "address": "000000660F5FF90D",
+            "line_number": 26,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 0,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 3,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 1,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 10,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 2,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 11,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 3,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 20,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 4,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 24,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 5,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 30,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 6,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 32,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 7,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 40,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 8,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 45,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 9,
+            "address": "000000660F5FF90E",
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "arr_sum",
+            "value": 55,
+            "address": "000000660F5FF90D",
+            "line_number": 28,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 0,
+            "line_number": 27,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 55,
+            "address": "0",
+            "line_number": 29,
+            "stack_depth": 2
         },
         {
             "type": "ASSIGN",
             "subject": "sum",
-            "value": 12,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
+            "value": 55,
+            "address": "000000660F5FF900",
+            "line_number": 30,
             "stack_depth": 1
         },
         {
+            "type": "CALL",
+            "subject": "bubble_sort",
+            "line_number": 31,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "n",
+            "value": 8,
+            "address": "000000660F5FF90F",
+            "line_number": 32,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 33,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 0,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
             "type": "ASSIGN",
-            "subject": "sum",
-            "value": 18,
-            "address": "000000660F5FF91C",
-            "line_number": 6,
-            "stack_depth": 1
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
         },
         {
             "type": "CONDITION",
-            "subject": "sum < 10",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 3,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 4,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 5,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 6,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 8,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
             "condition_result": 0,
-            "line_number": 9,
-            "stack_depth": 1
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 1,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 7,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 7,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 3,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 7,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 4,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 7,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 5,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 7,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 0,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 2,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 3,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 5,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 3,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 4,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 6,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 0,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 3,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 3,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 3,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 1,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[j] > arr[j+1]",
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "tmp",
+            "value": 5,
+            "address": "000000660F5FF913",
+            "line_number": 38,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 1,
+            "address": "000000660F5FF910",
+            "line_number": 39,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 0,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 4,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 0,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 5,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 0,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 1,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 6,
+            "address": "000000660F5FF911",
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "swapped",
+            "value": 0,
+            "address": "000000660F5FF910",
+            "line_number": 35,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 1,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF912",
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[j] > arr[j+1]",
+            "condition_result": 0,
+            "line_number": 37,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<n-i-1",
+            "condition_result": 0,
+            "line_number": 36,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "swapped == 0",
+            "condition_result": 0,
+            "line_number": 40,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<n-1",
+            "condition_result": 0,
+            "line_number": 34,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 41,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "power",
+            "line_number": 42,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "base",
+            "value": 2,
+            "address": "000000660F5FF914",
+            "line_number": 43,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "exp",
+            "value": 10,
+            "address": "000000660F5FF915",
+            "line_number": 44,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp == 0",
+            "condition_result": 0,
+            "line_number": 45,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp % 2 == 0",
+            "condition_result": 1,
+            "line_number": 47,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "exp % 2 == 0",
+            "line_number": 47,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "power",
+            "line_number": 42,
+            "stack_depth": 3
+        },
+        {
+            "type": "DECL",
+            "subject": "base",
+            "value": 2,
+            "address": "000000660F5FF916",
+            "line_number": 43,
+            "stack_depth": 3
+        },
+        {
+            "type": "DECL",
+            "subject": "exp",
+            "value": 5,
+            "address": "000000660F5FF917",
+            "line_number": 44,
+            "stack_depth": 3
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp == 0",
+            "condition_result": 0,
+            "line_number": 45,
+            "stack_depth": 3
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp % 2 == 0",
+            "condition_result": 0,
+            "line_number": 47,
+            "stack_depth": 3
         },
         {
             "type": "BRANCH",
             "subtype": "else",
-            "condition": "sum < 10",
-            "line_number": 11,
+            "condition": "exp % 2 == 0",
+            "line_number": 47,
+            "stack_depth": 3
+        },
+        {
+            "type": "CALL",
+            "subject": "power",
+            "line_number": 42,
+            "stack_depth": 4
+        },
+        {
+            "type": "DECL",
+            "subject": "base",
+            "value": 2,
+            "address": "000000660F5FF918",
+            "line_number": 43,
+            "stack_depth": 4
+        },
+        {
+            "type": "DECL",
+            "subject": "exp",
+            "value": 4,
+            "address": "000000660F5FF919",
+            "line_number": 44,
+            "stack_depth": 4
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp == 0",
+            "condition_result": 0,
+            "line_number": 45,
+            "stack_depth": 4
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp % 2 == 0",
+            "condition_result": 1,
+            "line_number": 47,
+            "stack_depth": 4
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "exp % 2 == 0",
+            "line_number": 47,
+            "stack_depth": 4
+        },
+        {
+            "type": "CALL",
+            "subject": "power",
+            "line_number": 42,
+            "stack_depth": 5
+        },
+        {
+            "type": "DECL",
+            "subject": "base",
+            "value": 2,
+            "address": "000000660F5FF91A",
+            "line_number": 43,
+            "stack_depth": 5
+        },
+        {
+            "type": "DECL",
+            "subject": "exp",
+            "value": 2,
+            "address": "000000660F5FF91B",
+            "line_number": 44,
+            "stack_depth": 5
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp == 0",
+            "condition_result": 0,
+            "line_number": 45,
+            "stack_depth": 5
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp % 2 == 0",
+            "condition_result": 1,
+            "line_number": 47,
+            "stack_depth": 5
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "exp % 2 == 0",
+            "line_number": 47,
+            "stack_depth": 5
+        },
+        {
+            "type": "CALL",
+            "subject": "power",
+            "line_number": 42,
+            "stack_depth": 6
+        },
+        {
+            "type": "DECL",
+            "subject": "base",
+            "value": 2,
+            "address": "000000660F5FF91C",
+            "line_number": 43,
+            "stack_depth": 6
+        },
+        {
+            "type": "DECL",
+            "subject": "exp",
+            "value": 1,
+            "address": "000000660F5FF91D",
+            "line_number": 44,
+            "stack_depth": 6
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp == 0",
+            "condition_result": 0,
+            "line_number": 45,
+            "stack_depth": 6
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp % 2 == 0",
+            "condition_result": 0,
+            "line_number": 47,
+            "stack_depth": 6
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "exp % 2 == 0",
+            "line_number": 47,
+            "stack_depth": 6
+        },
+        {
+            "type": "CALL",
+            "subject": "power",
+            "line_number": 42,
+            "stack_depth": 7
+        },
+        {
+            "type": "DECL",
+            "subject": "base",
+            "value": 2,
+            "address": "000000660F5FF91E",
+            "line_number": 43,
+            "stack_depth": 7
+        },
+        {
+            "type": "DECL",
+            "subject": "exp",
+            "value": 0,
+            "address": "000000660F5FF91F",
+            "line_number": 44,
+            "stack_depth": 7
+        },
+        {
+            "type": "CONDITION",
+            "subject": "exp == 0",
+            "condition_result": 1,
+            "line_number": 45,
+            "stack_depth": 7
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "exp == 0",
+            "line_number": 45,
+            "stack_depth": 7
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 46,
+            "stack_depth": 7
+        },
+        {
+            "type": "DECL",
+            "subject": "sub_result",
+            "value": 1,
+            "address": "000000660F5FF920",
+            "line_number": 48,
+            "stack_depth": 6
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sub_result",
+            "value": 2,
+            "address": "000000660F5FF920",
+            "line_number": 49,
+            "stack_depth": 6
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 2,
+            "address": "0",
+            "line_number": 50,
+            "stack_depth": 6
+        },
+        {
+            "type": "DECL",
+            "subject": "half_result",
+            "value": 2,
+            "address": "000000660F5FF921",
+            "line_number": 48,
+            "stack_depth": 5
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "half_result",
+            "value": 4,
+            "address": "000000660F5FF921",
+            "line_number": 49,
+            "stack_depth": 5
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 4,
+            "address": "0",
+            "line_number": 50,
+            "stack_depth": 5
+        },
+        {
+            "type": "DECL",
+            "subject": "half_result",
+            "value": 4,
+            "address": "000000660F5FF922",
+            "line_number": 48,
+            "stack_depth": 4
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "half_result",
+            "value": 16,
+            "address": "000000660F5FF922",
+            "line_number": 49,
+            "stack_depth": 4
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 16,
+            "address": "0",
+            "line_number": 50,
+            "stack_depth": 4
+        },
+        {
+            "type": "DECL",
+            "subject": "sub_result",
+            "value": 16,
+            "address": "000000660F5FF923",
+            "line_number": 48,
+            "stack_depth": 3
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "sub_result",
+            "value": 32,
+            "address": "000000660F5FF923",
+            "line_number": 49,
+            "stack_depth": 3
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 32,
+            "address": "0",
+            "line_number": 50,
+            "stack_depth": 3
+        },
+        {
+            "type": "DECL",
+            "subject": "half_result",
+            "value": 32,
+            "address": "000000660F5FF924",
+            "line_number": 48,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "half_result",
+            "value": 1024,
+            "address": "000000660F5FF924",
+            "line_number": 49,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1024,
+            "address": "0",
+            "line_number": 50,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "power_result",
+            "value": 1024,
+            "address": "000000660F5FF925",
+            "line_number": 51,
+            "stack_depth": 1
+        },
+        {
+            "type": "CALL",
+            "subject": "gcd",
+            "line_number": 52,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "a",
+            "value": 48,
+            "address": "000000660F5FF926",
+            "line_number": 53,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "b",
+            "value": 18,
+            "address": "000000660F5FF927",
+            "line_number": 54,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "t",
+            "value": 0,
+            "address": "000000660F5FF928",
+            "line_number": 55,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "b != 0",
+            "condition_result": 1,
+            "line_number": 56,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "t",
+            "value": 18,
+            "address": "000000660F5FF928",
+            "line_number": 57,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 12,
+            "address": "000000660F5FF927",
+            "line_number": 58,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 18,
+            "address": "000000660F5FF926",
+            "line_number": 59,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "b != 0",
+            "condition_result": 1,
+            "line_number": 56,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "t",
+            "value": 12,
+            "address": "000000660F5FF928",
+            "line_number": 57,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 6,
+            "address": "000000660F5FF927",
+            "line_number": 58,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 12,
+            "address": "000000660F5FF926",
+            "line_number": 59,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "b != 0",
+            "condition_result": 1,
+            "line_number": 56,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "t",
+            "value": 6,
+            "address": "000000660F5FF928",
+            "line_number": 57,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "b",
+            "value": 0,
+            "address": "000000660F5FF927",
+            "line_number": 58,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "a",
+            "value": 6,
+            "address": "000000660F5FF926",
+            "line_number": 59,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "b != 0",
+            "condition_result": 0,
+            "line_number": 56,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 6,
+            "address": "0",
+            "line_number": 60,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "gcd_result",
+            "value": 6,
+            "address": "000000660F5FF929",
+            "line_number": 61,
+            "stack_depth": 1
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 2,
+            "address": "000000660F5FF92A",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 7,
+            "address": "000000660F5FF92C",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF92D",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 11,
+            "address": "000000660F5FF92E",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF92F",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF92F",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 13,
+            "address": "000000660F5FF930",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF931",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF931",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 15,
+            "address": "000000660F5FF932",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF933",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF933",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 1,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "num % d == 0",
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 68,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 17,
+            "address": "000000660F5FF934",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF935",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF935",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 4,
+            "address": "000000660F5FF935",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 20,
+            "address": "000000660F5FF936",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF937",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 1,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "num % d == 0",
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 68,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 23,
+            "address": "000000660F5FF938",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF939",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF939",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 4,
+            "address": "000000660F5FF939",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 25,
+            "address": "000000660F5FF93A",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF93B",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF93B",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 4,
+            "address": "000000660F5FF93B",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 5,
+            "address": "000000660F5FF93B",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 1,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "num % d == 0",
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 68,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "is_prime",
+            "line_number": 62,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "num",
+            "value": 29,
+            "address": "000000660F5FF93C",
+            "line_number": 63,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num < 2",
+            "condition_result": 0,
+            "line_number": 64,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 2,
+            "address": "000000660F5FF93D",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 3,
+            "address": "000000660F5FF93D",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 4,
+            "address": "000000660F5FF93D",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 1,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "d",
+            "value": 5,
+            "address": "000000660F5FF93D",
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "num % d == 0",
+            "condition_result": 0,
+            "line_number": 67,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "d*d<=num",
+            "condition_result": 0,
+            "line_number": 66,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 1,
+            "address": "0",
+            "line_number": 69,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "matrix_multiply",
+            "line_number": 70,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "size",
+            "value": 3,
+            "address": "000000660F5FF93E",
+            "line_number": 71,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 72,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 0,
+            "address": "000000660F5FF940",
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 1,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 5,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 2,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 8,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 3,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 11,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 0,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 1,
+            "address": "000000660F5FF940",
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 2,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 8,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 1,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 5,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 14,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 2,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 8,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 20,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 0,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 1,
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "i",
+            "value": 2,
+            "address": "000000660F5FF940",
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 0,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 3,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 11,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 1,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 2,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 8,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 20,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 1,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "j",
+            "value": 2,
+            "address": "000000660F5FF941",
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 0,
+            "address": "000000660F5FF93F",
+            "line_number": 75,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 0,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 4,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 1,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 13,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 1,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "k",
+            "value": 2,
+            "address": "000000660F5FF942",
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "cell_sum",
+            "value": 29,
+            "address": "000000660F5FF93F",
+            "line_number": 77,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "k<size",
+            "condition_result": 0,
+            "line_number": 76,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "j<size",
+            "condition_result": 0,
+            "line_number": 74,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "for",
+            "condition": "i<size",
+            "condition_result": 0,
+            "line_number": 73,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 0,
+            "address": "0",
+            "line_number": 78,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "string_length",
+            "line_number": 79,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "len",
+            "value": 0,
+            "address": "000000660F5FF943",
+            "line_number": 80,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 0,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 1,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 1,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 2,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 2,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 3,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 3,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 4,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 4,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 5,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 5,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 6,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 6,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 7,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 7,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 8,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 8,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 9,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 9,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 10,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 10,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 11,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 11,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 12,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 12,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 13,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 13,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 14,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 1,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "idx",
+            "value": 14,
+            "address": "000000660F5FF944",
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "len",
+            "value": 15,
+            "address": "000000660F5FF943",
+            "line_number": 82,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "str[idx] != '\\0'",
+            "condition_result": 0,
+            "line_number": 81,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 15,
+            "address": "0",
+            "line_number": 83,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "binary_search",
+            "line_number": 84,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "low",
+            "value": 0,
+            "address": "000000660F5FF945",
+            "line_number": 85,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "high",
+            "value": 15,
+            "address": "000000660F5FF946",
+            "line_number": 86,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "mid",
+            "value": 0,
+            "address": "000000660F5FF947",
+            "line_number": 87,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "target",
+            "value": 11,
+            "address": "000000660F5FF948",
+            "line_number": 88,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "low <= high",
+            "condition_result": 1,
+            "line_number": 89,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "mid",
+            "value": 7,
+            "address": "000000660F5FF947",
+            "line_number": 90,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] == target",
+            "condition_result": 0,
+            "line_number": 91,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] < target",
+            "condition_result": 1,
+            "line_number": 93,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[mid] < target",
+            "line_number": 93,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "low",
+            "value": 8,
+            "address": "000000660F5FF945",
+            "line_number": 94,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "low <= high",
+            "condition_result": 1,
+            "line_number": 89,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "mid",
+            "value": 11,
+            "address": "000000660F5FF947",
+            "line_number": 90,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] == target",
+            "condition_result": 0,
+            "line_number": 91,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] < target",
+            "condition_result": 0,
+            "line_number": 93,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "arr[mid] < target",
+            "line_number": 93,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "high",
+            "value": 10,
+            "address": "000000660F5FF946",
+            "line_number": 94,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "low <= high",
+            "condition_result": 1,
+            "line_number": 89,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "mid",
+            "value": 9,
+            "address": "000000660F5FF947",
+            "line_number": 90,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] == target",
+            "condition_result": 0,
+            "line_number": 91,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] < target",
+            "condition_result": 1,
+            "line_number": 93,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[mid] < target",
+            "line_number": 93,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "low",
+            "value": 10,
+            "address": "000000660F5FF945",
+            "line_number": 94,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "low <= high",
+            "condition_result": 1,
+            "line_number": 89,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "mid",
+            "value": 10,
+            "address": "000000660F5FF947",
+            "line_number": 90,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "arr[mid] == target",
+            "condition_result": 1,
+            "line_number": 91,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "arr[mid] == target",
+            "line_number": 91,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 10,
+            "address": "0",
+            "line_number": 92,
+            "stack_depth": 2
+        },
+        {
+            "type": "CALL",
+            "subject": "collatz",
+            "line_number": 95,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "n",
+            "value": 27,
+            "address": "000000660F5FF949",
+            "line_number": 96,
+            "stack_depth": 2
+        },
+        {
+            "type": "DECL",
+            "subject": "steps",
+            "value": 0,
+            "address": "000000660F5FF94A",
+            "line_number": 97,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 82,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 1,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 41,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 2,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 124,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 3,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 62,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 4,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 31,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 5,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 94,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 6,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 47,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 7,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 142,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 8,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 71,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 9,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 214,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 10,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 107,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 11,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 322,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 12,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 161,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 13,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 484,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 14,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 242,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 15,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 121,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 16,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 364,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 17,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 182,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 18,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 91,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 19,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 274,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 20,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 137,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 21,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 412,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 22,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 206,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 23,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 103,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 24,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 310,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 25,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 155,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 26,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 466,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 27,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 233,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 28,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 700,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 29,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 350,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 30,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 175,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 31,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 526,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 32,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 263,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 33,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 790,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 34,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 395,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 35,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 1186,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 36,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 593,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 37,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 0,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "else",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 1780,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 38,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 890,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 39,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 1,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "CONDITION",
+            "subject": "n % 2 == 0",
+            "condition_result": 1,
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "n % 2 == 0",
+            "line_number": 99,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "n",
+            "value": 445,
+            "address": "000000660F5FF949",
+            "line_number": 100,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "steps",
+            "value": 40,
+            "address": "000000660F5FF94A",
+            "line_number": 101,
+            "stack_depth": 2
+        },
+        {
+            "type": "LOOP",
+            "subtype": "while",
+            "condition": "n != 1",
+            "condition_result": 0,
+            "line_number": 98,
+            "stack_depth": 2
+        },
+        {
+            "type": "RETURN",
+            "subtype": "literal",
+            "value": 40,
+            "address": "0",
+            "line_number": 102,
+            "stack_depth": 2
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "total",
+            "value": 1079,
+            "address": "000000660F5FF902",
+            "line_number": 103,
+            "stack_depth": 1
+        },
+        {
+            "type": "CONDITION",
+            "subject": "total > 1000",
+            "condition_result": 1,
+            "line_number": 104,
+            "stack_depth": 1
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "total > 1000",
+            "line_number": 104,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "flag",
+            "value": 1,
+            "address": "000000660F5FF903",
+            "line_number": 105,
+            "stack_depth": 1
+        },
+        {
+            "type": "CONDITION",
+            "subject": "flag == 1",
+            "condition_result": 1,
+            "line_number": 106,
+            "stack_depth": 1
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "flag == 1",
+            "line_number": 106,
+            "stack_depth": 1
+        },
+        {
+            "type": "CONDITION",
+            "subject": "result > 100",
+            "condition_result": 1,
+            "line_number": 107,
+            "stack_depth": 1
+        },
+        {
+            "type": "BRANCH",
+            "subtype": "if",
+            "condition": "result > 100",
+            "line_number": 107,
+            "stack_depth": 1
+        },
+        {
+            "type": "ASSIGN",
+            "subject": "result",
+            "value": 175,
+            "address": "000000660F5FF901",
+            "line_number": 108,
             "stack_depth": 1
         },
         {
@@ -418,7 +6940,7 @@
             "subtype": "literal",
             "value": 0,
             "address": "0",
-            "line_number": 16,
+            "line_number": 109,
             "stack_depth": 1
         }
     ]
