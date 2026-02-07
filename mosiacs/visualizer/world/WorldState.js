@@ -126,7 +126,8 @@ class WorldState {
             active: true,
             localVars: [],
             returnValue: null,
-            childStepIndices: []
+            childStepIndices: [],
+            line: step.line || 0
         });
 
         this.creationOrder.push(key);
@@ -201,7 +202,8 @@ class WorldState {
                 currentValue: step.value,
                 lastWriter: this.currentStep,
                 declStep: this.currentStep,
-                active: true
+                active: true,
+                line: step.line || 0
             });
 
             this.creationOrder.push(key);
@@ -277,7 +279,8 @@ class WorldState {
                 running: true,
                 steps: [this.currentStep],
                 childStepIndices: [],
-                _baseLookup: baseLookup
+                _baseLookup: baseLookup,
+                line: step.line || 0
             };
             map.set(key, factory);
 
@@ -325,7 +328,8 @@ class WorldState {
             step: this.currentStep,
             childStepIndices: [],
             chainLinks: [],
-            _baseLookup: baseLookup
+            _baseLookup: baseLookup,
+            line: step.line || 0
         };
         this.branchIntersections.set(key, intersection);
 

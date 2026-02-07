@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /** Load the currently selected trace file. */
     function loadSelectedTrace() {
         const filename = traceSelect ? traceSelect.value : undefined;
+        visualizer.setSourceCode(null); // No source code for example traces
         CodeParser.getExampleTrace(filename)
             .then(json => visualizer.visualize(json))
             .catch(err => console.error('Failed to load trace data:', err));
@@ -72,13 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         uploadBtn.disabled = true;
         uploadBtn.textContent = 'Processing...';
-        CodeParser.upload(file)
-            .then(json => {
+
+        // Read source code text and upload in parallel
+        Promise.all([file.text(), CodeParser.upload(file)])
+            .then(([sourceCode, json]) => {
                 if (json.success === false) {
                     const err = json.error || {};
                     alert(`Error (${err.stage || 'unknown'}): ${err.message || 'Unknown error'}`);
                     return;
                 }
+                visualizer.setSourceCode(sourceCode);
                 visualizer.visualize(json);
                 // Refresh the trace dropdown
                 return fetch('/api/traces').then(r => r.json()).then(files => {

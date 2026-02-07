@@ -478,7 +478,7 @@ class CityRenderer {
 
         mesh._buildingData = {
             step: fn.enterStep,
-            stepData: { type: 'CALL', name: fn.name, depth: fn.depth, line: 0 },
+            stepData: { type: 'CALL', name: fn.name, depth: fn.depth, line: fn.line || 0 },
             color, type: 'CALL',
             childSteps: this._fnChildSteps(fn),
             capMesh: cap
@@ -570,7 +570,7 @@ class CityRenderer {
 
         mesh._buildingData = {
             step: v.declStep,
-            stepData: { type: 'DECL', name: v.name, value: v.currentValue, address: v.address, line: 0 },
+            stepData: { type: 'DECL', name: v.name, value: v.currentValue, address: v.address, line: v.line || 0 },
             color, type: 'DECL',
             childSteps: this._varChildSteps(v),
             capMesh: roof
@@ -688,7 +688,7 @@ class CityRenderer {
 
         mesh._buildingData = {
             step: loop.steps[0] || 0,
-            stepData: { type: 'LOOP', name: '', subtype: loop.subtype, condition: loop.condition, line: 0 },
+            stepData: { type: 'LOOP', name: '', subtype: loop.subtype, condition: loop.condition, line: loop.line || 0 },
             color, type: 'LOOP',
             childSteps: this._loopChildSteps(loop),
             capMesh: chimney
@@ -776,12 +776,12 @@ class CityRenderer {
 
         mesh._buildingData = {
             step: br.step,
-            stepData: { type: 'CONDITION', name: br.condition, conditionResult: br.result, line: 0 },
+            stepData: { type: 'CONDITION', name: br.condition, conditionResult: br.result, line: br.line || 0 },
             color, type: 'CONDITION',
             childSteps: [
-                { type: 'CONDITION', name: br.condition, value: br.result ? 'true' : 'false', address: '0', line: 0 },
+                { type: 'CONDITION', name: br.condition, value: br.result ? 'true' : 'false', address: '0', line: br.line || 0 },
                 ...(br.chosenBranch
-                    ? [{ type: 'BRANCH', name: br.chosenBranch, value: '', address: '0', line: 0, subtype: br.chosenBranch }]
+                    ? [{ type: 'BRANCH', name: br.chosenBranch, value: '', address: '0', line: br.line || 0, subtype: br.chosenBranch }]
                     : [])
             ],
             capMesh: null

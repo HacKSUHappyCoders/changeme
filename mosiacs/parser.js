@@ -33,7 +33,7 @@ class CodeParser {
                 name:       t.subject || '',                 // primary identifier
                 value:      t.value !== undefined ? String(t.value) : '',
                 address:    t.address || '0',
-                line:       t.line_number || 0,
+                line:       Number(t.line_number) || 0,
                 depth:      t.stack_depth || 0,
                 // New fields from JSON
                 subtype:    t.subtype || '',                 // e.g. "for", "else", "literal"

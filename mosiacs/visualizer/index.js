@@ -23,6 +23,9 @@ class CodeVisualizer {
 
         // Explode interaction (click-to-inspect)
         this.explodeManager = null;
+
+        // Source code for the code panel
+        this._sourceCode = null;
     }
 
     /**
@@ -44,6 +47,9 @@ class CodeVisualizer {
         // Explode manager for click-to-inspect (pass cityRenderer for sub-spirals)
         this.explodeManager = new ExplodeManager(scene, this.cityRenderer);
 
+        // Wire up node-click → code panel highlight
+        this.explodeManager.onNodeSelect = (line) => this.highlightLine(line);
+
         // Galaxy warp manager — double-click to warp into sub-spiral galaxies
         this.galaxyWarpManager = new GalaxyWarpManager(scene, this.sceneManager, this.cityRenderer);
         this.explodeManager.galaxyWarpManager = this.galaxyWarpManager;
@@ -58,8 +64,9 @@ class CodeVisualizer {
      * Load and visualise a code trace.
      */
     visualize(codeTrace) {
-        // Clear previous city
+        // Clear previous city and code panel
         this.cityRenderer.clear();
+        this._removeCodePanel();
 
         // Clear any active galaxy warp
         if (this.galaxyWarpManager) {
@@ -96,6 +103,11 @@ class CodeVisualizer {
 
         // Update stats
         this._updateStats(trace.length);
+
+        // Build code panel if source code is available
+        if (this._sourceCode) {
+            this._buildCodePanel(this._sourceCode);
+        }
     }
 
     // ─── Camera ────────────────────────────────────────────────────
@@ -158,6 +170,90 @@ class CodeVisualizer {
             if (meta.num_variables) html += `, ${meta.num_variables} vars`;
         }
         el.innerHTML = html;
+    }
+
+    // ─── Code Panel ─────────────────────────────────────────────
+
+    setSourceCode(code) {
+        this._sourceCode = code;
+    }
+
+    _buildCodePanel(code) {
+        this._removeCodePanel();
+
+        const lines = code.split('\n');
+        const panel = document.createElement('div');
+        panel.id = 'codePanel';
+        panel.className = 'code-panel';
+
+        const header = document.createElement('div');
+        header.className = 'code-panel-header';
+        const meta = this.parser.metadata;
+        header.textContent = meta && meta.file_name ? meta.file_name : 'Source Code';
+        panel.appendChild(header);
+
+        const content = document.createElement('div');
+        content.className = 'code-panel-content';
+        content.id = 'codePanelContent';
+
+        lines.forEach((line, i) => {
+            const num = i + 1;
+            const row = document.createElement('div');
+            row.className = 'code-line';
+            row.id = 'codeLine' + num;
+
+            const numSpan = document.createElement('span');
+            numSpan.className = 'code-line-num';
+            numSpan.textContent = num;
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'code-line-text';
+            textSpan.textContent = line;
+
+            row.appendChild(numSpan);
+            row.appendChild(textSpan);
+            content.appendChild(row);
+        });
+
+        panel.appendChild(content);
+        document.body.appendChild(panel);
+
+        // Animate in
+        requestAnimationFrame(() => panel.classList.add('open'));
+    }
+
+    _removeCodePanel() {
+        const panel = document.getElementById('codePanel');
+        if (panel) {
+            panel.classList.remove('open');
+            setTimeout(() => { if (panel.parentNode) panel.parentNode.removeChild(panel); }, 300);
+        }
+    }
+
+    highlightLine(lineNumber) {
+        // Remove old highlight
+        const old = document.querySelector('.code-line.highlighted');
+        if (old) old.classList.remove('highlighted');
+
+        if (!lineNumber) return;
+
+        const lineEl = document.getElementById('codeLine' + lineNumber);
+        if (!lineEl) return;
+
+        lineEl.classList.add('highlighted');
+
+        // Scroll to center the line in the panel
+        const content = document.getElementById('codePanelContent');
+        if (!content) return;
+
+        const lineTop = lineEl.offsetTop - content.offsetTop;
+        const lineHeight = lineEl.offsetHeight;
+        const contentHeight = content.clientHeight;
+
+        content.scrollTo({
+            top: lineTop - (contentHeight / 2) + (lineHeight / 2),
+            behavior: 'smooth'
+        });
     }
 
 }

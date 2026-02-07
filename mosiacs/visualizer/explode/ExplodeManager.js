@@ -19,6 +19,9 @@ class ExplodeManager {
         /** Currently inspected building (null when nothing is open) */
         this.exploded = null;
 
+        /** Callback when a node is selected: (lineNumber) => void */
+        this.onNodeSelect = null;
+
         /** Double-click detection via delayed single-click pattern */
         this._pendingClickTimer = null;
         this._pendingClickMesh = null;
@@ -147,6 +150,11 @@ class ExplodeManager {
         });
 
         this.exploded = { mesh: buildingMesh, buildingData: bd, panel };
+
+        // Highlight the source line for this node
+        if (this.onNodeSelect) {
+            this.onNodeSelect(this._getLineForBuilding(buildingMesh));
+        }
 
         // Show the sub-spiral for this building
         if (this.cityRenderer) {
@@ -353,6 +361,12 @@ class ExplodeManager {
 
         this._dotPanel = panel;
 
+        // Highlight source line if available
+        if (this.onNodeSelect) {
+            const line = this._getLineForEntity(entity);
+            this.onNodeSelect(line);
+        }
+
         // Brief highlight pulse
         if (!mesh.isDisposed()) {
             const origScale = mesh.scaling.clone();
@@ -524,6 +538,12 @@ class ExplodeManager {
 
         this._dotPanel = panel;
 
+        // Highlight source line for this step
+        if (this.onNodeSelect) {
+            const line = step.line || this._getLineForEntity(dotMesh._entityData);
+            this.onNodeSelect(line);
+        }
+
         // Briefly highlight the clicked dot
         const origScale = dotMesh.scaling.clone();
         dotMesh.scaling = new BABYLON.Vector3(1.4, 1.4, 1.4);
@@ -538,6 +558,14 @@ class ExplodeManager {
             const p = this._dotPanel;
             setTimeout(() => { if (p.parentNode) p.parentNode.removeChild(p); }, 300);
             this._dotPanel = null;
+        }
+        // Restore highlight to the parent building's line (if one is open)
+        if (this.onNodeSelect) {
+            if (this.exploded && this.exploded.mesh) {
+                this.onNodeSelect(this._getLineForBuilding(this.exploded.mesh));
+            } else {
+                this.onNodeSelect(null);
+            }
         }
     }
 
@@ -629,6 +657,62 @@ class ExplodeManager {
         return h;
     }
 
+    /**
+     * Get the best available source line for a building mesh.
+     * Falls back through: stepData.line → trace step → first child with a line.
+     */
+    _getLineForBuilding(buildingMesh) {
+        const bd = buildingMesh._buildingData;
+        if (!bd) return 0;
+
+        // 1. Direct line from stepData
+        if (bd.stepData && bd.stepData.line) return bd.stepData.line;
+
+        // 2. Look up the trace step at this building's step index
+        if (this.cityRenderer && this.cityRenderer._lastTrace) {
+            const trace = this.cityRenderer._lastTrace;
+            const step = trace[bd.step];
+            if (step && step.line) return step.line;
+        }
+
+        // 3. Try the first child step that has a line number
+        const entity = buildingMesh._entityData;
+        if (entity && entity.childStepIndices && this.cityRenderer && this.cityRenderer._lastTrace) {
+            const trace = this.cityRenderer._lastTrace;
+            for (const idx of entity.childStepIndices) {
+                const childStep = trace[idx];
+                if (childStep && childStep.line) return childStep.line;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Get the best available source line for a consolidated entity
+     * (used by galaxy buildings and dot inspector entities).
+     */
+    _getLineForEntity(entity) {
+        if (!entity) return 0;
+
+        // 1. Direct line on the entity
+        if (entity.line) return entity.line;
+
+        // 2. firstStep line
+        if (entity.firstStep && entity.firstStep.line) return entity.firstStep.line;
+
+        // 3. Search stepIndices in the trace for the first one with a line
+        if (entity.stepIndices && this.cityRenderer && this.cityRenderer._lastTrace) {
+            const trace = this.cityRenderer._lastTrace;
+            for (const idx of entity.stepIndices) {
+                const step = trace[idx];
+                if (step && step.line) return step.line;
+            }
+        }
+
+        return 0;
+    }
+
     _iconForType(type) {
         switch (type) {
             case 'CALL':      return '🏛️';
@@ -654,6 +738,9 @@ class ExplodeManager {
         setTimeout(() => {
             if (panel.parentNode) panel.parentNode.removeChild(panel);
         }, 300);
+
+        // Clear code panel highlight
+        if (this.onNodeSelect) this.onNodeSelect(null);
 
         // Also close any dot inspector
         this._closeDotInspector();
