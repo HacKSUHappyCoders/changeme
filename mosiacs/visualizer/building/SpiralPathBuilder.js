@@ -18,18 +18,13 @@ class SpiralPathBuilder {
         const points = [];
         const radius = SPIRAL_CONFIG.radiusStart;
         const radiusGrowth = SPIRAL_CONFIG.radiusGrowth;
-        const heightPerStep = SPIRAL_CONFIG.heightStep;
-
-        // Calculate the total height so we can start at the top
-        const totalHeight = (steps - 1) * heightPerStep;
 
         for (let i = 0; i < steps; i++) {
             const angle = getSpiralAngle(i);
             const currentRadius = radius + (i * radiusGrowth);
             const x = Math.cos(angle) * currentRadius;
             const z = Math.sin(angle) * currentRadius;
-            // DESCENDING: start at totalHeight and go DOWN
-            const y = totalHeight - (i * heightPerStep);
+            const y = getSpiralY(i, steps);
             points.push(new BABYLON.Vector3(x, y, z));
         }
 
