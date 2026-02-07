@@ -1,4 +1,27 @@
-# Copilot Agent Instruction — What a “Building” Represents in the Visual Debugger
+# Code Mosaic Visualizer - Agent Instructions
+
+**Project Overview**: A 3D visual debugger that renders program execution traces as interactive spiral cities with stained-glass aesthetics.
+
+## Project Architecture
+
+This is a full-stack application consisting of:
+- **Frontend**: Babylon.js 3D visualizer (mosiacs/)
+- **Backend**: Flask API server (app/, server.py)
+- **Parser**: Tree-sitter based code instrumentation and trace generation (parser/)
+- **Docker**: Containerized deployment
+
+---
+
+# Core Visualization Concept
+
+You are implementing a 3D visual debugger where a program execution trace is rendered as a spiral city.
+**A building must never represent a line of code or an AST node.**
+A building represents a *persistent runtime concept* — something that continues to exist across multiple execution events.
+
+The visualization is driven by the execution trace (CALL, DECL, ASSIGN, LOOP, CONDITION, BRANCH, RETURN).
+The user navigates forward along a spiral path that represents **time**. Each trace event advances time.
+
+Your task: construct buildings based on runtime responsibility, not syntax.Agent Instruction — What a “Building” Represents in the Visual Debugger
 
 You are implementing a 3D visual debugger where a program execution trace is rendered as a spiral city.
 **A building must never represent a line of code or an AST node.**
@@ -262,9 +285,169 @@ In this phase we will be creating a lot of different visual features that can be
 
 
 ## Phase 4 - Advanced Development of Building Designs
+
 # This phase is all about changing the way some of the nodes are displayed when expanded
-# For loops - bubbles
+
+## For loops - Bubbles
 Firstly, we will change the way the for loop galaxy is displayed. Instead of a spiral galaxy, we want the for loop to be represented by a bubble and this would be a semi transparent bubble, and the bubble reprents the for loop itself and inside of the bubble is a connected chain of nodes/buildings of the code inside of the bubble. They should all be conncted up and inside of the bubble and they should all have tags when hovering over them and also show causality.
 
-# If statements - Trees
+## If statements - Trees
 Secodnly for IF statements, we want them to become a tree like structure when we click to expand them, instead of the current spiral shape. Potentially maybe we can pull the if, if else, and else statements together into one unit and when we expand it we can see the tree structure form. This would be pretty cool to see work and function this way, but maybe it would not be possible with the current setup. If it is not possible, let me know.
+
+---
+
+# Technical Stack & File Structure
+
+## Frontend (mosiacs/)
+- **index.html**: Main UI with controls and canvas
+- **main.js**: Application entry point, event handlers
+- **parser.js**: Parses trace data and handles API communication
+- **styles.css**: UI styling
+
+### Visualizer Architecture (mosiacs/visualizer/)
+- **index.js**: Main CodeVisualizer class
+- **SpiralConfig.js**: Spiral geometry configuration
+
+#### Scene Management (scene/)
+- **SceneManager.js**: Babylon.js scene setup
+- **CameraController.js**: Camera control and positioning
+- **LightingManager.js**: Scene lighting
+
+#### Building System (building/)
+- **SpiralPathBuilder.js**: Generates spiral path geometry
+
+#### Rendering Systems (world/)
+- **WorldState.js**: Manages global state
+- **CityRenderer.js**: Main building rendering
+- **SubSpiralRenderer.js**: Sub-spiral (galaxy) rendering
+- **LoopBubbleRenderer.js**: Loop visualization as bubbles
+- **BranchTreeRenderer.js**: Branch/if statement tree visualization
+- **CausalityRenderer.js**: Value causality web visualization
+- **PanoramicRenderer.js**: Wide-angle views
+- **MemoryPoolRenderer.js**: Memory visualization
+- **ColorHash.js**: Deterministic color generation
+- **LabelHelper.js**: Text labels for buildings
+- **MeshFactory.js**: Reusable mesh creation
+
+#### Galaxy System (world/galaxy/)
+- **GalaxyBuilder.js**: Creates sub-spiral galaxies
+- **GalaxyWarpManager.js**: Handles transitions to/from galaxies
+- **WarpEffects.js**: Visual effects for galaxy transitions
+
+#### Explosion System (explode/)
+- **ExplodeManager.js**: Building explosion/detail view
+
+#### UI Components (ui/)
+- **DraggablePanel.js**: Makes UI panels draggable
+
+## Backend
+
+### Flask Server (server.py)
+- Serves static files
+- API endpoints:
+  - `/api/trace/<filename>` - Returns trace JSON
+  - `/api/traces` - Lists available traces
+  - `/` - Serves index.html
+
+### Application Layer (app/)
+- **routes.py**: API routes for uploading and processing code
+- **pyproject.toml**: Python dependencies (Flask, tree-sitter)
+- Uses uv for package management
+
+## Parser (parser/)
+- **run.py**: Main pipeline orchestrator
+  - Instruments source code with tree-sitter
+  - Compiles instrumented code
+  - Executes and captures trace
+  - Normalizes output to JSON
+- **normalize.py**: Converts raw trace to JSON format
+- **tracer/**: Tree-sitter instrumentation
+  - **base.py**: Base instrumentation class
+  - **core.py**: Core tracing logic
+  - **registry.py**: Language registration
+  - **languages/c.py**: C language support
+  - **languages/python.py**: Python language support
+
+## Data Format
+
+### Trace JSON Structure
+```json
+{
+  "metadata": {
+    "file_name": "example.c",
+    "language": "C",
+    "total_lines": 18,
+    "num_functions": 1,
+    "function_names": ["main"],
+    "num_variables": 2,
+    "max_nesting_depth": 2
+  },
+  "traces": [
+    {
+      "type": "CALL",
+      "subject": "main",
+      "line_number": 1,
+      "stack_depth": 1
+    },
+    {
+      "type": "DECL",
+      "subject": "sum",
+      "value": 0,
+      "address": "000000660F5FF91C",
+      "line_number": 4,
+      "stack_depth": 1
+    }
+  ]
+}
+```
+
+### Event Types
+- **CALL**: Function invocation
+- **DECL**: Variable declaration
+- **ASSIGN**: Variable assignment
+- **LOOP**: Loop iteration (for/while)
+- **CONDITION**: Conditional evaluation
+- **BRANCH**: Branch taken (if/else)
+- **RETURN**: Function return
+
+## Docker Setup
+- **Dockerfile**: Python 3.13 + gcc + uv
+- **docker-compose.yml**: Runs on port 3000
+- Volumes mount data directory
+
+---
+
+# Implementation Guidelines
+
+## When Working on Frontend
+- The main visualizer class is in `mosiacs/visualizer/index.js`
+- Use Babylon.js API for 3D rendering
+- Follow the existing renderer pattern (separate files for each feature)
+- Test with example traces in `mosiacs/data/`
+
+## When Working on Backend
+- Flask routes are in `app/routes.py` and `server.py`
+- Parser pipeline is in `parser/run.py`
+- Add new language support in `parser/tracer/languages/`
+
+## When Adding Features
+1. Update AGENTS.md with the feature description
+2. Create/modify appropriate renderer class
+3. Add UI controls in index.html/main.js
+4. Test with various trace files
+5. Document in README if user-facing
+
+## Color System
+Buildings use a hash-based color scheme with fixed RGB channels:
+- One channel always 255
+- Other channels vary based on hash of identifier
+- Same function/variable always gets same color
+- Different visualization types use different color patterns
+
+## State Management
+- WorldState maintains global state
+- Each renderer manages its own objects
+- Camera state tracked by CameraController
+- Galaxy system maintains separate coordinate spaces
+
+---
