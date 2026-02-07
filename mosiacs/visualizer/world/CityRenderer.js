@@ -514,7 +514,7 @@ class CityRenderer {
             );
         }
         if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = 0.9;
-        `` if (entry.mesh._buildingData) {
+        if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = MeshFactory.loopChildSteps(loop);
         }
         if (entry.label) {
@@ -661,5 +661,19 @@ class CityRenderer {
                 entry[k].dispose();
             }
         });
+    }
+
+    // ─── Delegates to MeshFactory / LabelHelper ────────────────────
+
+    _glowMaterial(name, color) {
+        return this.meshFactory.glowMaterial(name, color);
+    }
+
+    _animateScaleIn(mesh) {
+        this.meshFactory.animateScaleIn(mesh);
+    }
+
+    _createFloatingLabel(name, text, pos, yOffset, color, scale) {
+        return this.labelHelper.create(name, text, pos, yOffset, color, scale);
     }
 }
