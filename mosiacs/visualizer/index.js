@@ -1,203 +1,122 @@
 /**
- * CodeVisualizer - Main visualizer class
- * Babylon.js Visualizer for Code Mosaic
- * Creates a stained-glass descending spiral visualization of code execution.
- * 
- * Design philosophy:
- * - The spiral DESCENDS from top to bottom (execution flows downward like gravity)
- * - Each operation type has a unique trapezoid-style shape and size hierarchy
- * - CALL operations are the largest/tallest (they are function entry points)
- * - Child operations (DECL, ASSIGN, LOOP, etc.) build off their parent CALL
- * - Shapes are varied trapezoids/prisms to create a dynamic, organic skyline
+ * CodeVisualizer — Main orchestrator for the 3D visual debugger.
+ *
+ * Architecture:
+ *   WorldState    – runtime simulation: functions, variables, loops, branches, memory
+ *   CityRenderer  – translates world snapshots into Babylon.js meshes
+ *   SceneManager  – Babylon.js scene, camera, lights
+ *
+ * A building represents a persistent runtime concept (function, variable,
+ * loop, branch) — NOT a line of code or AST node.
+ *
+ * The spiral path represents time.  Each trace event advances one step.
  */
 class CodeVisualizer {
     constructor(canvas) {
         this.canvas = canvas;
         this.parser = new CodeParser();
-        this.buildings = [];
-        
-        // Initialize managers
+
+        // Managers — initialised in init()
         this.sceneManager = null;
-        this.materialManager = null;
-        this.spiralPathBuilder = null;
-        this.shapeBuilder = null;
-        this.animationController = null;
-        this.buildingFactory = null;
+        this.worldState = null;
+        this.cityRenderer = null;
+
+        // Explode interaction (click-to-inspect)
         this.explodeManager = null;
     }
 
     /**
-     * Initialize the visualizer
+     * Initialise Babylon.js and all sub-systems.
      */
     init() {
-        // Initialize scene manager
+        // Scene setup
         this.sceneManager = new SceneManager(this.canvas);
         this.sceneManager.init();
 
         const scene = this.sceneManager.getScene();
-        const camera = this.sceneManager.getCamera();
 
-        // Initialize other managers
-        this.materialManager = new MaterialManager(scene);
-        this.spiralPathBuilder = new SpiralPathBuilder(scene, this.materialManager);
-        this.shapeBuilder = new ShapeBuilder(scene);
-        this.animationController = new AnimationController(scene);
-        this.buildingFactory = new BuildingFactory(
-            scene,
-            this.shapeBuilder,
-            this.materialManager,
-            this.animationController
-        );
-        this.explodeManager = new ExplodeManager(scene, camera, this.materialManager);
+        // World state engine
+        this.worldState = new WorldState();
+
+        // City renderer — turns world snapshots into 3D geometry
+        this.cityRenderer = new CityRenderer(scene);
+
+        // Explode manager for click-to-inspect (pass cityRenderer for sub-spirals)
+        this.explodeManager = new ExplodeManager(scene, this.cityRenderer);
 
         return this;
     }
 
     /**
-     * Visualize parsed code trace
+     * Load and visualise a code trace.
      */
     visualize(codeTrace) {
-        // Clear existing buildings
-        this.buildings.forEach(b => {
-            b.mesh.dispose();
-            b.cap.dispose();
-        });
-        this.buildings = [];
-        
-        // Clear spiral path
-        this.spiralPathBuilder.clear();
+        // Clear previous city
+        this.cityRenderer.clear();
 
-        // Parse the code
+        // Parse the trace
         const trace = this.parser.parse(codeTrace);
 
-        // ── Group child steps under their parent "container" step ────
-        // Container types: CALL, LOOP, CONDITION, BRANCH  (and legacy IF/ELSE)
-        // Everything between a container and the next container (or RETURN
-        // / next container at same depth) belongs to that container.
-        const containerTypes = new Set(['CALL', 'LOOP', 'CONDITION', 'BRANCH', 'IF', 'ELSE']);
-        const childMap = this._buildChildMap(trace, containerTypes);
+        // Feed into world state
+        this.worldState.loadTrace(trace);
 
-        // Create descending spiral path
-        const pathPoints = this.spiralPathBuilder.createSpiralPath(trace.length);
+        // Advance to the end so the full city is visible
+        this.worldState.seekTo(trace.length - 1);
 
-        // Track the current parent CALL's building height
-        let currentCallHeight = 0;
+        // Block material dirty notifications during bulk mesh creation
+        // (major perf win for large traces)
+        const scene = this.sceneManager.getScene();
+        scene.blockMaterialDirtyMechanism = true;
 
-        // Create buildings along the path
-        trace.forEach((step, index) => {
-            const position = pathPoints[index];
-            const color = this.parser.getColorForType(step.type);
-            const children = childMap[index] || [];
-            
-            setTimeout(() => {
-                const buildingData = this.buildingFactory.createBuilding(
-                    index, position, color, step.type, step, currentCallHeight, children
-                );
-                this.buildings.push(buildingData);
-                
-                if (step.type === 'CALL') {
-                    currentCallHeight = buildingData.height;
-                }
-            }, index * 100);
-        });
+        // Render the current world state
+        this.cityRenderer.render(this.worldState.getSnapshot());
 
-        // Update camera target
-        const midHeight = ((trace.length - 1) * 0.5) / 2;
-        this.sceneManager.setCameraTarget(new BABYLON.Vector3(0, midHeight, 0));
+        // Re-enable material updates
+        scene.blockMaterialDirtyMechanism = false;
 
-        this.updateStats(trace.length);
+        // Reset camera to a good overview position
+        this.sceneManager.resetCamera();
+
+        // Update stats
+        this._updateStats(trace.length);
     }
 
-    /**
-     * Build a map:  parentIndex → [ childStep, childStep, … ]
-     *
-     * A "container" (CALL, LOOP, IF, ELSE) owns every subsequent step
-     * until the next container at the same-or-lesser depth, or a RETURN
-     * that closes the current function.
-     */
-    _buildChildMap(trace, containerTypes) {
-        const childMap = {};        // index → []
-        let currentContainer = -1;  // index of current open container
+    // ─── Camera ────────────────────────────────────────────────────
 
-        trace.forEach((step, i) => {
-            if (containerTypes.has(step.type)) {
-                // This step IS a container — initialise its child list.
-                childMap[i] = childMap[i] || [];
-                currentContainer = i;
-            } else if (step.type === 'RETURN') {
-                // RETURN is its own building; give it an empty child list
-                childMap[i] = childMap[i] || [];
-                // Also add the RETURN as a child of the current container
-                if (currentContainer >= 0) {
-                    childMap[currentContainer] = childMap[currentContainer] || [];
-                    childMap[currentContainer].push(step);
-                }
-                currentContainer = -1; // close container
-            } else {
-                // DECL / ASSIGN / other → belongs to current container
-                if (currentContainer >= 0) {
-                    childMap[currentContainer] = childMap[currentContainer] || [];
-                    childMap[currentContainer].push(step);
-                } else {
-                    // No open container – the step is its own building
-                    childMap[i] = childMap[i] || [];
-                }
-            }
-        });
-
-        return childMap;
-    }
-
-    /**
-     * Update statistics display, including metadata when available.
-     */
-    updateStats(count) {
-        const statsElement = document.getElementById('stats');
-        if (!statsElement) return;
-
-        let html = `<strong>Visualizing:</strong><br>${count} execution steps`;
-
-        const meta = this.parser.metadata;
-        if (meta) {
-            if (meta.file_name)  html += `<br>File: ${meta.file_name}`;
-            if (meta.language)   html += ` (${meta.language})`;
-            if (meta.total_lines) html += `<br>${meta.total_lines} lines`;
-            if (meta.num_functions) html += `, ${meta.num_functions} function(s)`;
-            if (meta.num_variables) html += `, ${meta.num_variables} vars`;
-        }
-
-        statsElement.innerHTML = html;
-    }
-
-    /**
-     * Reset camera to default position — looking at the top of the spiral
-     */
     resetCamera() {
         this.sceneManager.resetCamera();
     }
 
-    /**
-     * Collapse any currently exploded building and restore camera
-     */
+    // ─── Explode ───────────────────────────────────────────────────
+
     collapseExplodedBuilding() {
         return this.explodeManager.collapseIfExploded();
     }
 
-    /**
-     * Toggle debug column mode for shattered pieces
-     * When enabled: shards fly to side column in front of camera for easy debugging
-     * When disabled: shards explode in rings around the building (original behavior)
-     */
-    toggleDebugColumnMode() {
-        return this.explodeManager.toggleDebugMode();
+    // ─── Animation toggle ──────────────────────────────────────────
+
+    toggleAnimation() {
+        const scene = this.sceneManager.getScene();
+        scene.animationsEnabled = !scene.animationsEnabled;
+        return scene.animationsEnabled;
     }
 
-    /**
-     * Toggle animation
-     */
-    toggleAnimation() {
-        const isAnimating = this.animationController.toggleAnimation();
-        this.sceneManager.toggleAnimations(isAnimating);
-        return isAnimating;
+    // ─── UI helpers ────────────────────────────────────────────────
+
+    _updateStats(count) {
+        const el = document.getElementById('stats');
+        if (!el) return;
+
+        let html = `<strong>Visualizing:</strong><br>${count} execution steps`;
+        const meta = this.parser.metadata;
+        if (meta) {
+            if (meta.file_name) html += `<br>File: ${meta.file_name}`;
+            if (meta.language)  html += ` (${meta.language})`;
+            if (meta.total_lines) html += `<br>${meta.total_lines} lines`;
+            if (meta.num_functions) html += `, ${meta.num_functions} fn(s)`;
+            if (meta.num_variables) html += `, ${meta.num_variables} vars`;
+        }
+        el.innerHTML = html;
     }
+
 }

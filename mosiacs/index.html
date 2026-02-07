@@ -10,48 +10,53 @@
     <canvas id="renderCanvas"></canvas>
     
     <div id="controls">
-        <h2>🎨 Code Mosaic</h2>
+        <h2>Code Mosaic</h2>
         <div>
-            <button id="loadExample">Load Example Code</button>
+            <select id="traceFile">
+                <option value="small_test_data.json">Small Test</option>
+                <option value="test_data.json">Test Data</option>
+                <option value="big_test_data.json">Big Test</option>
+            </select>
+            <button id="loadExample">Load Trace</button>
             <button id="resetCamera">Reset Camera</button>
-            <button id="collapseBuilding">De-Explode Building</button>
+            <button id="collapseBuilding">Close Inspector</button>
             <button id="toggleAnimation">Pause Animation</button>
-            <button id="toggleDebugMode" class="debug-btn">🐛 Debug Column: ON</button>
         </div>
+
     </div>
     <div id="info">
         <strong>Controls:</strong><br>
         • Left mouse: Rotate<br>
         • Right mouse: Pan<br>
         • Scroll: Zoom<br>
-        • <strong>Click a building</strong> to shatter &amp; inspect variables<br>
-        • Click building again OR use <strong>De-Explode button</strong> to collapse<br>
-        • <strong>Debug Column Mode:</strong> Shards fly to screen edge for easy viewing<br>
+        • <strong>Click a building</strong> to inspect its data<br>
+        • Click again or press <strong>Close Inspector</strong> to dismiss<br>
         <br>
         <span id="stats"></span>
     </div>
-
 
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     <script src="parser.js"></script>
 
+    <!-- Shared config -->
+    <script src="visualizer/SpiralConfig.js"></script>
+
     <!-- Scene modules -->
     <script src="visualizer/scene/SceneManager.js"></script>
-    <script src="visualizer/scene/MaterialManager.js"></script>
 
-    <!-- Building modules -->
-    <script src="visualizer/building/SpiralPathBuilder.js"></script>
-    <script src="visualizer/building/ShapeBuilder.js"></script>
-    <script src="visualizer/building/AnimationController.js"></script>
-    <script src="visualizer/building/BuildingFactory.js"></script>
+    <!-- World state engine -->
+    <script src="visualizer/world/WorldState.js"></script>
 
-    <!-- Explode modules -->
-    <script src="visualizer/explode/StepLabelHelper.js"></script>
-    <script src="visualizer/explode/ShardFactory.js"></script>
-    <script src="visualizer/explode/ShardAnimator.js"></script>
-    <script src="visualizer/explode/ExplodeCameraController.js"></script>
+    <!-- Rendering helpers (loaded before CityRenderer) -->
+    <script src="visualizer/world/ColorHash.js"></script>
+    <script src="visualizer/world/LabelHelper.js"></script>
+    <script src="visualizer/world/MeshFactory.js"></script>
+    <script src="visualizer/world/SubSpiralRenderer.js"></script>
+    <script src="visualizer/world/CityRenderer.js"></script>
+
+    <!-- Explode / inspector -->
     <script src="visualizer/explode/ExplodeManager.js"></script>
 
     <!-- Main visualizer -->

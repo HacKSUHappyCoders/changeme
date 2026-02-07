@@ -47,27 +47,8 @@ class CodeParser {
     }
 
     /**
-     * Get color based on operation type (stained glass colors)
-     */
-    getColorForType(type) {
-        const colors = {
-            'CALL':      { r: 0.8, g: 0.2, b: 0.2, a: 0.8 },   // Ruby red
-            'DECL':      { r: 0.2, g: 0.4, b: 0.8, a: 0.8 },   // Sapphire blue
-            'LOOP':      { r: 0.6, g: 0.2, b: 0.8, a: 0.8 },   // Amethyst purple
-            'ASSIGN':    { r: 0.2, g: 0.8, b: 0.4, a: 0.8 },   // Emerald green
-            'RETURN':    { r: 0.9, g: 0.7, b: 0.1, a: 0.8 },   // Amber gold
-            'CONDITION': { r: 0.9, g: 0.4, b: 0.2, a: 0.8 },   // Topaz orange
-            'BRANCH':    { r: 0.4, g: 0.7, b: 0.9, a: 0.8 },   // Aquamarine
-            'IF':        { r: 0.9, g: 0.4, b: 0.2, a: 0.8 },   // Topaz orange  (legacy)
-            'ELSE':      { r: 0.4, g: 0.7, b: 0.9, a: 0.8 },   // Aquamarine    (legacy)
-            'DEFAULT':   { r: 0.7, g: 0.7, b: 0.7, a: 0.8 }    // Crystal clear
-        };
-        return colors[type] || colors['DEFAULT'];
-    }
-
-    /**
      * Fetch trace data from the Flask API.
-     * @param {string} [filename='test_data.json'] – JSON file in data/
+     * @param {string} [filename='big_test_data.json'] – JSON file in data/
      * @returns {Promise<object>} The trace JSON object
      */
     static getExampleTrace(filename) {

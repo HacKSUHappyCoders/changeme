@@ -1,52 +1,26 @@
 /**
- * ExplodeManager - Handles click-to-shatter interaction on buildings.
+ * ExplodeManager — Click a building to open a screen-pinned HTML inspector
+ * that shows the real data behind that entity (from the JSON trace).
  *
- * When a building is clicked it "shatters" into static floating shards.
- * Each shard represents a variable / value that lived inside that code block.
- *
- * Clicking a second time (or clicking another building) collapses the shards
- * back and restores the original building.
- *
- * Delegates to:
- *   ShardFactory             – mesh + label creation
- *   ShardAnimator            – fly-out animations (debug-column & ring)
- *   ExplodeCameraController  – camera save / restore / zoom
- *   StepLabelHelper          – label text & colour helpers
+ * The inspector cards are fixed to the viewport (not 3D), so they stay
+ * readable as the camera moves.  Clicking the same building (or the
+ * close button) collapses the inspector.
  */
 class ExplodeManager {
-    constructor(scene, camera, materialManager) {
+    constructor(scene, cityRenderer) {
         this.scene  = scene;
-        this.camera = camera;
-        this.materialManager = materialManager;
 
-        // Sub-modules
-        this.shardFactory    = new ShardFactory(scene, camera);
-        this.shardAnimator   = new ShardAnimator(scene, camera);
-        this.cameraCtrl      = new ExplodeCameraController(camera);
+        /** Reference to CityRenderer for on-demand sub-spiral rendering */
+        this.cityRenderer = cityRenderer || null;
 
-        /** Currently exploded building data (null when nothing is open) */
+        /** Currently inspected building (null when nothing is open) */
         this.exploded = null;
-
-        /** Debug mode: shards fly to side column (true) or explode in rings (false) */
-        this.debugColumnMode = true;
 
         this._setupPointerObservable();
     }
 
-    // ─── public helpers ─────────────────────────────────────────────
+    // ─── public ─────────────────────────────────────────────────────
 
-    /**
-     * Toggle between debug column mode and ring explosion mode
-     */
-    toggleDebugMode() {
-        this.debugColumnMode = !this.debugColumnMode;
-        console.log(`Debug column mode: ${this.debugColumnMode ? 'ON' : 'OFF'}`);
-        return this.debugColumnMode;
-    }
-
-    /**
-     * Collapse any currently exploded building (called from UI).
-     */
     collapseIfExploded() {
         if (this.exploded) {
             this._collapse();
@@ -60,147 +34,227 @@ class ExplodeManager {
     _setupPointerObservable() {
         this.scene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERPICK) return;
-            const pickResult = pointerInfo.pickInfo;
-            if (!pickResult.hit || !pickResult.pickedMesh) return;
+            const pick = pointerInfo.pickInfo;
+            if (!pick.hit || !pick.pickedMesh) return;
 
-            const buildingMesh = this._findBuildingMesh(pickResult.pickedMesh);
+            const buildingMesh = this._findBuildingMesh(pick.pickedMesh);
             if (!buildingMesh) return;
 
-            // Already exploded → collapse
+            // Already inspecting this building → close
             if (this.exploded && this.exploded.mesh === buildingMesh) {
                 this._collapse();
                 return;
             }
 
-            // Different building exploded → collapse first, then explode new
-            if (this.exploded) {
-                this._collapse();
-                setTimeout(() => this._explode(buildingMesh), 550);
-            } else {
-                this._explode(buildingMesh);
-            }
+            // Different building → close old, open new
+            if (this.exploded) this._collapse();
+            this._explode(buildingMesh);
         });
     }
 
     _findBuildingMesh(mesh) {
         let cur = mesh;
         while (cur) {
+            if (cur._buildingData) return cur;
             if (cur.name && cur.name.startsWith('building_')) return cur;
-            if (cur.name && cur.name.startsWith('shard_'))    return null;
             cur = cur.parent;
         }
         return null;
     }
 
-    // ─── explode ────────────────────────────────────────────────────
+    // ─── explode (open inspector) ───────────────────────────────────
 
     _explode(buildingMesh) {
         const bd = buildingMesh._buildingData;
         if (!bd) return;
 
-        const childSteps = bd.childSteps || [];
-        const centerPos  = buildingMesh.position.clone();
-        const height     = buildingMesh._trapHeight || 2;
-        const totalShards = this._calculateTotalShards(childSteps.length);
+        const entity = buildingMesh._entityData || {};
 
-        const cameraViewInfo = this.cameraCtrl.calculateViewPosition(centerPos, height, totalShards);
+        // Build HTML inspector
+        const panel = this._buildInspectorHTML(bd, entity);
+        document.body.appendChild(panel);
 
-        // Hide original building + cap
-        buildingMesh.setEnabled(false);
-        if (bd.capMesh) bd.capMesh.setEnabled(false);
+        // Animate in
+        requestAnimationFrame(() => panel.classList.add('open'));
 
-        // ── create shards ───────────────────────────────────────────
-        const shards = [];
-
-        // Header – show the step type, name, and extra context (subtype, condition)
-        const sd = bd.stepData;
-        let headerLabel = `${sd.type}  ${sd.name || ''}`;
-        if (sd.subtype)   headerLabel += `  [${sd.subtype}]`;
-        if (sd.condition)  headerLabel += `  (${sd.condition})`;
-        if (sd.line > 0)   headerLabel += `   L${sd.line}`;
-
-        shards.push(this.shardFactory.createShard(
-            `shard_header_${bd.step}`,
-            headerLabel.trim(),
-            centerPos, 0, totalShards, height,
-            bd.color, true, 0,
-            cameraViewInfo.direction,
-            this.debugColumnMode
-        ));
-
-        let idx = 1;
-        childSteps.forEach((child, i) => {
-            // Main label
-            shards.push(this.shardFactory.createShard(
-                `shard_${bd.step}_${i}_main`,
-                StepLabelHelper.labelForStep(child),
-                centerPos, idx++, totalShards, height,
-                StepLabelHelper.colorForChild(child), false, 0,
-                cameraViewInfo.direction,
-                this.debugColumnMode
-            ));
-
-            // Address shard
-            if (child.address && child.address !== '0') {
-                shards.push(this.shardFactory.createShard(
-                    `shard_${bd.step}_${i}_addr`,
-                    `@${child.address.substring(0, 16)}`,
-                    centerPos, idx++, totalShards, height,
-                    StepLabelHelper.colorForChild(child), false, 1,
-                    cameraViewInfo.direction,
-                    this.debugColumnMode
-                ));
-            }
-
-            // Line shard
-            if (child.line > 0) {
-                shards.push(this.shardFactory.createShard(
-                    `shard_${bd.step}_${i}_line`,
-                    `line ${child.line}`,
-                    centerPos, idx++, totalShards, height,
-                    { ...StepLabelHelper.colorForChild(child), a: 0.7 }, false, 2,
-                    cameraViewInfo.direction,
-                    this.debugColumnMode
-                ));
-            }
+        // Close button
+        panel.querySelector('.inspector-close').addEventListener('click', () => {
+            this._collapse();
         });
 
-        // Empty placeholder
-        if (childSteps.length === 0) {
-            shards.push(this.shardFactory.createShard(
-                `shard_empty_${bd.step}`,
-                '(no variables)',
-                centerPos, 1, 2, height,
-                { r: 0.5, g: 0.5, b: 0.5, a: 0.7 }, false, 0,
-                cameraViewInfo.direction,
-                this.debugColumnMode
-            ));
+        this.exploded = { mesh: buildingMesh, buildingData: bd, panel };
+
+        // Show the sub-spiral for this building
+        if (this.cityRenderer) {
+            this.cityRenderer.showSubSpiral(buildingMesh);
         }
-
-        // ── animate ─────────────────────────────────────────────────
-        this.shardAnimator.animateShardsOut(shards, this.debugColumnMode);
-
-        // ── camera ──────────────────────────────────────────────────
-        if (this.debugColumnMode) {
-            // In debug mode, move camera to view the building + column
-            // The column is offset +6 on the X axis from the building
-            const columnCenter = centerPos.clone();
-            columnCenter.x += 3; // midpoint between building and column
-            const debugViewInfo = this.cameraCtrl.calculateViewPosition(
-                columnCenter, height, shards.length
-            );
-            this.cameraCtrl.saveCameraAndMoveToFront(
-                columnCenter, height, shards.length, debugViewInfo
-            );
-        } else {
-            this.cameraCtrl.saveCameraAndMoveToFront(centerPos, height, shards.length, cameraViewInfo);
-        }
-
-        this.exploded = { mesh: buildingMesh, shards, buildingData: bd };
     }
 
-    _calculateTotalShards(childCount) {
-        return 1 + (childCount * 3) + 2;
+    // ─── build the inspector DOM from real data ─────────────────────
+
+    _buildInspectorHTML(bd, entity) {
+        const panel = document.createElement('div');
+        panel.id = 'inspectorPanel';
+        panel.className = 'inspector-panel';
+
+        let html = '';
+
+        // Close button
+        html += `<button class="inspector-close">✕</button>`;
+
+        switch (bd.type) {
+            case 'CALL':
+                html += this._buildFunctionInspector(bd, entity);
+                break;
+            case 'DECL':
+                html += this._buildVariableInspector(bd, entity);
+                break;
+            case 'LOOP':
+                html += this._buildLoopInspector(bd, entity);
+                break;
+            case 'CONDITION':
+                html += this._buildBranchInspector(bd, entity);
+                break;
+            default:
+                html += `<div class="inspector-header">${bd.type}</div>`;
+                html += `<div class="inspector-row"><span class="inspector-label">Step</span><span class="inspector-val">${bd.step}</span></div>`;
+        }
+
+        panel.innerHTML = html;
+        return panel;
+    }
+
+    // ── Function ────────────────────────────────────────────────────
+
+    _buildFunctionInspector(bd, fn) {
+        let h = '';
+        h += `<div class="inspector-header fn-header">
+            <span class="inspector-icon">🏛️</span>
+            <span>${fn.name || bd.stepData.name}()</span>
+        </div>`;
+        h += `<div class="inspector-section">`;
+        h += this._row('Type', 'Function Call');
+        h += this._row('Depth', fn.depth !== undefined ? fn.depth : bd.stepData.depth);
+        h += this._row('Enter step', fn.enterStep !== undefined ? fn.enterStep : bd.step);
+        if (fn.exitStep !== null && fn.exitStep !== undefined)
+            h += this._row('Exit step', fn.exitStep);
+        h += this._row('Active', fn.active ? '✓ yes' : '✗ no');
+        h += `</div>`;
+
+        // Local variables
+        if (fn.localVars && fn.localVars.length > 0) {
+            h += `<div class="inspector-subtitle">Local Variables</div>`;
+            h += `<div class="inspector-section">`;
+            fn.localVars.forEach(vk => {
+                h += `<div class="inspector-row"><span class="inspector-label var-chip">${vk}</span></div>`;
+            });
+            h += `</div>`;
+        }
+
+        // Return value
+        if (fn.returnValue !== null && fn.returnValue !== undefined) {
+            h += `<div class="inspector-subtitle">Return</div>`;
+            h += `<div class="inspector-section">`;
+            h += this._row('Value', fn.returnValue);
+            h += `</div>`;
+        }
+
+        return h;
+    }
+
+    // ── Variable ────────────────────────────────────────────────────
+
+    _buildVariableInspector(bd, v) {
+        let h = '';
+        h += `<div class="inspector-header var-header">
+            <span class="inspector-icon">🏠</span>
+            <span>${v.name || bd.stepData.name}</span>
+        </div>`;
+        h += `<div class="inspector-section">`;
+        h += this._row('Type', 'Variable');
+        h += this._row('Current value', `<strong>${v.currentValue !== undefined ? v.currentValue : bd.stepData.value}</strong>`);
+        h += this._row('Address', v.address || bd.stepData.address || '—');
+        h += this._row('Scope', v.scope || '—');
+        h += this._row('Declared at step', v.declStep !== undefined ? v.declStep : bd.step);
+        h += this._row('Active', v.active ? '✓ yes' : '✗ no');
+        h += `</div>`;
+
+        // Value history (from actual trace data)
+        if (v.values && v.values.length > 0) {
+            h += `<div class="inspector-subtitle">Value History</div>`;
+            h += `<div class="inspector-section inspector-history">`;
+            v.values.forEach((entry, i) => {
+                const isCurrent = (i === v.values.length - 1);
+                h += `<div class="history-row ${isCurrent ? 'current' : ''}">
+                    <span class="history-step">step ${entry.step}</span>
+                    <span class="history-arrow">→</span>
+                    <span class="history-value">${entry.value}</span>
+                </div>`;
+            });
+            h += `</div>`;
+        }
+
+        return h;
+    }
+
+    // ── Loop ────────────────────────────────────────────────────────
+
+    _buildLoopInspector(bd, loop) {
+        let h = '';
+        h += `<div class="inspector-header loop-header">
+            <span class="inspector-icon">🏭</span>
+            <span>${(loop.subtype || 'loop').toUpperCase()}</span>
+        </div>`;
+        h += `<div class="inspector-section">`;
+        h += this._row('Type', (loop.subtype || 'loop').toUpperCase() + ' Loop');
+        h += this._row('Condition', `<code>${loop.condition || bd.stepData.condition || '—'}</code>`);
+        h += this._row('Iterations', loop.iterations !== undefined ? loop.iterations : '—');
+        h += this._row('Running', loop.running ? '🔄 yes' : '⏹ no');
+        h += this._row('Active', loop.active ? '✓ yes' : '✗ no');
+        h += `</div>`;
+
+        // Iteration steps
+        if (loop.steps && loop.steps.length > 0) {
+            h += `<div class="inspector-subtitle">Iteration Steps</div>`;
+            h += `<div class="inspector-section inspector-history">`;
+            loop.steps.forEach((s, i) => {
+                const isLast = (i === loop.steps.length - 1);
+                h += `<div class="history-row ${isLast ? 'current' : ''}">
+                    <span class="history-step">step ${s}</span>
+                    <span class="history-arrow">→</span>
+                    <span class="history-value">iteration ${i + 1}</span>
+                </div>`;
+            });
+            h += `</div>`;
+        }
+
+        return h;
+    }
+
+    // ── Branch ──────────────────────────────────────────────────────
+
+    _buildBranchInspector(bd, br) {
+        let h = '';
+        h += `<div class="inspector-header cond-header">
+            <span class="inspector-icon">🔀</span>
+            <span>CONDITION</span>
+        </div>`;
+        h += `<div class="inspector-section">`;
+        h += this._row('Type', 'Branch / Condition');
+        h += this._row('Condition', `<code>${br.condition || bd.stepData.name || '—'}</code>`);
+        h += this._row('Result', br.result ? '<span class="val-true">TRUE</span>' : '<span class="val-false">FALSE</span>');
+        if (br.chosenBranch)
+            h += this._row('Branch taken', br.chosenBranch);
+        h += this._row('Step', br.step !== undefined ? br.step : bd.step);
+        h += `</div>`;
+
+        return h;
+    }
+
+    // ── helpers ─────────────────────────────────────────────────────
+
+    _row(label, value) {
+        return `<div class="inspector-row"><span class="inspector-label">${label}</span><span class="inspector-val">${value}</span></div>`;
     }
 
     // ─── collapse ───────────────────────────────────────────────────
@@ -208,20 +262,18 @@ class ExplodeManager {
     _collapse() {
         if (!this.exploded) return;
 
-        const { mesh, shards, buildingData } = this.exploded;
+        const { mesh, buildingData, panel } = this.exploded;
 
-        shards.forEach(s => {
-            if (s.material) {
-                if (s.material.diffuseTexture) s.material.diffuseTexture.dispose();
-                s.material.dispose();
-            }
-            s.dispose();
-        });
+        // Remove inspector
+        panel.classList.remove('open');
+        setTimeout(() => {
+            if (panel.parentNode) panel.parentNode.removeChild(panel);
+        }, 300);
 
-        mesh.setEnabled(true);
-        if (buildingData.capMesh) buildingData.capMesh.setEnabled(true);
-
-        this.cameraCtrl.restoreCamera();
+        // Hide the sub-spiral for this building
+        if (this.cityRenderer) {
+            this.cityRenderer.hideSubSpiral(mesh);
+        }
 
         this.exploded = null;
     }

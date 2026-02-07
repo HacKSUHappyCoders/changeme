@@ -35,7 +35,6 @@
         "num_branches": 128,
         "max_nesting_depth": 8
     },
-    "seed": 12345123451234512345,
     "traces": [
         {
             "type": "CALL",
