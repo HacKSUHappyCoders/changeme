@@ -18,7 +18,7 @@ class CityRenderer {
         this.meshFactory = new MeshFactory(scene, this.labelHelper);
         this.subSpiralRenderer = new SubSpiralRenderer(scene, this.labelHelper);
 
-        // Phase 4: Bubble renderer for for-loops
+        // Phase 4: Bubble renderer for loops (for, while, do-while)
         this.loopBubbleRenderer = new LoopBubbleRenderer(scene, this.labelHelper);
 
         // Phase 4: Tree renderer for if-statements

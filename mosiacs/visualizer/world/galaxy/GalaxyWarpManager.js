@@ -63,7 +63,7 @@ class GalaxyWarpManager {
 
     /**
      * Warp to the galaxy for the given building
-     * Phase 4: For-loops use bubble rendering instead of spiral galaxies
+     * Phase 4: All loops (for, while, do-while) use bubble rendering
      * Phase 4: If-statements use tree rendering instead of spiral galaxies
      */
     warpTo(buildingMesh) {
@@ -75,8 +75,8 @@ class GalaxyWarpManager {
         // Determine sub-trace for this galaxy
         const subTrace = this._extractSubTrace(buildingMesh, entity);
 
-        // Phase 4: Check if this is a for-loop
-        const isForLoop = this._isForLoop(buildingMesh, entity);
+        // Phase 4: Check if this is a loop (for, while, do-while)
+        const isLoop = this._isLoop(buildingMesh, entity);
 
         // Phase 4: Check if this is a branch/if-statement
         const isBranch = this._isBranch(buildingMesh, entity);
@@ -84,8 +84,8 @@ class GalaxyWarpManager {
         // For non-branch types, require non-empty sub-trace
         if (subTrace.length === 0 && !isBranch) return;
 
-        if (isForLoop) {
-            // Use bubble renderer for for-loops
+        if (isLoop) {
+            // Use bubble renderer for all loops (for, while, do-while)
             this._warpToBubble(buildingMesh, entity, sourcePos, subTrace);
         } else if (isBranch) {
             // Use tree renderer for if-statements
@@ -97,26 +97,29 @@ class GalaxyWarpManager {
     }
 
     /**
-     * Check if a building represents a for-loop
+     * Check if a building represents any loop (for, while, do-while)
      */
-    _isForLoop(buildingMesh, entity) {
+    _isLoop(buildingMesh, entity) {
+        const loopSubtypes = new Set(['for', 'while', 'do-while']);
+
         // Check building data
         const bd = buildingMesh._buildingData;
-        if (bd && bd.type === 'LOOP' && bd.stepData) {
-            if (bd.stepData.subtype === 'for') return true;
-        }
+        if (bd && bd.type === 'LOOP') return true;
 
         // Check entity data
-        if (entity.type === 'loop' && entity.subtype === 'for') return true;
+        if (entity.type === 'loop' && loopSubtypes.has(entity.subtype)) return true;
 
-        // Check if it's from a loop mesh cache
+        // Check if it's from a loop mesh cache (for-loops or while-loops)
         const isFromLoopCache = this.mainCityRenderer.loopMeshes.has(entity.key);
-        if (isFromLoopCache) {
-            // Get the loop data to check subtype
-            const loopEntry = this.mainCityRenderer.loopMeshes.get(entity.key);
+        const isFromWhileCache = this.mainCityRenderer.whileMeshes.has(entity.key);
+        if (isFromLoopCache || isFromWhileCache) {
+            const cache = isFromLoopCache
+                ? this.mainCityRenderer.loopMeshes
+                : this.mainCityRenderer.whileMeshes;
+            const loopEntry = cache.get(entity.key);
             if (loopEntry && loopEntry.mesh && loopEntry.mesh._buildingData) {
-                const loopData = loopEntry.mesh._buildingData.stepData;
-                if (loopData && loopData.subtype === 'for') return true;
+                const loopData = loopEntry.mesh._buildingData;
+                if (loopData.type === 'LOOP') return true;
             }
         }
 
@@ -196,7 +199,7 @@ class GalaxyWarpManager {
     }
 
     /**
-     * Warp to a bubble view (for for-loops)
+     * Warp to a bubble view (for all loop types: for, while, do-while)
      */
     _warpToBubble(buildingMesh, entity, sourcePos, subTrace) {
         // Handle stacking
@@ -247,7 +250,7 @@ class GalaxyWarpManager {
     }
 
     /**
-     * Traditional galaxy spiral warp (for functions, while-loops, branches)
+     * Traditional galaxy spiral warp (for functions)
      */
     _warpToGalaxy(buildingMesh, entity, sourcePos, subTrace) {
         // Handle stacking

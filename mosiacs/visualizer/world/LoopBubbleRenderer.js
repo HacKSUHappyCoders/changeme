@@ -1,8 +1,9 @@
 /**
  * LoopBubbleRenderer — Phase 4
  *
- * Renders for-loops as semi-transparent bubbles containing a connected chain
- * of nodes/buildings representing the code inside the loop.
+ * Renders loops (for, while, do-while) as semi-transparent bubbles
+ * containing a connected chain of nodes/buildings representing the
+ * code inside the loop.
  *
  * Unlike the spiral galaxy approach, this creates:
  *   1. A semi-transparent spherical bubble (the loop container)
