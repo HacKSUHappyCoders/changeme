@@ -21,6 +21,9 @@ class CityRenderer {
         // Phase 4: Bubble renderer for for-loops
         this.loopBubbleRenderer = new LoopBubbleRenderer(scene, this.labelHelper);
 
+        // Phase 4: Tree renderer for if-statements
+        this.branchTreeRenderer = new BranchTreeRenderer(scene, this.labelHelper);
+
         // Wire up the sub-spiral toggle callback so we know when to push/restore
         this.subSpiralRenderer.onSubSpiralToggle = (action, key, boundingRadius, parentPos) => {
             this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
@@ -28,6 +31,11 @@ class CityRenderer {
 
         // Wire up bubble toggle callback
         this.loopBubbleRenderer.onBubbleToggle = (action, key, boundingRadius, parentPos) => {
+            this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
+        };
+
+        // Wire up tree toggle callback (Phase 4: if-statement trees)
+        this.branchTreeRenderer.onTreeToggle = (action, key, boundingRadius, parentPos) => {
             this._onSubSpiralToggle(action, key, boundingRadius, parentPos);
         };
 
@@ -66,8 +74,16 @@ class CityRenderer {
         if (this._hoverAttached) return;
         this._hoverAttached = true;
 
+        // Throttle hover picking to every ~50ms (20 fps) instead of every frame
+        let lastHoverTime = 0;
+        const hoverInterval = 50; // ms
+
         this.scene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERMOVE) return;
+
+            const now = Date.now();
+            if (now - lastHoverTime < hoverInterval) return;
+            lastHoverTime = now;
 
             // Check for main buildings, sub-spiral dots, galaxy buildings, and bubble nodes
             const pick = this.scene.pick(
@@ -342,6 +358,8 @@ class CityRenderer {
         this._openSubSpirals.clear();
         this._lastSnapshot = null;
         this.subSpiralRenderer.clear();
+        this.loopBubbleRenderer.clearAll();
+        this.branchTreeRenderer.clearAll();
     }
 
     /**
@@ -378,19 +396,24 @@ class CityRenderer {
         if (this._nextSlot < 2) return;
 
         const points = [];
-        for (let i = 0; i < this._nextSlot; i++) {
+        // For large spirals, compute every other point to reduce geometry
+        const stride = this._nextSlot > 200 ? 2 : 1;
+        for (let i = 0; i < this._nextSlot; i += stride) {
             const p = this._spiralPosition(i);
             p.y -= 0.05;
             points.push(p);
         }
 
         this._spiralTube = BABYLON.MeshBuilder.CreateTube('spiralTimeline', {
-            path: points, radius: 0.12, sideOrientation: BABYLON.Mesh.DOUBLESIDE
+            path: points, radius: 0.12,
+            tessellation: 8,
+            sideOrientation: BABYLON.Mesh.DOUBLESIDE
         }, this.scene);
         const mat = new BABYLON.StandardMaterial('spiralMat', this.scene);
         mat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 0.3);
         mat.diffuseColor  = new BABYLON.Color3(0.9, 0.8, 0.4);
         mat.alpha = 0.55;
+        mat.freeze();
         this._spiralTube.material = mat;
         this._spiralTube.isPickable = false;
     }
@@ -892,7 +915,7 @@ class CityRenderer {
                     `memRing_${node.address}_${entry.mesh.name}`, {
                         diameter: 2.2,
                         thickness: 0.12,
-                        tessellation: 16
+                        tessellation: 12
                     }, this.scene
                 );
                 ring.position = new BABYLON.Vector3(pos.x, pos.y - 0.8, pos.z);

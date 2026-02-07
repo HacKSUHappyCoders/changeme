@@ -63,6 +63,14 @@ class SceneManager {
         this.scene.pointerMovePredicate = (mesh) =>
             mesh._buildingData != null;
         this.scene.skipPointerMovePicking = false;
+
+        // ── Extra performance optimisations ──
+        // Disable subsystems we don't use (particles, sprites, lens flares, probes)
+        this.scene.particlesEnabled = false;
+        this.scene.spritesEnabled = false;
+        this.scene.lensFlaresEnabled = false;
+        this.scene.probesEnabled = false;
+        // NOTE: Do NOT set postProcessesEnabled=false — it breaks the GlowLayer
     }
 
     /**
@@ -71,10 +79,10 @@ class SceneManager {
     _setupGlowLayer() {
         this.glowLayer = new BABYLON.GlowLayer("glow", this.scene, {
             mainTextureSamples: 1,
-            blurKernelSize: 16,
-            mainTextureFixedSize: 256,
+            blurKernelSize: 12,
+            mainTextureFixedSize: 300,
         });
-        this.glowLayer.intensity = 0.7;
+        this.glowLayer.intensity = 0.6;
     }
 
     /**

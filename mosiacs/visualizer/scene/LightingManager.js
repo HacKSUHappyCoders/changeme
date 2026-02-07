@@ -41,14 +41,16 @@ class LightingManager {
         fill.diffuse = new BABYLON.Color3(0.55, 0.7, 1);
         this.lights.push(fill);
 
-        // Low directional for underneath surfaces
+        // Low directional for underneath surfaces (low intensity to save perf)
         const rim = new BABYLON.PointLight(
             "rimLight",
             new BABYLON.Vector3(0, -5, 0),
             this.scene
         );
-        rim.intensity = 0.35;
+        rim.intensity = 0.25;
         rim.diffuse = new BABYLON.Color3(0.6, 0.5, 0.9);
+        // Exclude non-main meshes from this light to save per-fragment cost
+        rim.includedOnlyMeshes = [];
         this.lights.push(rim);
 
         return this.lights;

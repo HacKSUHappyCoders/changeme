@@ -23,6 +23,9 @@ class GalaxyBuilder {
         
         // Pending animation timers
         this._pendingTimers = [];
+
+        // ── Performance: cap galaxy building count ──
+        this.maxGalaxyNodes = 80;
     }
 
     /**
@@ -33,7 +36,21 @@ class GalaxyBuilder {
     buildGalaxy(subTrace, center, parentEntity) {
         const renderer = this.mainCityRenderer.subSpiralRenderer;
         const allIndices = subTrace.map((_, i) => i);
-        const entities = renderer._consolidateChildren(allIndices, subTrace);
+        const rawEntities = renderer._consolidateChildren(allIndices, subTrace);
+
+        // ── Performance: cap large galaxy spirals ──
+        let entities = rawEntities;
+        if (rawEntities.length > this.maxGalaxyNodes) {
+            entities = rawEntities.slice(0, this.maxGalaxyNodes - 1);
+            const remaining = rawEntities.length - entities.length;
+            entities.push({
+                type: 'summary',
+                colorType: 'SUMMARY',
+                label: `… ${remaining} more nodes`,
+                stepIndices: [],
+                firstStep: rawEntities[this.maxGalaxyNodes - 1].firstStep || {}
+            });
+        }
 
         // Reset extra meshes list before building
         this._galaxyExtraMeshes = [];
@@ -149,6 +166,8 @@ class GalaxyBuilder {
 
         buildingMeshes.forEach((mesh, i) => {
             mesh.scaling = new BABYLON.Vector3(0, 0, 0);
+            // Reduce stagger delay for large galaxies to avoid long load feel
+            const delay = buildingMeshes.length > 40 ? i * 15 : i * 40;
             const timerId = setTimeout(() => {
                 if (!mesh.isDisposed()) {
                     this.scene.beginDirectAnimation(mesh, [popAnim], 0, 15, false, 1.0, () => {
@@ -159,7 +178,7 @@ class GalaxyBuilder {
                         }
                     });
                 }
-            }, i * 40);
+            }, delay);
             this._pendingTimers.push(timerId);
         });
     }

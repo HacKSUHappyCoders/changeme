@@ -156,10 +156,12 @@ class PanoramicRenderer {
 
         // Freeze all panoramic meshes (lines + source spheres)
         for (const mesh of this._meshes) {
-            if (mesh && !mesh.isDisposed()) {
-                mesh.computeWorldMatrix(true);
-                mesh.freezeWorldMatrix();
-            }
+            try {
+                if (mesh) {
+                    mesh.computeWorldMatrix(true);
+                    mesh.freezeWorldMatrix();
+                }
+            } catch (e) { /* skip disposed meshes */ }
         }
     }
 
@@ -227,9 +229,14 @@ class PanoramicRenderer {
      * Entities are capped at MAX_ENTITIES_PER_GALAXY with uniform
      * downsampling to preserve the spiral shape.
      * Also emits the spiral-path line and warp line.
+     *
+     * Dispatches to specialised layouts based on container type:
+     *   - 'for'    → bubble layout (compact ring of dots)
+     *   - 'branch' → tree layout  (branching Y-shape with dots)
+     *   - others   → spiral galaxy layout
      */
     _collectGalaxyDots(container, trace, addDot) {
-        const { key, childIndices, pos: parentPos, color: parentColor } = container;
+        const { key, type, childIndices, pos: parentPos, color: parentColor } = container;
 
         const renderer = this.cityRenderer.subSpiralRenderer;
         const entities = renderer._consolidateChildren(childIndices, trace);
@@ -245,9 +252,21 @@ class PanoramicRenderer {
             parentPos.z + (dirZ / dirLen) * this._galaxyOffset
         );
 
+        if (type === 'for') {
+            this._collectBubbleDots(key, entities, galaxyCenter, parentPos, parentColor, addDot);
+        } else if (type === 'branch') {
+            this._collectTreeDots(key, entities, childIndices, trace, galaxyCenter, parentPos, parentColor, addDot);
+        } else {
+            this._collectSpiralDots(key, entities, galaxyCenter, parentPos, parentColor, addDot);
+        }
+    }
+
+    /**
+     * Spiral galaxy layout (for functions, while-loops, generic containers).
+     */
+    _collectSpiralDots(key, entities, galaxyCenter, parentPos, parentColor, addDot) {
         const pathPoints = [];
 
-        // ── Lay out dots on a spiral ──
         for (let i = 0; i < entities.length; i++) {
             const angle = i * this._galaxyAngleStep;
             const radius = this._galaxyRadiusStart + i * this._galaxyRadiusGrowth;
@@ -256,12 +275,11 @@ class PanoramicRenderer {
             const z = galaxyCenter.z + Math.sin(angle) * radius;
 
             pathPoints.push(new BABYLON.Vector3(x, y, z));
-
             const colorType = entities[i].colorType || entities[i].type || 'CALL';
             addDot(colorType, x, y, z);
         }
 
-        // ── Spiral path — simple line ──
+        // Spiral path line
         if (pathPoints.length >= 2) {
             const pathColor = ColorHash.spiralColor(key + '_panoramic');
             const lines = BABYLON.MeshBuilder.CreateLines(
@@ -275,10 +293,168 @@ class PanoramicRenderer {
             this._meshes.push(lines);
         }
 
-        // ── Warp connection — straight line ──
+        // Warp connection line
+        this._createWarpLine(key, parentPos, galaxyCenter, parentColor);
+    }
+
+    /**
+     * Bubble layout for for-loops: dots arranged in a compact ring/helix
+     * with a faint circle outline representing the bubble.
+     */
+    _collectBubbleDots(key, entities, bubbleCenter, parentPos, parentColor, addDot) {
+        const count = entities.length;
+        const bubbleRadius = 2.0 + count * 0.08;
+        const pathPoints = [];
+
+        for (let i = 0; i < count; i++) {
+            // Compact ring with slight height variation
+            const angle = (i / Math.max(count, 1)) * Math.PI * 2 * 1.3;
+            const r = bubbleRadius * (0.4 + 0.5 * Math.sin((i / count) * Math.PI));
+            const x = bubbleCenter.x + Math.cos(angle) * r;
+            const y = bubbleCenter.y + 0.2 + (i * 0.04);
+            const z = bubbleCenter.z + Math.sin(angle) * r;
+
+            pathPoints.push(new BABYLON.Vector3(x, y, z));
+            const colorType = entities[i].colorType || entities[i].type || 'LOOP';
+            addDot(colorType, x, y, z);
+        }
+
+        // Ring path
+        if (pathPoints.length >= 2) {
+            const lines = BABYLON.MeshBuilder.CreateLines(
+                `pano_bubble_path_${key}`,
+                { points: pathPoints, updatable: false },
+                this.scene
+            );
+            lines.color = new BABYLON.Color3(parentColor.r, parentColor.g, parentColor.b);
+            lines.alpha = 0.4;
+            lines.isPickable = false;
+            this._meshes.push(lines);
+        }
+
+        // Faint bubble outline circle (16-segment ring)
+        const ringPoints = [];
+        const ringSegments = 16;
+        for (let i = 0; i <= ringSegments; i++) {
+            const a = (i / ringSegments) * Math.PI * 2;
+            ringPoints.push(new BABYLON.Vector3(
+                bubbleCenter.x + Math.cos(a) * bubbleRadius,
+                bubbleCenter.y,
+                bubbleCenter.z + Math.sin(a) * bubbleRadius
+            ));
+        }
+        const ring = BABYLON.MeshBuilder.CreateLines(
+            `pano_bubble_ring_${key}`,
+            { points: ringPoints, updatable: false },
+            this.scene
+        );
+        ring.color = new BABYLON.Color3(parentColor.r * 0.7, parentColor.g * 0.7, parentColor.b * 0.7);
+        ring.alpha = 0.25;
+        ring.isPickable = false;
+        this._meshes.push(ring);
+
+        // Warp connection line
+        this._createWarpLine(key, parentPos, bubbleCenter, parentColor);
+    }
+
+    /**
+     * Tree layout for if-statements: dots arranged in a branching Y-shape.
+     * Root dot at top, two (or more) arms fanning downward with child dots.
+     */
+    _collectTreeDots(key, entities, childIndices, trace, treeCenter, parentPos, parentColor, addDot) {
+        // Place root condition dot
+        addDot('CONDITION', treeCenter.x, treeCenter.y, treeCenter.z);
+
+        // Try to split entities into taken/not-taken arms
+        // Simple heuristic: if we have BRANCH events, split around them
+        const takenEntities = [];
+        const otherEntities = [];
+
+        for (const ent of entities) {
+            if (ent.colorType === 'CONDITION' || ent.colorType === 'BRANCH') {
+                otherEntities.push(ent);
+            } else {
+                takenEntities.push(ent);
+            }
+        }
+
+        const allLeaves = takenEntities.length > 0 ? takenEntities : entities;
+
+        // Split leaves into two arms (taken / not-taken approximation)
+        const armCount = Math.min(2, Math.max(1, Math.ceil(allLeaves.length / 3)));
+        const armSpread = 3.0;
+        const leafDrop = 1.0;
+        const allPathPoints = [new BABYLON.Vector3(treeCenter.x, treeCenter.y, treeCenter.z)];
+
+        for (let arm = 0; arm < armCount; arm++) {
+            const armX = treeCenter.x + (arm - (armCount - 1) / 2) * armSpread;
+            const armY = treeCenter.y - 2.0;
+            const armZ = treeCenter.z;
+
+            // Arm branch dot
+            addDot('BRANCH', armX, armY, armZ);
+
+            // Line from root to arm
+            const armLine = BABYLON.MeshBuilder.CreateLines(
+                `pano_tree_arm_${key}_${arm}`,
+                {
+                    points: [
+                        new BABYLON.Vector3(treeCenter.x, treeCenter.y, treeCenter.z),
+                        new BABYLON.Vector3(armX, armY, armZ)
+                    ],
+                    updatable: false
+                },
+                this.scene
+            );
+            armLine.color = new BABYLON.Color3(parentColor.r, parentColor.g, parentColor.b);
+            armLine.alpha = 0.45;
+            armLine.isPickable = false;
+            this._meshes.push(armLine);
+
+            // Distribute child dots down each arm
+            const armStart = Math.floor((arm / armCount) * allLeaves.length);
+            const armEnd = Math.floor(((arm + 1) / armCount) * allLeaves.length);
+            const armLeafPoints = [];
+
+            let prevPoint = new BABYLON.Vector3(armX, armY, armZ);
+            for (let l = armStart; l < armEnd; l++) {
+                const leafY = armY - (l - armStart + 1) * leafDrop;
+                const leafX = armX + ((l - armStart) % 2 === 0 ? 0.2 : -0.2);
+                const leafZ = armZ;
+
+                const colorType = allLeaves[l].colorType || allLeaves[l].type || 'DECL';
+                addDot(colorType, leafX, leafY, leafZ);
+
+                const leafPoint = new BABYLON.Vector3(leafX, leafY, leafZ);
+                armLeafPoints.push(prevPoint, leafPoint);
+                prevPoint = leafPoint;
+            }
+
+            // Leaf chain line
+            if (armLeafPoints.length >= 2) {
+                const leafLine = BABYLON.MeshBuilder.CreateLines(
+                    `pano_tree_leaves_${key}_${arm}`,
+                    { points: armLeafPoints, updatable: false },
+                    this.scene
+                );
+                leafLine.color = new BABYLON.Color3(parentColor.r * 0.8, parentColor.g * 0.8, parentColor.b * 0.8);
+                leafLine.alpha = 0.35;
+                leafLine.isPickable = false;
+                this._meshes.push(leafLine);
+            }
+        }
+
+        // Warp connection line
+        this._createWarpLine(key, parentPos, treeCenter, parentColor);
+    }
+
+    /**
+     * Helper: create a warp connection line from parent building to galaxy/bubble/tree center.
+     */
+    _createWarpLine(key, parentPos, targetCenter, parentColor) {
         const warpLine = BABYLON.MeshBuilder.CreateLines(
             `pano_warp_${key}`,
-            { points: [parentPos, galaxyCenter], updatable: false },
+            { points: [parentPos, targetCenter], updatable: false },
             this.scene
         );
         warpLine.color = new BABYLON.Color3(
@@ -494,10 +670,12 @@ class PanoramicRenderer {
 
     _disposeMeshes() {
         for (const mesh of this._meshes) {
-            if (mesh && !mesh.isDisposed()) {
-                mesh.material = null;
-                mesh.dispose();
-            }
+            try {
+                if (mesh) {
+                    mesh.material = null;
+                    mesh.dispose();
+                }
+            } catch (e) { /* already disposed */ }
         }
         this._meshes = [];
         this._sourceMeshes.clear();
@@ -505,7 +683,7 @@ class PanoramicRenderer {
 
     _disposeMaterials() {
         this._matCache.forEach(mat => {
-            if (mat && !mat.isDisposed()) mat.dispose();
+            try { if (mat) mat.dispose(); } catch (e) { /* already disposed */ }
         });
         this._matCache.clear();
     }

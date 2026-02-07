@@ -48,6 +48,9 @@ class GalaxyWarpManager {
         if (entity.type === 'call' || entity.type === 'loop' || entity.type === 'condition') {
             if (entity.stepIndices && entity.stepIndices.length > 1) return true;
         }
+        // Phase 4: Allow warping for branch buildings even with minimal children
+        // (the tree renderer can show the condition/branch structure)
+        if (entity.condition !== undefined && entity.chosenBranch !== undefined) return true;
         return false;
     }
 
@@ -61,6 +64,7 @@ class GalaxyWarpManager {
     /**
      * Warp to the galaxy for the given building
      * Phase 4: For-loops use bubble rendering instead of spiral galaxies
+     * Phase 4: If-statements use tree rendering instead of spiral galaxies
      */
     warpTo(buildingMesh) {
         if (!this.canWarp(buildingMesh)) return;
@@ -70,14 +74,22 @@ class GalaxyWarpManager {
 
         // Determine sub-trace for this galaxy
         const subTrace = this._extractSubTrace(buildingMesh, entity);
-        if (subTrace.length === 0) return;
 
         // Phase 4: Check if this is a for-loop
         const isForLoop = this._isForLoop(buildingMesh, entity);
 
+        // Phase 4: Check if this is a branch/if-statement
+        const isBranch = this._isBranch(buildingMesh, entity);
+
+        // For non-branch types, require non-empty sub-trace
+        if (subTrace.length === 0 && !isBranch) return;
+
         if (isForLoop) {
             // Use bubble renderer for for-loops
             this._warpToBubble(buildingMesh, entity, sourcePos, subTrace);
+        } else if (isBranch) {
+            // Use tree renderer for if-statements
+            this._warpToTree(buildingMesh, entity, sourcePos, subTrace);
         } else {
             // Use traditional galaxy spiral for other types
             this._warpToGalaxy(buildingMesh, entity, sourcePos, subTrace);
@@ -109,6 +121,78 @@ class GalaxyWarpManager {
         }
 
         return false;
+    }
+
+    /**
+     * Check if a building represents a branch/if-statement
+     */
+    _isBranch(buildingMesh, entity) {
+        // Check building data
+        const bd = buildingMesh._buildingData;
+        if (bd && bd.type === 'CONDITION') return true;
+
+        // Check entity data
+        if (entity.condition !== undefined && entity.chosenBranch !== undefined) return true;
+
+        // Check if it's from the branch mesh cache
+        if (this.mainCityRenderer.branchMeshes.has(entity.key)) return true;
+
+        return false;
+    }
+
+    /**
+     * Warp to a tree view (for if-statements)
+     */
+    _warpToTree(buildingMesh, entity, sourcePos, subTrace) {
+        // Handle stacking
+        if (this.warpedGalaxy) {
+            this._galaxyStack.push(this.warpedGalaxy);
+            this._dimGalaxyVisuals(this.warpedGalaxy, 0.45);
+        } else {
+            this._dimMainSpiral(0.3);
+        }
+
+        // Compute tree position (similar to galaxy position)
+        const treeCenter = this._computeGalaxyPosition(sourcePos);
+
+        // Get building color
+        const color = this._colorForType('CONDITION');
+
+        // Render the tree
+        const childIndices = subTrace.map((_, i) => i);
+        const treeRenderer = this.mainCityRenderer.branchTreeRenderer;
+        const treeData = treeRenderer.renderTree(
+            entity.key || 'tree',
+            childIndices,
+            treeCenter,
+            subTrace,
+            entity
+        );
+
+        // Collect all tree meshes for navigation
+        const treeMeshes = treeRenderer.getTreeMeshes(entity.key || 'tree');
+
+        // Create warp effects
+        this.warpEffects.createWarpLine(sourcePos, treeCenter, color);
+        this.warpEffects.createSourceGlow(sourcePos, color);
+        this.warpEffects.createGalaxyLabel(treeCenter, entity);
+
+        // Store state
+        this.warpedGalaxy = {
+            buildingMesh,
+            entity,
+            sourcePos,
+            galaxyCenter: treeCenter,
+            galaxyData: { isTree: true, treeData, entities: [], meshes: treeMeshes },
+            color,
+            ...this.warpEffects.getEffects(),
+            subTrace,
+            isTree: true
+        };
+
+        // Fly camera
+        this._flyCamera(treeCenter, true);
+        this._showReturnButton(true);
     }
 
     /**
@@ -513,16 +597,20 @@ class GalaxyWarpManager {
 
     /**
      * Dispose a warped galaxy entry
-     * Phase 4: Handle bubble disposal
+     * Phase 4: Handle bubble and tree disposal
      */
     _disposeWarpedGalaxy(galaxy) {
         if (!galaxy) return;
 
-        // Check if this is a bubble or traditional galaxy
+        // Check if this is a bubble, tree, or traditional galaxy
         if (galaxy.isBubble && galaxy.galaxyData && galaxy.galaxyData.bubbleData) {
             // Dispose bubble using bubble renderer
             const bubbleKey = galaxy.entity.key || 'bubble';
             this.mainCityRenderer.loopBubbleRenderer.removeBubble(bubbleKey);
+        } else if (galaxy.isTree && galaxy.galaxyData && galaxy.galaxyData.treeData) {
+            // Dispose tree using tree renderer
+            const treeKey = galaxy.entity.key || 'tree';
+            this.mainCityRenderer.branchTreeRenderer.removeTree(treeKey);
         } else {
             // Traditional galaxy disposal
             const cachedMats = new Set(this.galaxyBuilder._matCache.values());

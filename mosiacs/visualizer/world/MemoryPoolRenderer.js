@@ -222,7 +222,7 @@ class MemoryPoolRenderer {
 
         this._poolSurface = BABYLON.MeshBuilder.CreateDisc('memoryPoolSurface', {
             radius: discRadius,
-            tessellation: 48
+            tessellation: 32
         }, this.scene);
         this._poolSurface.rotation.x = Math.PI / 2;
         this._poolSurface.position.y = poolY;
@@ -352,8 +352,8 @@ class MemoryPoolRenderer {
                     midZ + offsetZ * 0.8
                 );
 
-                // Generate cubic Bézier curve (32 segments)
-                const segments = 32;
+                // Generate cubic Bézier curve (20 segments — smooth enough, less geometry)
+                const segments = 20;
                 const pts = [];
                 for (let i = 0; i <= segments; i++) {
                     pts.push(this._cubicBezier(p0, p1, p2, p3, i / segments));
@@ -410,7 +410,7 @@ class MemoryPoolRenderer {
             this._splashRoot = BABYLON.MeshBuilder.CreateTorus('memorySplashRoot', {
                 diameter: 1.4,
                 thickness: 0.06,
-                tessellation: 32
+                tessellation: 16
             }, this.scene);
             this._splashRoot.material = this._splashMat;
             this._splashRoot.isPickable = false;
@@ -432,9 +432,12 @@ class MemoryPoolRenderer {
 
     /**
      * Spawn small spheres that continuously flow along each stream path.
-     * Each stream gets 3 droplets staggered at different t-offsets so they
+     * Each stream gets 2 droplets staggered at different t-offsets so they
      * appear to be a continuous flow of water. Uses a single shared material
      * and a registerBeforeRender loop that updates positions each frame.
+     *
+     * Performance: cap the total number of droplets, skip frames when
+     * there are many active droplets.
      */
     _spawnFlowingDroplets(streamCurves) {
         if (streamCurves.length === 0) return;
@@ -446,15 +449,18 @@ class MemoryPoolRenderer {
         this._dropletMat.alpha = 0.7;
         this._dropletMat.freeze();
 
-        const dropletsPerStream = 3;
+        // Fewer droplets per stream (was 3) and cap total droplets
+        const dropletsPerStream = 2;
+        const maxTotalDroplets = 60;
+        const maxStreams = Math.min(streamCurves.length, Math.floor(maxTotalDroplets / dropletsPerStream));
 
-        for (let si = 0; si < streamCurves.length; si++) {
+        for (let si = 0; si < maxStreams; si++) {
             const curve = streamCurves[si];
 
             for (let di = 0; di < dropletsPerStream; di++) {
                 const sphere = BABYLON.MeshBuilder.CreateSphere(
                     `memDrop_${si}_${di}`,
-                    { diameter: 0.3, segments: 4 },
+                    { diameter: 0.3, segments: 3 },
                     this.scene
                 );
                 sphere.material = this._dropletMat;
@@ -469,16 +475,23 @@ class MemoryPoolRenderer {
                     // Stagger each droplet along the stream and add per-stream
                     // variation so they don't all move in lockstep
                     offset: di / dropletsPerStream,
-                    speed: 0.3 + (si % 5) * 0.04  // slight speed variation
+                    speed: 0.25 + (si % 5) * 0.03  // slightly slower, less frantic
                 });
             }
         }
 
-        // Animation loop — update every droplet's position each frame
+        // Animation loop — update every droplet's position.
+        // Skip every other frame when there are 30+ active droplets.
         let time = 0;
+        let frameCount = 0;
+        const skipThreshold = 30;
         this._dropletObserver = this.scene.onBeforeRenderObservable.add(() => {
+            frameCount++;
+            const shouldSkip = this._droplets.length >= skipThreshold && (frameCount & 1);
             const dt = this.scene.getEngine().getDeltaTime() / 1000;
             time += dt;
+
+            if (shouldSkip) return;
 
             for (let i = 0; i < this._droplets.length; i++) {
                 const drop = this._droplets[i];
@@ -489,15 +502,13 @@ class MemoryPoolRenderer {
                 const rawT = ((time * path.speed) + path.offset) % 1.0;
 
                 // Ease: accelerate as the droplet "falls" (gravity feel)
-                // Use a power curve so the droplet moves slowly at the peak
-                // and fast at the bottom — like real water
                 const t = rawT * rawT * (3 - 2 * rawT); // smoothstep for natural motion
 
                 const pos = this._cubicBezier(path.p0, path.p1, path.p2, path.p3, t);
                 drop.position.copyFrom(pos);
 
                 // Scale: smaller at peak (far away feel), bigger near endpoints
-                const peakDist = Math.abs(t - 0.35);  // peak is roughly at t=0.35
+                const peakDist = Math.abs(t - 0.35);
                 const scale = 0.22 + peakDist * 0.25;
                 drop.scaling.setAll(scale);
             }
@@ -522,7 +533,7 @@ class MemoryPoolRenderer {
         this._ringRoot = BABYLON.MeshBuilder.CreateTorus('memoryRingRoot', {
             diameter: 2.0,
             thickness: 0.1,
-            tessellation: 24
+            tessellation: 16
         }, this.scene);
         this._ringRoot.material = this._ringMat;
         this._ringRoot.isPickable = false;
