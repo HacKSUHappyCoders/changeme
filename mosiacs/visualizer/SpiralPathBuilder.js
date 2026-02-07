@@ -14,10 +14,10 @@ class SpiralPathBuilder {
      */
     createSpiralPath(steps) {
         const points = [];
-        const radius = 2;
-        const radiusGrowth = 0.3;
-        const heightPerStep = 0.5;
-        const turnsPerStep = 0.3;
+        const radius = 1;
+        const radiusGrowth = 0.2;
+        const heightPerStep = 0.3;
+        const turnsPerStep = 0.5;
 
         // Calculate the total height so we can start at the top
         const totalHeight = (steps - 1) * heightPerStep;
