@@ -11,7 +11,28 @@ C_LANGUAGE = Language(language())
 
 ACCEPTABLE_EXTENSIONS = {".c"}
 
-C_KEYWORDS = {"printf", "main", "return", "if", "while", "for", "else", "switch", "case", "break", "continue", "sizeof", "typedef", "struct", "enum", "union", "goto", "do"}
+C_KEYWORDS = {
+    "printf",
+    "main",
+    "return",
+    "if",
+    "while",
+    "for",
+    "else",
+    "switch",
+    "case",
+    "break",
+    "continue",
+    "sizeof",
+    "typedef",
+    "struct",
+    "enum",
+    "union",
+    "goto",
+    "do",
+}
+
+DELIM = "\\0"  # Null byte delimiter for output parsing
 
 TYPE_FMT_MAP = {
     "int": "%d",
@@ -94,7 +115,10 @@ class TypeAnalyzer:
         type_node = node.child_by_field_name("type")
         if not type_node:
             for child in node.children:
-                if child.type.endswith("_type") or child.type in ("type_identifier", "primitive_type"):
+                if child.type.endswith("_type") or child.type in (
+                    "type_identifier",
+                    "primitive_type",
+                ):
                     type_node = child
                     break
 
@@ -104,14 +128,18 @@ class TypeAnalyzer:
             if child.type == "init_declarator":
                 var_node = child.child_by_field_name("declarator")
                 if var_node:
-                    self.symbol_table.register(Helpers.get_text(var_node, self.code_bytes), curr_type)
+                    self.symbol_table.register(
+                        Helpers.get_text(var_node, self.code_bytes), curr_type
+                    )
 
     def _handle_parameter(self, node):
         type_node = node.child_by_field_name("type")
         curr_type = Helpers.get_text(type_node, self.code_bytes) if type_node else "int"
         var_node = node.child_by_field_name("declarator")
         if var_node:
-            self.symbol_table.register(Helpers.get_text(var_node, self.code_bytes), curr_type)
+            self.symbol_table.register(
+                Helpers.get_text(var_node, self.code_bytes), curr_type
+            )
 
 
 class MetadataCollector:
@@ -181,7 +209,9 @@ class MetadataCollector:
                 if child.type == "function_declarator":
                     for sub in child.children:
                         if sub.type == "identifier":
-                            self.function_names.append(Helpers.get_text(sub, self.code_bytes))
+                            self.function_names.append(
+                                Helpers.get_text(sub, self.code_bytes)
+                            )
         elif node.type == "declaration":
             for child in node.children:
                 if child.type == "init_declarator":
@@ -238,6 +268,31 @@ class CodeInstrumenter:
 
     def _add_before(self, line_idx, code):
         self.pre_insertions.setdefault(line_idx, []).append(code)
+
+    @staticmethod
+    def _make_trace(parts):
+        """Generate a printf statement that outputs fields separated by null bytes."""
+        fmt_parts = []
+        args = []
+        for part in parts:
+            if isinstance(part, tuple):
+                fmt_parts.append(part[0])
+                args.append(part[1])
+            else:
+                fmt_parts.append("%s")
+                args.append(f'"{part}"')
+
+        statements = []
+        for i, (fmt, arg) in enumerate(zip(fmt_parts, args)):
+            if fmt == "%s":
+                statements.append(f"printf({arg})")
+            else:
+                statements.append(f'printf("{fmt}", {arg})')
+            if i < len(fmt_parts) - 1:
+                statements.append("putchar(0)")
+        statements.append("putchar('\\n')")
+
+        return "    " + "; ".join(statements) + ";"
 
     def _build_output(self):
         result = ["int __stack_depth = 0;"]
@@ -301,30 +356,29 @@ class CodeInstrumenter:
 
         if func_name == "main" and self.metadata:
             for key, val in self.metadata.items():
-                self._add_after(start_line, f'    printf("META|{key}|{val}\\n");')
+                trace = self._make_trace(["META", str(key), str(val)])
+                self._add_after(start_line, trace)
 
         self._add_after(start_line, "    __stack_depth++;")
 
-        fmt_parts = []
-        arg_parts = []
-        for p in params:
-            fmt_parts.append(Helpers.get_type_fmt(self.symbol_table.get_type(p)))
-            arg_parts.append(p)
+        # Build CALL trace
+        parts = ["CALL", func_name]
+        if params:
+            for p in params:
+                parts.append((Helpers.get_type_fmt(self.symbol_table.get_type(p)), p))
+        parts.append(("%d", "__stack_depth"))
 
-        fmt_str = ",".join(fmt_parts)
-        arg_str = ",".join(arg_parts)
-
-        if arg_str:
-            trace = f'    printf("CALL|{func_name}|{fmt_str}|{arg_str}|%d\\n", {arg_str}, __stack_depth);'
-        else:
-            trace = f'    printf("CALL|{func_name}|||%d\\n", __stack_depth);'
+        trace = self._make_trace(parts)
         self._add_after(start_line, trace)
 
     def visit_parameter_declaration(self, node):
         var_name = Helpers.extract_var_name(node, self.code_bytes)
         if var_name:
             line = node.start_point[0]
-            self._add_after(line, f'    printf("PARAM|{var_name}|%d|{line + 1}\\n", {var_name});')
+            trace = self._make_trace(
+                ["PARAM", var_name, ("%d", var_name), str(line + 1)]
+            )
+            self._add_after(line, trace)
 
     def visit_if_statement(self, node):
         self.branch_counter += 1
@@ -332,18 +386,27 @@ class CodeInstrumenter:
 
         if cond_expr:
             if_line = node.start_point[0]
-            self._add_before(
-                if_line,
-                f'    printf("CONDITION|{cond_text}|%d|{if_line + 1}|%d\\n", {cond_expr}, __stack_depth);',
+            trace = self._make_trace(
+                [
+                    "CONDITION",
+                    cond_text,
+                    ("%d", cond_expr),
+                    str(if_line + 1),
+                    ("%d", "__stack_depth"),
+                ]
             )
+            self._add_before(if_line, trace)
 
         consequence = node.child_by_field_name("consequence")
         if consequence:
             line = consequence.start_point[0]
+            trace = self._make_trace(
+                ["BRANCH", "if", cond_text, str(line + 1), ("%d", "__stack_depth")]
+            )
             if consequence.type == "compound_statement":
-                self._add_after(line, f'    printf("BRANCH|if|{cond_text}|{line + 1}|%d\\n", __stack_depth);')
+                self._add_after(line, trace)
             else:
-                self._add_before(line, f'    printf("BRANCH|if|{cond_text}|{line + 1}|%d\\n", __stack_depth);')
+                self._add_before(line, trace)
 
         alternative = node.child_by_field_name("alternative")
         if alternative:
@@ -354,12 +417,15 @@ class CodeInstrumenter:
                         alt_body = child
                         break
 
+            trace = self._make_trace(
+                ["BRANCH", "else", cond_text, str(line + 1), ("%d", "__stack_depth")]
+            )
             if alt_body.type == "compound_statement":
                 line = alt_body.start_point[0]
-                self._add_after(line, f'    printf("BRANCH|else|{cond_text}|{line + 1}|%d\\n", __stack_depth);')
+                self._add_after(line, trace)
             elif alt_body.type != "if_statement":
                 line = alt_body.start_point[0]
-                self._add_before(line, f'    printf("BRANCH|else|{cond_text}|{line + 1}|%d\\n", __stack_depth);')
+                self._add_before(line, trace)
 
     def visit_while_statement(self, node):
         cond_text, cond_expr = Helpers.extract_condition(node, self.code_bytes)
@@ -368,9 +434,21 @@ class CodeInstrumenter:
             return
         line = body.start_point[0]
         if cond_expr:
-            self._add_after(line, f'    printf("LOOP|while|{cond_text}|%d|{line + 1}|%d\\n", {cond_expr}, __stack_depth);')
+            trace = self._make_trace(
+                [
+                    "LOOP",
+                    "while",
+                    cond_text,
+                    ("%d", cond_expr),
+                    str(line + 1),
+                    ("%d", "__stack_depth"),
+                ]
+            )
         else:
-            self._add_after(line, f'    printf("LOOP|while||1|{line + 1}|%d\\n", __stack_depth);')
+            trace = self._make_trace(
+                ["LOOP", "while", "", "1", str(line + 1), ("%d", "__stack_depth")]
+            )
+        self._add_after(line, trace)
 
     def visit_for_statement(self, node):
         cond_text, cond_expr = Helpers.extract_condition(node, self.code_bytes)
@@ -379,9 +457,21 @@ class CodeInstrumenter:
             return
         line = body.start_point[0]
         if cond_expr:
-            self._add_after(line, f'    printf("LOOP|for|{cond_text}|%d|{line + 1}|%d\\n", {cond_expr}, __stack_depth);')
+            trace = self._make_trace(
+                [
+                    "LOOP",
+                    "for",
+                    cond_text,
+                    ("%d", cond_expr),
+                    str(line + 1),
+                    ("%d", "__stack_depth"),
+                ]
+            )
         else:
-            self._add_after(line, f'    printf("LOOP|for||1|{line + 1}|%d\\n", __stack_depth);')
+            trace = self._make_trace(
+                ["LOOP", "for", "", "1", str(line + 1), ("%d", "__stack_depth")]
+            )
+        self._add_after(line, trace)
 
     def visit_declaration(self, node):
         for child in node.children:
@@ -393,17 +483,31 @@ class CodeInstrumenter:
                 v_type = self.symbol_table.get_type(var_name)
                 fmt = Helpers.get_type_fmt(v_type)
 
-                self._add_after(
-                    line,
-                    f'    printf("DECL|{var_name}|{fmt}|%p|{line + 1}|%d\\n", {var_name}, &{var_name}, __stack_depth);',
+                trace = self._make_trace(
+                    [
+                        "DECL",
+                        var_name,
+                        (fmt, var_name),
+                        ("%p", f"&{var_name}"),
+                        str(line + 1),
+                        ("%d", "__stack_depth"),
+                    ]
                 )
+                self._add_after(line, trace)
 
                 for read_var in self._collect_reads(child):
                     r_fmt = Helpers.get_type_fmt(self.symbol_table.get_type(read_var))
-                    self._add_before(
-                        line,
-                        f'    printf("READ|{read_var}|{r_fmt}|%p|{line + 1}|%d\\n", {read_var}, &{read_var}, __stack_depth);',
+                    trace = self._make_trace(
+                        [
+                            "READ",
+                            read_var,
+                            (r_fmt, read_var),
+                            ("%p", f"&{read_var}"),
+                            str(line + 1),
+                            ("%d", "__stack_depth"),
+                        ]
                     )
+                    self._add_before(line, trace)
 
     def visit_assignment_expression(self, node):
         left_var = None
@@ -418,18 +522,32 @@ class CodeInstrumenter:
         line = node.start_point[0]
         fmt = Helpers.get_type_fmt(self.symbol_table.get_type(left_var))
 
-        self._add_after(
-            line,
-            f'    printf("ASSIGN|{left_var}|{fmt}|%p|{line + 1}|%d\\n", {left_var}, &{left_var}, __stack_depth);',
+        trace = self._make_trace(
+            [
+                "ASSIGN",
+                left_var,
+                (fmt, left_var),
+                ("%p", f"&{left_var}"),
+                str(line + 1),
+                ("%d", "__stack_depth"),
+            ]
         )
+        self._add_after(line, trace)
 
         for read_var in self._collect_reads(node):
             if read_var != left_var:
                 r_fmt = Helpers.get_type_fmt(self.symbol_table.get_type(read_var))
-                self._add_before(
-                    line,
-                    f'    printf("READ|{read_var}|{r_fmt}|%p|{line + 1}|%d\\n", {read_var}, &{read_var}, __stack_depth);',
+                trace = self._make_trace(
+                    [
+                        "READ",
+                        read_var,
+                        (r_fmt, read_var),
+                        ("%p", f"&{read_var}"),
+                        str(line + 1),
+                        ("%d", "__stack_depth"),
+                    ]
                 )
+                self._add_before(line, trace)
 
     def visit_return_statement(self, node):
         line = node.start_point[0]
@@ -438,16 +556,30 @@ class CodeInstrumenter:
                 var_name = Helpers.get_text(child, self.code_bytes)
                 if var_name not in C_KEYWORDS:
                     fmt = Helpers.get_type_fmt(self.symbol_table.get_type(var_name))
-                    self._add_before(
-                        line,
-                        f'    printf("RETURN|{var_name}|{fmt}|%p|{line + 1}|%d\\n", {var_name}, &{var_name}, __stack_depth);',
+                    trace = self._make_trace(
+                        [
+                            "RETURN",
+                            var_name,
+                            (fmt, var_name),
+                            ("%p", f"&{var_name}"),
+                            str(line + 1),
+                            ("%d", "__stack_depth"),
+                        ]
                     )
+                    self._add_before(line, trace)
             elif child.type in ("number_literal", "string_literal"):
                 val = Helpers.get_text(child, self.code_bytes)
-                self._add_before(
-                    line,
-                    f'    printf("RETURN|literal|{val}|0|{line + 1}|%d\\n", __stack_depth);',
+                trace = self._make_trace(
+                    [
+                        "RETURN",
+                        "literal",
+                        val,
+                        "0",
+                        str(line + 1),
+                        ("%d", "__stack_depth"),
+                    ]
                 )
+                self._add_before(line, trace)
         self._add_before(line, "    __stack_depth--;")
 
 
@@ -463,7 +595,9 @@ def main():
 
     ext = os.path.splitext(args.input_file)[1]
     if ext not in ACCEPTABLE_EXTENSIONS:
-        print(f"Error: File '{args.input_file}' must have an acceptable extension ({ACCEPTABLE_EXTENSIONS})")
+        print(
+            f"Error: File '{args.input_file}' must have an acceptable extension ({ACCEPTABLE_EXTENSIONS})"
+        )
         sys.exit(1)
 
     with open(args.input_file, "rb") as f:
