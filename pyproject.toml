@@ -1,0 +1,11 @@
+[project]
+name = "changeme"
+version = "0.1.0"
+description = "Code Mosaic Visualizer"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.0",
+]
+
+[tool.uv.workspace]
+members = ["app"]

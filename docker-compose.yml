@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./mosiacs/data:/srv/mosiacs/data
