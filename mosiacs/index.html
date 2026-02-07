@@ -51,7 +51,9 @@
     <!-- Shared config -->
     <script src="visualizer/SpiralConfig.js"></script>
 
-    <!-- Scene modules -->
+    <!-- Scene modules (refactored) -->
+    <script src="visualizer/scene/CameraController.js"></script>
+    <script src="visualizer/scene/LightingManager.js"></script>
     <script src="visualizer/scene/SceneManager.js"></script>
 
     <!-- World state engine -->
@@ -62,7 +64,12 @@
     <script src="visualizer/world/LabelHelper.js"></script>
     <script src="visualizer/world/MeshFactory.js"></script>
     <script src="visualizer/world/SubSpiralRenderer.js"></script>
-    <script src="visualizer/world/GalaxyWarpManager.js"></script>
+    
+    <!-- Galaxy warp modules (refactored) -->
+    <script src="visualizer/world/galaxy/GalaxyBuilder.js"></script>
+    <script src="visualizer/world/galaxy/WarpEffects.js"></script>
+    <script src="visualizer/world/galaxy/GalaxyWarpManager.js"></script>
+    
     <script src="visualizer/world/CausalityRenderer.js"></script>
     <script src="visualizer/world/PanoramicRenderer.js"></script>
     <script src="visualizer/world/CityRenderer.js"></script>

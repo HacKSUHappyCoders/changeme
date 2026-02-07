@@ -279,9 +279,55 @@ class GalaxyWarpManager {
             // Restore main spiral opacity
             this._dimMainSpiral(1.0);
 
-            // Fly camera back
+            // Fly camera back to the initial bird's-eye view
             if (animate) {
-                this._flyCamera(new BABYLON.Vector3(0, 10, 0), false);
+                // Use resetCamera to get the proper initial view (looking down from above)
+                const spiralRadius = this.mainCityRenderer.getSpiralRadius();
+                const camera = this.sceneManager.getCamera();
+                
+                // Stop any existing camera animation
+                this.scene.stopAnimation(camera);
+                
+                // Calculate the proper bird's-eye position based on spiral size
+                let height, offset;
+                if (spiralRadius != null && spiralRadius > 0) {
+                    height = spiralRadius * 2.2 + 10;
+                    offset = spiralRadius * 0.15;
+                } else {
+                    height = 65;
+                    offset = 5;
+                }
+                
+                const newPos = new BABYLON.Vector3(offset, height, offset);
+                const newTarget = new BABYLON.Vector3(0, 0, 0);
+                
+                // Animate camera position
+                const posAnim = new BABYLON.Animation(
+                    'cameraFlyPos', 'position', 30,
+                    BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                );
+                posAnim.setKeys([
+                    { frame: 0, value: camera.position.clone() },
+                    { frame: 60, value: newPos }
+                ]);
+                const ease = new BABYLON.CubicEase();
+                ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+                posAnim.setEasingFunction(ease);
+
+                // Animate camera target
+                const targetAnim = new BABYLON.Animation(
+                    'cameraFlyTarget', 'target', 30,
+                    BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                );
+                targetAnim.setKeys([
+                    { frame: 0, value: camera.target.clone() },
+                    { frame: 60, value: newTarget }
+                ]);
+                targetAnim.setEasingFunction(ease);
+
+                this.scene.beginDirectAnimation(camera, [posAnim, targetAnim], 0, 60, false);
             }
 
             // Hide return button
