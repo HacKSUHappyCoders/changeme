@@ -149,6 +149,9 @@ class PanoramicRenderer {
             this._collectGalaxyDots(container, trace, addDot);
         }
 
+        // ── Add standalone entities (black holes, console outputs) ──
+        this._collectStandaloneDots(snapshot, addDot);
+
         // ── Pass 2: create thin-instanced source meshes ──
         for (const [colorType, flatPositions] of positionsByType) {
             this._stampDots(colorType, flatPositions);
@@ -258,6 +261,49 @@ class PanoramicRenderer {
             this._collectTreeDots(key, entities, childIndices, trace, galaxyCenter, parentPos, parentColor, addDot);
         } else {
             this._collectSpiralDots(key, entities, galaxyCenter, parentPos, parentColor, addDot);
+        }
+    }
+
+    /**
+     * Collect dots for standalone entities (black holes, console outputs).
+     * These don't have galaxies, they're just individual dots on the main spiral.
+     */
+    _collectStandaloneDots(snapshot, addDot) {
+        // External function calls (black holes)
+        for (const fn of (snapshot.functions || [])) {
+            if (fn.isExternal) {
+                const slot = this.cityRenderer._slotMap.get(fn.key);
+                if (slot === undefined) continue;
+                const pos = this.cityRenderer._spiralPosition(slot);
+
+                // Get the black hole position (offset from spiral)
+                const angle = getSpiralAngle(slot);
+                const radius = this.cityRenderer.spiralRadiusStart + slot * this.cityRenderer.spiralRadiusGrowth;
+                const offsetDistance = radius * 0.5 + 5;
+
+                const x = Math.cos(angle) * (radius + offsetDistance);
+                const y = pos.y;
+                const z = Math.sin(angle) * (radius + offsetDistance);
+
+                addDot('EXTERNAL_CALL', x, y, z);
+            }
+        }
+
+        // Console outputs
+        for (const output of (snapshot.consoleOutputs || [])) {
+            const slot = this.cityRenderer._slotMap.get(output.key);
+            if (slot === undefined) continue;
+            const pos = this.cityRenderer._spiralPosition(slot);
+
+            // Get the console bubble position (offset inward from spiral)
+            const angle = getSpiralAngle(slot);
+            const radius = this.cityRenderer.spiralRadiusStart + slot * this.cityRenderer.spiralRadiusGrowth;
+
+            const x = Math.cos(angle) * (radius - 2);
+            const y = pos.y + 1.5;
+            const z = Math.sin(angle) * (radius - 2);
+
+            addDot('UNKNOWN', x, y, z);
         }
     }
 
@@ -580,6 +626,27 @@ class PanoramicRenderer {
         for (const [, e] of cr.whileMeshes)    dimEntry(e);
         for (const [, e] of cr.branchMeshes)   dimEntry(e);
 
+        // Dim black holes and accretion disks
+        for (const [, e] of cr.blackHoleMeshes) {
+            if (e.mesh && e.mesh.material) {
+                if (e.mesh.material.isFrozen) e.mesh.material.unfreeze();
+                e.mesh.material.alpha *= alpha;
+            }
+            if (e.disk && e.disk.material) {
+                if (e.disk.material.isFrozen) e.disk.material.unfreeze();
+                e.disk.material.alpha *= alpha;
+            }
+            if (e.label) e.label.setEnabled(false);
+        }
+
+        // Dim console output bubbles
+        for (const [, e] of cr.consoleBubbles) dimEntry(e);
+
+        // Dim connection lines
+        for (const conn of cr.blackHoleConnections) {
+            if (conn) conn.alpha *= alpha;
+        }
+
         if (cr._spiralTube && cr._spiralTube.material) {
             if (cr._spiralTube.material.isFrozen) cr._spiralTube.material.unfreeze();
             cr._spiralTube.material.alpha *= alpha;
@@ -621,6 +688,27 @@ class PanoramicRenderer {
         for (const [, e] of cr.whileMeshes)    restoreEntry(e);
         for (const [, e] of cr.branchMeshes)   restoreEntry(e);
 
+        // Restore black holes and accretion disks
+        for (const [, e] of cr.blackHoleMeshes) {
+            if (e.mesh && e.mesh.material) {
+                if (e.mesh.material.isFrozen) e.mesh.material.unfreeze();
+                e.mesh.material.alpha = 0.95;
+            }
+            if (e.disk && e.disk.material) {
+                if (e.disk.material.isFrozen) e.disk.material.unfreeze();
+                e.disk.material.alpha = 0.7;
+            }
+            if (e.label) e.label.setEnabled(true);
+        }
+
+        // Restore console output bubbles
+        for (const [, e] of cr.consoleBubbles) restoreEntry(e);
+
+        // Restore connection lines
+        for (const conn of cr.blackHoleConnections) {
+            if (conn) conn.alpha = 0.4;
+        }
+
         if (cr._spiralTube && cr._spiralTube.material) {
             if (cr._spiralTube.material.isFrozen) cr._spiralTube.material.unfreeze();
             cr._spiralTube.material.alpha = 0.55;
@@ -654,15 +742,17 @@ class PanoramicRenderer {
     /** Colour palette: colorType (uppercase) → {r,g,b,a}. */
     _colorForType(type) {
         switch (type) {
-            case 'CALL':      return { r: 0.9, g: 0.3, b: 0.3, a: 0.75 };
-            case 'RETURN':    return { r: 0.9, g: 0.6, b: 0.2, a: 0.75 };
-            case 'DECL':      return { r: 0.3, g: 0.5, b: 0.9, a: 0.75 };
-            case 'PARAM':     return { r: 0.4, g: 0.6, b: 1.0, a: 0.75 };
-            case 'ASSIGN':    return { r: 0.3, g: 0.8, b: 0.9, a: 0.75 };
-            case 'LOOP':      return { r: 0.7, g: 0.3, b: 0.9, a: 0.75 };
-            case 'CONDITION': return { r: 0.9, g: 0.5, b: 0.2, a: 0.75 };
-            case 'BRANCH':    return { r: 0.9, g: 0.8, b: 0.2, a: 0.75 };
-            default:          return { r: 0.5, g: 0.5, b: 0.5, a: 0.75 };
+            case 'CALL':         return { r: 0.9, g: 0.3, b: 0.3, a: 0.75 };
+            case 'RETURN':       return { r: 0.9, g: 0.6, b: 0.2, a: 0.75 };
+            case 'DECL':         return { r: 0.3, g: 0.5, b: 0.9, a: 0.75 };
+            case 'PARAM':        return { r: 0.4, g: 0.6, b: 1.0, a: 0.75 };
+            case 'ASSIGN':       return { r: 0.3, g: 0.8, b: 0.9, a: 0.75 };
+            case 'LOOP':         return { r: 0.7, g: 0.3, b: 0.9, a: 0.75 };
+            case 'CONDITION':    return { r: 0.9, g: 0.5, b: 0.2, a: 0.75 };
+            case 'BRANCH':       return { r: 0.9, g: 0.8, b: 0.2, a: 0.75 };
+            case 'EXTERNAL_CALL': return { r: 0.6, g: 0.3, b: 0.8, a: 0.9 };  // Purple for black holes
+            case 'UNKNOWN':      return { r: 0.4, g: 0.6, b: 0.8, a: 0.6 };   // Light blue for console
+            default:             return { r: 0.5, g: 0.5, b: 0.5, a: 0.75 };
         }
     }
 

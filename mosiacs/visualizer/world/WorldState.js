@@ -23,6 +23,7 @@ class WorldState {
         this.whileLoopFactories = new Map();
         this.branchIntersections = new Map();
         this.memoryNodes = new Map();
+        this.consoleOutputs = new Map();  // UNKNOWN events (console output)
 
         // Invocation counters for unique keys
         this._fnCallCount = new Map();
@@ -66,6 +67,7 @@ class WorldState {
         this.whileLoopFactories.clear();
         this.branchIntersections.clear();
         this.memoryNodes.clear();
+        this.consoleOutputs.clear();
         this._fnCallCount.clear();
         this._forLoopCount.clear();
         this._whileLoopCount.clear();
@@ -113,7 +115,7 @@ class WorldState {
             case 'CONDITION':    this._handleCondition(step); break;
             case 'BRANCH':       this._handleBranch(step); break;
             case 'EXTERNAL_CALL': this._handleExternalCall(step); break;
-            case 'UNKNOWN':      /* silently ignore */ break;
+            case 'UNKNOWN':      this._handleUnknown(step); break;
         }
     }
 
@@ -176,7 +178,8 @@ class WorldState {
             childStepIndices: [],
             line: step.line || 0,
             isExternal: true,            // flag for external calls
-            sourceFile: step.sourceFile
+            sourceFile: step.sourceFile,
+            args: step.args || []        // store arguments if available
         });
 
         this.creationOrder.push(key);
@@ -516,6 +519,30 @@ class WorldState {
         }
     }
 
+    // ─── UNKNOWN — console output / debug messages ─────────────────
+
+    _handleUnknown(step) {
+        // UNKNOWN events are typically console output (printf, etc.)
+        // Create a console output bubble for visualization
+        const key = `console_${this.currentStep}`;
+
+        // Extract message from args array
+        const message = (step.args && step.args.length > 0)
+            ? step.args.join(' ')
+            : 'Output';
+
+        this.consoleOutputs.set(key, {
+            key,
+            message,
+            step: this.currentStep,
+            line: step.line || 0,
+            scope: this.currentScope(),
+            sourceFile: step.sourceFile
+        });
+
+        this.creationOrder.push(key);
+    }
+
     // ─── Memory ────────────────────────────────────────────────────
 
     _registerMemoryNode(address, houseKey) {
@@ -540,6 +567,7 @@ class WorldState {
             whileLoops: [...this.whileLoopFactories.values()],
             branches: [...this.branchIntersections.values()],
             memory: [...this.memoryNodes.values()],
+            consoleOutputs: [...this.consoleOutputs.values()],
             readRelations: [...this.readRelations],
             callStack: [...this.callStack],
             currentEvent: this.currentStep >= 0 ? this.trace[this.currentStep] : null

@@ -47,6 +47,7 @@ class CityRenderer {
         this.branchMeshes   = new Map();
         this.blackHoleMeshes = new Map();  // external function calls
         this.blackHoleConnections = [];    // connection lines from spiral to black holes
+        this.consoleBubbles = new Map();   // console output bubbles
         this.memoryLines    = [];
 
         // Spiral layout config
@@ -244,6 +245,7 @@ class CityRenderer {
         this._renderLoops(snapshot.loops);
         this._renderWhileLoops(snapshot.whileLoops || []);
         this._renderBranches(snapshot.branches);
+        this._renderConsoleOutputs(snapshot.consoleOutputs || []);
         this._updateBuildingPositions();
         this._renderMemoryLayer(snapshot.memory);
         this._renderSpiralPath();
@@ -349,7 +351,7 @@ class CityRenderer {
 
     clear() {
         [this.functionMeshes, this.variableMeshes, this.loopMeshes,
-         this.whileMeshes, this.branchMeshes, this.blackHoleMeshes].forEach(cache => {
+         this.whileMeshes, this.branchMeshes, this.blackHoleMeshes, this.consoleBubbles].forEach(cache => {
             cache.forEach(entry => this._disposeEntry(entry));
             cache.clear();
         });
@@ -595,8 +597,9 @@ class CityRenderer {
         connectionLine.isPickable = false;
         this.blackHoleConnections.push(connectionLine);
 
-        // Label
-        const labelText = `${fn.name}() 📦`;
+        // Label with arguments if available
+        const argsStr = (fn.args && fn.args.length > 0) ? fn.args.join(', ') : '';
+        const labelText = argsStr ? `${fn.name}(${argsStr}) 📦` : `${fn.name}() 📦`;
         const labelColor = { r: 0.6, g: 0.4, b: 0.8, a: 1.0 };
         const label = this._createFloatingLabel(
             `blackholeLabel_${fn.key}`, labelText, blackHolePos.clone(), size + 0.5, labelColor
@@ -928,6 +931,103 @@ class CityRenderer {
         });
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // ─── Console Output Bubbles ────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+
+    _renderConsoleOutputs(outputs) {
+        const activeKeys = new Set();
+        outputs.forEach(out => {
+            activeKeys.add(out.key);
+            if (!this.consoleBubbles.has(out.key)) {
+                const slot = this._slotFor(out.key);
+                const pos = this._spiralPosition(slot);
+                this.consoleBubbles.set(out.key, this._createConsoleBubble(out, pos, slot));
+            }
+        });
+        this.consoleBubbles.forEach((entry, key) => {
+            if (!activeKeys.has(key)) this._setInactive(entry);
+        });
+    }
+
+    _createConsoleBubble(output, pos, slot) {
+        const angle = getSpiralAngle(slot);
+        const radius = this.spiralRadiusStart + slot * this.spiralRadiusGrowth;
+
+        // Position bubble slightly inward and elevated from spiral
+        const bubblePos = new BABYLON.Vector3(
+            Math.cos(angle) * (radius - 2),
+            pos.y + 1.5,
+            Math.sin(angle) * (radius - 2)
+        );
+
+        // Create semi-transparent card/bubble
+        const width = Math.min(output.message.length * 0.12 + 1, 4);
+        const height = 0.8;
+        const depth = 0.1;
+
+        const card = BABYLON.MeshBuilder.CreateBox(`console_${output.key}`, {
+            width, height, depth
+        }, this.scene);
+        card.position = bubblePos;
+        card.rotation.y = angle + Math.PI / 2; // Face outward
+
+        // Glass-like material
+        const mat = new BABYLON.StandardMaterial(`consoleMat_${output.key}`, this.scene);
+        mat.diffuseColor = new BABYLON.Color3(0.9, 0.95, 1.0);
+        mat.emissiveColor = new BABYLON.Color3(0.4, 0.5, 0.6);
+        mat.specularColor = new BABYLON.Color3(0.8, 0.9, 1.0);
+        mat.alpha = 0.3;
+        card.material = mat;
+        card.isPickable = false;
+
+        // Glowing border
+        const border = BABYLON.MeshBuilder.CreateBox(`consoleBorder_${output.key}`, {
+            width: width + 0.1, height: height + 0.1, depth: 0.05
+        }, this.scene);
+        border.position = bubblePos;
+        border.rotation.y = angle + Math.PI / 2;
+
+        const borderMat = new BABYLON.StandardMaterial(`consoleBorderMat_${output.key}`, this.scene);
+        borderMat.emissiveColor = new BABYLON.Color3(0.3, 0.7, 0.9);
+        borderMat.alpha = 0.6;
+        border.material = borderMat;
+        border.isPickable = false;
+
+        // Text label showing the message
+        const labelColor = { r: 0.9, g: 0.95, b: 1.0, a: 1.0 };
+        const label = this._createFloatingLabel(
+            `consoleLabel_${output.key}`,
+            `💬 ${output.message}`,
+            bubblePos.clone(),
+            0,
+            labelColor
+        );
+        label.isPickable = false;
+
+        // Connection line from spiral to bubble
+        const connectionLine = BABYLON.MeshBuilder.CreateLines(`consoleConnection_${output.key}`, {
+            points: [pos, bubblePos],
+            updatable: false
+        }, this.scene);
+        connectionLine.color = new BABYLON.Color3(0.4, 0.6, 0.8);
+        connectionLine.alpha = 0.3;
+        connectionLine.isPickable = false;
+
+        this._animateScaleIn(card);
+        this._animateScaleIn(border);
+
+        return {
+            mesh: card,
+            border,
+            label,
+            connection: connectionLine,
+            height: 0,
+            color: labelColor,
+            type: 'console'
+        };
+    }
+
     _createBranchIntersection(br, pos, slot) {
         const height = 2.2;
         const width = 2.2;
@@ -1106,7 +1206,7 @@ class CityRenderer {
 
     _disposeEntry(entry) {
         if (!entry) return;
-        const disposable = ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath', 'label', 'disk', 'connection'];
+        const disposable = ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath', 'label', 'disk', 'connection', 'border'];
         disposable.forEach(k => {
             if (entry[k]) {
                 if (entry[k].material) entry[k].material.dispose();
