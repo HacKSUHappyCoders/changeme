@@ -116,6 +116,19 @@ class CityRenderer {
 
     render(snapshot) {
         this._ensureHoverObserver();
+
+        // Keep a reference to the trace for on-demand sub-spiral rendering
+        this._lastTrace = snapshot.trace || [];
+
+        // Pre-assign spiral slots in trace-creation order so that
+        // buildings are interleaved along the spiral based on when they
+        // first appeared in the execution trace, NOT grouped by type.
+        if (snapshot.creationOrder) {
+            for (const key of snapshot.creationOrder) {
+                this._slotFor(key);   // assigns monotonically increasing slot
+            }
+        }
+
         this._renderFunctions(snapshot.functions, snapshot.callStack);
         this._renderVariables(snapshot.variables);
         this._renderLoops(snapshot.loops);
@@ -125,9 +138,37 @@ class CityRenderer {
         this._renderMemoryLayer(snapshot.memory);
         this._renderSpiralPath();
 
-        // Sub-spirals emerging from containers
-        const posMap = this._buildPositionMap();
-        this.subSpiralRenderer.render(snapshot, posMap, snapshot.trace || []);
+        // Sub-spirals are rendered on-demand when a building is clicked
+        // (see showSubSpiral / hideSubSpiral, called by ExplodeManager).
+
+        // Freeze all meshes whose world matrix won't change any more
+        this._freezeStaticMeshes();
+    }
+
+    // ─── On-demand sub-spiral API (called by ExplodeManager) ───────
+
+    /**
+     * Show the sub-spiral for a specific building.
+     * @param {BABYLON.AbstractMesh} buildingMesh – the clicked building
+     */
+    showSubSpiral(buildingMesh) {
+        if (!buildingMesh || !buildingMesh._entityData) return;
+        const entity = buildingMesh._entityData;
+        const key = entity.key;
+        const childIndices = entity.childStepIndices;
+        if (!childIndices || childIndices.length === 0) return;
+
+        const parentPos = buildingMesh.position.clone();
+        this.subSpiralRenderer.renderSingle(key, childIndices, parentPos, this._lastTrace);
+    }
+
+    /**
+     * Hide the sub-spiral for a specific building.
+     * @param {BABYLON.AbstractMesh} buildingMesh – the building to collapse
+     */
+    hideSubSpiral(buildingMesh) {
+        if (!buildingMesh || !buildingMesh._entityData) return;
+        this.subSpiralRenderer.removeSingle(buildingMesh._entityData.key);
     }
 
     clear() {
@@ -285,6 +326,7 @@ class CityRenderer {
         mesh.position = pos.clone();
         mesh.rotation.y = tangentAngle;
         mesh.material = this._glowMaterial(`fnMat_${fn.key}`, color);
+        mesh.isPickable = true;
 
         const cap = BABYLON.MeshBuilder.CreateBox(`fnCap_${fn.key}`, {
             height: 0.3, width: width * 0.7, depth: width * 0.7
@@ -497,7 +539,7 @@ class CityRenderer {
         mesh.material = this._glowMaterial(`loopMat_${loop.key}`, color);
 
         const chimney = BABYLON.MeshBuilder.CreateCylinder(`loopChimney_${loop.key}`, {
-            height: 1.3, diameter: 0.45, tessellation: 8
+            height: 1.3, diameter: 0.45, tessellation: 6
         }, this.scene);
         chimney.position = pos.clone();
         chimney.position.y += height + 0.65;
@@ -687,6 +729,34 @@ class CityRenderer {
     // ─── Shared helpers ────────────────────────────────────────────
     // ═══════════════════════════════════════════════════════════════
 
+    /**
+     * Freeze the world matrices of meshes that are fully positioned.
+     * This tells Babylon.js to skip recomputing their matrices each
+     * frame, significantly improving render-loop performance for large
+     * scenes.
+     */
+    _freezeStaticMeshes() {
+        const freezeEntry = (entry) => {
+            if (!entry) return;
+            const meshes = [entry.mesh, entry.cap, entry.roof, entry.chimney,
+                            entry.truePath, entry.falsePath];
+            for (const m of meshes) {
+                if (m && !m._isFrozen) {
+                    m.freezeWorldMatrix();
+                    m._isFrozen = true;
+                }
+            }
+        };
+        for (const [, e] of this.functionMeshes) freezeEntry(e);
+        for (const [, e] of this.variableMeshes) freezeEntry(e);
+        for (const [, e] of this.loopMeshes)     freezeEntry(e);
+        for (const [, e] of this.whileMeshes)    freezeEntry(e);
+        for (const [, e] of this.branchMeshes)   freezeEntry(e);
+
+        // Freeze the spiral tube
+        if (this._spiralTube) this._spiralTube.freezeWorldMatrix();
+    }
+
     _setInactive(entry) {
         if (!entry) return;
         if (entry.mesh && entry.mesh.material)      entry.mesh.material.alpha = 0.85;
@@ -711,7 +781,9 @@ class CityRenderer {
     // ─── Delegates to MeshFactory / LabelHelper ────────────────────
 
     _glowMaterial(name, color) {
-        return this.meshFactory.glowMaterial(name, color);
+        const mat = this.meshFactory.glowMaterial(name, color);
+        mat.freeze();           // performance: skip redundant shader recompilation
+        return mat;
     }
 
     _animateScaleIn(mesh) {

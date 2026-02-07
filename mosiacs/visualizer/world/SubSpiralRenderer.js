@@ -1,91 +1,97 @@
 /**
- * SubSpiralRenderer — Renders mini spirals that emerge from container buildings
- * (functions, for-loops, while-loops, branches).
+ * SubSpiralRenderer — Renders sub-spirals that descend downward from
+ * container buildings (functions, for-loops, while-loops, branches).
  *
- * Each sub-spiral is a smaller, tighter spiral anchored at the parent
- * building's position.  The child trace steps are displayed as tiny
- * colour-coded dots along the sub-spiral path.
+ * Sub-spirals are spawned on-demand (when a building is clicked) rather
+ * than all at once, so only one is visible at a time.
  *
- * Sub-spirals are always visible (not on-click) — they appear as the
- * program runs and stay permanently.
+ * The layout is deliberately TALL and NARROW — a tight helix that drops
+ * straight down beneath the parent building, clearly distinct from the
+ * wide main spiral.
+ *
+ * Performance: caches materials per step-type so at most ~8 materials
+ * exist regardless of how many dots are rendered.
  */
 class SubSpiralRenderer {
     constructor(scene, labelHelper) {
         this.scene = scene;
         this.labelHelper = labelHelper;
 
-        // All rendered sub-spirals: parentKey → { tube, dots[], pathColor }
+        // All rendered sub-spirals: parentKey → { tube, dots[], dotCount }
         this.subSpirals = new Map();
 
-        // Sub-spiral layout (smaller / tighter than main spiral)
-        this.radiusStart = 0.6;
-        this.radiusGrowth = 0.08;
-        this.angleStep = 0.7;
-        this.heightStep = 0.12;
-        this.tubeRadius = 0.04;
-        this.dotRadius = 0.12;
+        // ── Sub-spiral layout: tall & narrow ──
+        // Small radius so it stays close to the building column
+        this.radiusStart  = 0.8;
+        this.radiusGrowth = 0.02;       // barely grows outward
+        // Tight winding
+        this.angleStep    = 0.65;
+        // Large vertical drop per step → long / tall spiral
+        this.heightStep   = 0.55;
+        this.tubeRadius   = 0.06;
+        this.dotRadius    = 0.10;
+
+        // Shared material cache (stepType → StandardMaterial)
+        this._matCache = new Map();
+    }
+
+    // ─── On-demand API (called by ExplodeManager) ──────────────────
+
+    /**
+     * Render a single sub-spiral for the given container entity key.
+     * If one already exists for that key it is disposed first.
+     *
+     * @param {string}          parentKey   – entity key (e.g. "fn_main_#1")
+     * @param {number[]}        childIndices – indices into the trace array
+     * @param {BABYLON.Vector3} parentPos   – world position of the building
+     * @param {Array}           trace       – full trace array
+     */
+    renderSingle(parentKey, childIndices, parentPos, trace) {
+        if (!childIndices || childIndices.length === 0) return;
+
+        // Remove existing spiral for this key
+        this.removeSingle(parentKey);
+
+        const pathColor = ColorHash.spiralColor(parentKey);
+        const result = this._buildSubSpiral(
+            parentKey, childIndices, parentPos, pathColor, trace
+        );
+        this.subSpirals.set(parentKey, result);
     }
 
     /**
-     * Render sub-spirals for all container entities that have child steps.
-     *
-     * @param {object} snapshot – WorldState snapshot
-     * @param {Map} parentPositionMap – entityKey → BABYLON.Vector3 (building positions from CityRenderer)
-     * @param {Array} trace – the full trace array for step lookups
+     * Remove a single sub-spiral by key.
+     * @returns {boolean} true if something was removed
      */
-    render(snapshot, parentPositionMap, trace) {
-        const containers = this._collectContainers(snapshot);
-
-        for (const container of containers) {
-            if (container.childStepIndices.length === 0) continue;
-
-            const parentPos = parentPositionMap.get(container.key);
-            if (!parentPos) continue;
-
-            // Only re-render if the sub-spiral doesn't exist or has grown
-            const existing = this.subSpirals.get(container.key);
-            if (existing && existing.dotCount === container.childStepIndices.length) continue;
-
-            // Dispose old version if present
-            if (existing) this._disposeSubSpiral(existing);
-
-            // Build the sub-spiral
-            const pathColor = ColorHash.spiralColor(container.key);
-            const result = this._buildSubSpiral(
-                container.key, container.childStepIndices, parentPos, pathColor, trace
-            );
-            this.subSpirals.set(container.key, result);
+    removeSingle(parentKey) {
+        const existing = this.subSpirals.get(parentKey);
+        if (existing) {
+            this._disposeSubSpiral(existing);
+            this.subSpirals.delete(parentKey);
+            return true;
         }
+        return false;
     }
 
+    /** Remove ALL sub-spirals (used when the whole city is cleared). */
     clear() {
         this.subSpirals.forEach(s => this._disposeSubSpiral(s));
         this.subSpirals.clear();
+        this._matCache.forEach(m => m.dispose());
+        this._matCache.clear();
     }
 
     // ─── internal ──────────────────────────────────────────────────
 
-    _collectContainers(snapshot) {
-        const out = [];
-        for (const fn of snapshot.functions) {
-            if (fn.childStepIndices && fn.childStepIndices.length > 0) out.push(fn);
-        }
-        for (const loop of snapshot.loops) {
-            if (loop.childStepIndices && loop.childStepIndices.length > 0) out.push(loop);
-        }
-        for (const wl of snapshot.whileLoops) {
-            if (wl.childStepIndices && wl.childStepIndices.length > 0) out.push(wl);
-        }
-        for (const br of snapshot.branches) {
-            if (br.childStepIndices && br.childStepIndices.length > 0) out.push(br);
-        }
-        return out;
-    }
-
+    /**
+     * Compute sub-spiral position for a given slot, descending from origin.
+     * Slot 0 starts just below the building; subsequent slots drop steeply.
+     */
     _subSpiralPosition(slot, origin) {
-        const angle = slot * this.angleStep;
+        const angle  = slot * this.angleStep;
         const radius = this.radiusStart + slot * this.radiusGrowth;
-        const y = origin.y + 0.3 + slot * this.heightStep;   // rise upward from building
+        // Descend straight down beneath the building
+        const y = origin.y - 0.5 - slot * this.heightStep;
         return new BABYLON.Vector3(
             origin.x + Math.cos(angle) * radius,
             y,
@@ -93,41 +99,49 @@ class SubSpiralRenderer {
         );
     }
 
+    /**
+     * Get or create a cached material for a given step type.
+     */
+    _getCachedMaterial(stepType) {
+        if (this._matCache.has(stepType)) return this._matCache.get(stepType);
+
+        const c = this._dotColor({ type: stepType });
+        const mat = new BABYLON.StandardMaterial(`subDotMat_${stepType}`, this.scene);
+        mat.diffuseColor  = new BABYLON.Color3(c.r, c.g, c.b);
+        mat.emissiveColor = new BABYLON.Color3(c.r * 0.5, c.g * 0.5, c.b * 0.5);
+        mat.alpha = 0.9;
+        mat.freeze();
+        this._matCache.set(stepType, mat);
+        return mat;
+    }
+
     _buildSubSpiral(parentKey, childIndices, origin, pathColor, trace) {
         const dots = [];
         const pathPoints = [];
         const maxSlots = childIndices.length;
 
-        // Build path points and dots for each child step
         for (let i = 0; i < maxSlots; i++) {
             const pos = this._subSpiralPosition(i, origin);
             pathPoints.push(pos.clone());
 
-            // Create a small dot for each step
             const stepIndex = childIndices[i];
             const step = trace[stepIndex];
-            const dotColor = this._dotColor(step);
+            const stepType = step ? step.type : 'UNKNOWN';
 
             const dot = BABYLON.MeshBuilder.CreateSphere(
                 `subDot_${parentKey}_${i}`,
-                { diameter: this.dotRadius * 2, segments: 6 },
+                { diameter: this.dotRadius * 2, segments: 4 },
                 this.scene
             );
             dot.position = pos;
             dot.isPickable = false;
-
-            const mat = new BABYLON.StandardMaterial(`subDotMat_${parentKey}_${i}`, this.scene);
-            mat.diffuseColor = new BABYLON.Color3(dotColor.r, dotColor.g, dotColor.b);
-            mat.emissiveColor = new BABYLON.Color3(
-                dotColor.r * 0.5, dotColor.g * 0.5, dotColor.b * 0.5
-            );
-            mat.alpha = 0.9;
-            dot.material = mat;
+            dot.material = this._getCachedMaterial(stepType);
+            dot.freezeWorldMatrix();
 
             dots.push(dot);
         }
 
-        // Draw the spiral tube if there are at least 2 points
+        // Draw the spiral tube
         let tube = null;
         if (pathPoints.length >= 2) {
             tube = BABYLON.MeshBuilder.CreateTube(`subTube_${parentKey}`, {
@@ -136,13 +150,15 @@ class SubSpiralRenderer {
                 sideOrientation: BABYLON.Mesh.DOUBLESIDE
             }, this.scene);
             const tubeMat = new BABYLON.StandardMaterial(`subTubeMat_${parentKey}`, this.scene);
-            tubeMat.diffuseColor = new BABYLON.Color3(pathColor.r, pathColor.g, pathColor.b);
+            tubeMat.diffuseColor  = new BABYLON.Color3(pathColor.r, pathColor.g, pathColor.b);
             tubeMat.emissiveColor = new BABYLON.Color3(
                 pathColor.r * 0.4, pathColor.g * 0.4, pathColor.b * 0.4
             );
             tubeMat.alpha = 0.6;
+            tubeMat.freeze();
             tube.material = tubeMat;
             tube.isPickable = false;
+            tube.freezeWorldMatrix();
         }
 
         return { tube, dots, pathColor, dotCount: maxSlots };
@@ -171,7 +187,7 @@ class SubSpiralRenderer {
             entry.tube.dispose();
         }
         for (const dot of entry.dots) {
-            if (dot.material) dot.material.dispose();
+            dot.material = null;   // don't dispose shared cached materials
             dot.dispose();
         }
     }

@@ -13,9 +13,23 @@ class SceneManager {
      * Initialize the Babylon.js scene
      */
     init() {
-        this.engine = new BABYLON.Engine(this.canvas, true);
+        this.engine = new BABYLON.Engine(this.canvas, true, {
+            // Performance: use lower precision where possible
+            useHighPrecisionFloats: false,
+            // Reduce stencil overhead
+            stencil: false,
+        });
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.18, 1);
+
+        // ── Performance optimizations ──
+        // Skip bounding-info recomputation when meshes don't move each frame
+        this.scene.skipFrustumClipping = false;
+        // Block material-dirty notifications during bulk mesh creation
+        this.scene.blockMaterialDirtyMechanism = false;
+        // Auto-freeze materials that don't change
+        this.scene.autoClear = true;
+        this.scene.autoClearDepthAndStencil = true;
 
         // Create camera — positioned to look DOWN at the descending spiral
         this.camera = new BABYLON.ArcRotateCamera(
@@ -86,7 +100,10 @@ class SceneManager {
      * Add glow layer for stained glass effect
      */
     _setupGlowLayer() {
-        const glowLayer = new BABYLON.GlowLayer("glow", this.scene);
+        const glowLayer = new BABYLON.GlowLayer("glow", this.scene, {
+            mainTextureSamples: 1,       // lower sample count for performance
+            blurKernelSize: 32,          // smaller blur for speed
+        });
         glowLayer.intensity = 0.7;
     }
 

@@ -41,8 +41,8 @@ class CodeVisualizer {
         // City renderer — turns world snapshots into 3D geometry
         this.cityRenderer = new CityRenderer(scene);
 
-        // Explode manager for click-to-inspect
-        this.explodeManager = new ExplodeManager(scene);
+        // Explode manager for click-to-inspect (pass cityRenderer for sub-spirals)
+        this.explodeManager = new ExplodeManager(scene, this.cityRenderer);
 
         return this;
     }
@@ -63,8 +63,16 @@ class CodeVisualizer {
         // Advance to the end so the full city is visible
         this.worldState.seekTo(trace.length - 1);
 
+        // Block material dirty notifications during bulk mesh creation
+        // (major perf win for large traces)
+        const scene = this.sceneManager.getScene();
+        scene.blockMaterialDirtyMechanism = true;
+
         // Render the current world state
         this.cityRenderer.render(this.worldState.getSnapshot());
+
+        // Re-enable material updates
+        scene.blockMaterialDirtyMechanism = false;
 
         // Reset camera to a good overview position
         this.sceneManager.resetCamera();

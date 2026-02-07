@@ -37,6 +37,11 @@ class WorldState {
         this._containerStack = [];
 
         this.processedSteps = [];
+
+        // Ordered list of entity keys in the order they first appear in the trace.
+        // This is used by the renderer to assign spiral slots in trace-order
+        // instead of grouping by type.
+        this.creationOrder = [];
     }
 
     loadTrace(trace) {
@@ -59,6 +64,7 @@ class WorldState {
         this.callStack = [];
         this._containerStack = [];
         this.processedSteps = [];
+        this.creationOrder = [];
     }
 
     seekTo(targetStep) {
@@ -122,6 +128,8 @@ class WorldState {
             returnValue: null,
             childStepIndices: []
         });
+
+        this.creationOrder.push(key);
 
         this.callStack.push(key);
         this._containerStack.push({
@@ -195,6 +203,8 @@ class WorldState {
                 declStep: this.currentStep,
                 active: true
             });
+
+            this.creationOrder.push(key);
 
             const fnKey = this.callStack.length > 0
                 ? this.callStack[this.callStack.length - 1]
@@ -271,6 +281,8 @@ class WorldState {
             };
             map.set(key, factory);
 
+            this.creationOrder.push(key);
+
             this._containerStack.push({
                 key, type: typeTag,
                 startStep: this.currentStep,
@@ -316,6 +328,8 @@ class WorldState {
             _baseLookup: baseLookup
         };
         this.branchIntersections.set(key, intersection);
+
+        this.creationOrder.push(key);
 
         this._containerStack.push({
             key, type: 'branch',
@@ -363,6 +377,7 @@ class WorldState {
             step: this.currentStep,
             totalSteps: this.trace.length,
             trace: this.trace,
+            creationOrder: [...this.creationOrder],
             functions: [...this.functionDistricts.values()],
             variables: [...this.variableHouses.values()],
             loops: [...this.forLoopFactories.values()],

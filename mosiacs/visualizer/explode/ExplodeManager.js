@@ -7,8 +7,11 @@
  * close button) collapses the inspector.
  */
 class ExplodeManager {
-    constructor(scene) {
+    constructor(scene, cityRenderer) {
         this.scene  = scene;
+
+        /** Reference to CityRenderer for on-demand sub-spiral rendering */
+        this.cityRenderer = cityRenderer || null;
 
         /** Currently inspected building (null when nothing is open) */
         this.exploded = null;
@@ -80,6 +83,11 @@ class ExplodeManager {
         });
 
         this.exploded = { mesh: buildingMesh, buildingData: bd, panel };
+
+        // Show the sub-spiral for this building
+        if (this.cityRenderer) {
+            this.cityRenderer.showSubSpiral(buildingMesh);
+        }
     }
 
     // ─── build the inspector DOM from real data ─────────────────────
@@ -261,6 +269,11 @@ class ExplodeManager {
         setTimeout(() => {
             if (panel.parentNode) panel.parentNode.removeChild(panel);
         }, 300);
+
+        // Hide the sub-spiral for this building
+        if (this.cityRenderer) {
+            this.cityRenderer.hideSubSpiral(mesh);
+        }
 
         this.exploded = null;
     }

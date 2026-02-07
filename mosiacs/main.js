@@ -10,18 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the visualizer
     visualizer.init();
 
-    // Load trace data from the API on startup
-    CodeParser.getExampleTrace()
-        .then(json => visualizer.visualize(json))
-        .catch(err => console.error('Failed to load trace data:', err));
+    const traceSelect = document.getElementById('traceFile');
 
-    // Load example button — re-fetches from the API so you can
-    // swap out data/test_data.json while the server is running
-    document.getElementById('loadExample').addEventListener('click', () => {
-        CodeParser.getExampleTrace()
+    /** Load the currently selected trace file. */
+    function loadSelectedTrace() {
+        const filename = traceSelect ? traceSelect.value : undefined;
+        CodeParser.getExampleTrace(filename)
             .then(json => visualizer.visualize(json))
             .catch(err => console.error('Failed to load trace data:', err));
-    });
+    }
+
+    // Load trace data from the API on startup
+    loadSelectedTrace();
+
+    // Load example button — loads the selected file from the dropdown
+    document.getElementById('loadExample').addEventListener('click', loadSelectedTrace);
 
     // Reset camera button
     document.getElementById('resetCamera').addEventListener('click', () => {
