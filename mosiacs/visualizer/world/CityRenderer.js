@@ -162,6 +162,7 @@ class CityRenderer {
         mat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.4);
         mat.alpha = 0.55;
         this._spiralTube.material = mat;
+        this._spiralTube.isPickable = false;
     }
 
     // ─── Reposition buildings to final spiral Y ──────────────────
@@ -302,12 +303,14 @@ class CityRenderer {
             r: Math.min(color.r * 1.5, 1), g: Math.min(color.g * 1.5, 1),
             b: Math.min(color.b * 1.5, 1), a: 0.9
         });
+        cap.isPickable = false;
 
         this._animateScaleIn(mesh);
         this._animateScaleIn(cap);
 
         const label = this._createFloatingLabel(`fnLabel_${fn.key}`, fn.name, pos.clone(), height + 0.5, color);
         label.setEnabled(false);
+        label.isPickable = false;
 
         mesh._buildingData = {
             step: fn.enterStep,
@@ -389,6 +392,7 @@ class CityRenderer {
             r: Math.min(color.r * 1.4, 1), g: Math.min(color.g * 1.4, 1),
             b: Math.min(color.b * 1.4, 1), a: 0.9
         });
+        roof.isPickable = false;
 
         this._animateScaleIn(mesh);
         this._animateScaleIn(roof);
@@ -396,6 +400,7 @@ class CityRenderer {
         const labelText = `${v.name} = ${v.currentValue}`;
         const label = this._createFloatingLabel(`varLabel_${v.key}`, labelText, pos.clone(), height + 1.3, color);
         label.setEnabled(false);
+        label.isPickable = false;
 
         mesh._buildingData = {
             step: v.declStep,
@@ -477,6 +482,7 @@ class CityRenderer {
         chimney.position.z += 0.7 * Math.sin(tangentAngle);
         chimney.material = this._glowMaterial(`loopChimneyMat_${loop.key}`,
             { r: 0.4, g: 0.15, b: 0.6, a: 0.9 });
+        chimney.isPickable = false;
 
         this._animateScaleIn(mesh);
         this._animateScaleIn(chimney);
@@ -484,6 +490,7 @@ class CityRenderer {
         const labelText = `${loop.subtype.toUpperCase()} (${loop.condition}) ×${loop.iterations}`;
         const label = this._createFloatingLabel(`loopLabel_${loop.key}`, labelText, pos.clone(), height + 2, color);
         label.setEnabled(false);
+        label.isPickable = false;
 
         mesh._buildingData = {
             step: loop.steps[0] || 0,
@@ -559,12 +566,15 @@ class CityRenderer {
 
         const truePath = this._createPathIndicator(`brTrue_${br.key}`, pos, 1.6, tangentAngle + Math.PI / 6, true);
         const falsePath = this._createPathIndicator(`brFalse_${br.key}`, pos, 1.6, tangentAngle - Math.PI / 6, false);
+        truePath.isPickable = false;
+        falsePath.isPickable = false;
 
         this._animateScaleIn(mesh);
 
         const labelText = `IF (${br.condition}) → ${br.result ? 'true' : 'false'}`;
         const label = this._createFloatingLabel(`brLabel_${br.key}`, labelText, pos.clone(), height + 1, color);
         label.setEnabled(false);
+        label.isPickable = false;
 
         mesh._buildingData = {
             step: br.step,
@@ -635,6 +645,7 @@ class CityRenderer {
                 mat.emissiveColor = new BABYLON.Color3(0.3, 0.8, 0.3);
                 mat.alpha = 0.4;
                 line.material = mat;
+                line.isPickable = false;
                 this.memoryLines.push(line);
             }
         });

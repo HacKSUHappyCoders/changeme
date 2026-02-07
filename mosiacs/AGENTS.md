@@ -216,4 +216,18 @@ For loops: Each time the loop is at its first iteration make it a new building.
 If statement: for each if statement make a building and make a chain of buildings for if, if else and else
 While: same as for loops
 
-Now to define the colors, we will do a combo of hash and specific coloring
+Now to define the colors, we will do a combo of hash and specific coloring. You should create a hash based on the name or other indetifying data that each piece has and then we will use a color schema to declare each one. So the color schema follows the RGB aproach with the following idea
+
+# IDEA
+X X X
+X X 255
+X 255 255
+255 255 255
+X 255 X
+255 255 X
+255 X 255
+
+The 255 values are solid inplace, but the X values can be changed and are determing by the unique hash that was created above. This will make sure that if a function building is shown multiple times that it is the same color, like hello() should be the same color throughout and end() should be a different color then hello().
+
+## NEW BIG FEATURE
+Now we want to build a spiral inside of spiral idea. So for example, we have function buildings, and inside of functions there is code. So lets make it so when we click on a function, if statement, for loop and while loop, a new spiral comes out of them that represents the code inside of them. This code inside each would not be displayed in the main spiral, but instead in this mini subversion spiral. Also can you make it so all the spirals are visibly created as the program is run. and also keep all the spiral visible. In addition, each spirals path color should be different too. But essentially I want spirals building off of spirals to make a really cool mosiac.
