@@ -37,6 +37,9 @@ class PanoramicRenderer {
         this._savedCameraTarget = null;
         this._mainSpiralHidden = false;
 
+        /** Saved reference to the normal GlowLayer (swapped during panoramic) */
+        this._savedGlowLayer = null;
+
         // ── Galaxy spiral layout ──
         this._galaxyRadiusStart = 3.0;
         this._galaxyRadiusGrowth = 0.18;
@@ -100,6 +103,9 @@ class PanoramicRenderer {
 
         this.scene.blockMaterialDirtyMechanism = false;
 
+        // Swap to a high-intensity, wide-blur GlowLayer for the panoramic view
+        this._boostGlow();
+
         // Fly camera to a grand overview position
         this._flyCameraToOverview();
     }
@@ -110,6 +116,9 @@ class PanoramicRenderer {
 
         // Remove all panoramic meshes
         this._disposeMeshes();
+
+        // Restore the normal GlowLayer
+        this._restoreGlow();
 
         // Restore main spiral visibility
         this._restoreMainSpiral();
@@ -652,6 +661,48 @@ class PanoramicRenderer {
         }
     }
 
+    // ─── GlowLayer Boost ────────────────────────────────────────────
+
+    /**
+     * Replace the normal GlowLayer with a much larger, more intense one
+     * so every dot radiates a wide colour halo during panoramic mode.
+     */
+    _boostGlow() {
+        const sm = this.sceneManager;
+        if (!sm.glowLayer) return;
+
+        // Stash the original layer (don't dispose — we'll restore it later)
+        this._savedGlowLayer = sm.glowLayer;
+        sm.glowLayer.setEnabled(false);
+
+        // Create a panoramic-grade glow layer with a much wider blur
+        this._panoGlow = new BABYLON.GlowLayer('panoGlow', this.scene, {
+            mainTextureSamples: 1,
+            blurKernelSize: 64,
+            mainTextureFixedSize: 512,
+        });
+        this._panoGlow.intensity = 1.8;
+
+        // Point the scene manager at the new layer so other code still works
+        sm.glowLayer = this._panoGlow;
+    }
+
+    /**
+     * Dispose the panoramic GlowLayer and restore the original.
+     */
+    _restoreGlow() {
+        if (!this._savedGlowLayer) return;
+
+        if (this._panoGlow) {
+            this._panoGlow.dispose();
+            this._panoGlow = null;
+        }
+
+        this._savedGlowLayer.setEnabled(true);
+        this.sceneManager.glowLayer = this._savedGlowLayer;
+        this._savedGlowLayer = null;
+    }
+
     // ─── Main Spiral Dim/Restore ───────────────────────────────────
 
     _dimMainSpiral(alpha) {
@@ -784,7 +835,7 @@ class PanoramicRenderer {
         mat.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
         mat.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
         mat.emissiveColor = new BABYLON.Color3(
-            color.r * 0.55, color.g * 0.55, color.b * 0.55
+            color.r * 0.8, color.g * 0.8, color.b * 0.8
         );
         mat.alpha = color.a !== undefined ? color.a : 0.8;
         mat.disableLighting = false;
