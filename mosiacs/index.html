@@ -17,27 +17,7 @@
             <button id="collapseBuilding">Close Inspector</button>
             <button id="toggleAnimation">Pause Animation</button>
         </div>
-        <div id="timelineControls">
-            <div class="timeline-row">
-                <button id="goToStart" title="Go to start">⏮</button>
-                <button id="stepBack" title="Step backward">⏪</button>
-                <button id="playPause" title="Play / Pause">▶</button>
-                <button id="stepFwd" title="Step forward">⏩</button>
-                <button id="goToEnd" title="Go to end">⏭</button>
-            </div>
-            <input id="timelineSlider" type="range" min="0" max="0" value="0" />
-            <div class="timeline-info">
-                <span id="stepCounter">Step 0 / 0</span>
-                <span id="currentEvent">—</span>
-            </div>
-            <div class="speed-row">
-                <label>Speed:</label>
-                <button class="speed-btn" data-speed="1200">0.5×</button>
-                <button class="speed-btn active" data-speed="600">1×</button>
-                <button class="speed-btn" data-speed="300">2×</button>
-                <button class="speed-btn" data-speed="100">5×</button>
-            </div>
-        </div>
+
     </div>
     <div id="info">
         <strong>Controls:</strong><br>
@@ -61,7 +41,7 @@
 
     <!-- World state engine -->
     <script src="visualizer/world/WorldState.js"></script>
-    <script src="visualizer/world/TimelineController.js"></script>
+
     <script src="visualizer/world/CityRenderer.js"></script>
 
     <!-- Explode / inspector -->

@@ -43,57 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtn.textContent = isAnimating ? 'Pause Animation' : 'Resume Animation';
     });
 
-    // ─── Timeline controls ─────────────────────────────────────────
-
-    const playPauseBtn = document.getElementById('playPause');
-    if (playPauseBtn) {
-        playPauseBtn.addEventListener('click', () => {
-            const playing = visualizer.togglePlay();
-            playPauseBtn.textContent = playing ? '⏸' : '▶';
-        });
-    }
-
-    const stepFwdBtn = document.getElementById('stepFwd');
-    if (stepFwdBtn) {
-        stepFwdBtn.addEventListener('click', () => visualizer.stepForward());
-    }
-
-    const stepBackBtn = document.getElementById('stepBack');
-    if (stepBackBtn) {
-        stepBackBtn.addEventListener('click', () => visualizer.stepBackward());
-    }
-
-    const goToStartBtn = document.getElementById('goToStart');
-    if (goToStartBtn) {
-        goToStartBtn.addEventListener('click', () => visualizer.goToStart());
-    }
-
-    const goToEndBtn = document.getElementById('goToEnd');
-    if (goToEndBtn) {
-        goToEndBtn.addEventListener('click', () => visualizer.goToEnd());
-    }
-
-    const timelineSlider = document.getElementById('timelineSlider');
-    if (timelineSlider) {
-        timelineSlider.addEventListener('input', (e) => {
-            visualizer.seekTo(parseInt(e.target.value, 10));
-        });
-    }
-
-    // Speed buttons
-    document.querySelectorAll('.speed-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const speed = parseInt(btn.dataset.speed, 10);
-            visualizer.setSpeed(speed);
-            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
-
     // Show welcome message
     console.log('🎨 Code Mosaic Visualizer initialized!');
     console.log('Click "Load Example Code" to see the visualization.');
     console.log('Click any building to explode and see variable data.');
-    console.log('Use the timeline to scrub through execution steps.');
     console.log('Debug Column Mode is ON by default - shards will fly to the side of your screen!');
 });

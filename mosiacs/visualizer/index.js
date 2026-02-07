@@ -4,7 +4,6 @@
  * Architecture (AGENTS.md compliant):
  *   WorldState         – runtime simulation: functions, variables, loops, branches, memory
  *   CityRenderer       – translates world snapshots into Babylon.js meshes
- *   TimelineController – forward / backward / seek / auto-play
  *   SceneManager       – Babylon.js scene, camera, lights
  *   MaterialManager    – stained-glass material factory
  *
@@ -12,7 +11,6 @@
  * loop, branch) — NOT a line of code or AST node.
  *
  * The spiral path represents time.  Each trace event advances one step.
- * The user can scrub forward and backward; the city updates deterministically.
  */
 class CodeVisualizer {
     constructor(canvas) {
@@ -24,7 +22,6 @@ class CodeVisualizer {
         this.materialManager = null;
         this.worldState = null;
         this.cityRenderer = null;
-        this.timeline = null;
 
         // Explode interaction (click-to-inspect)
         this.explodeManager = null;
@@ -49,12 +46,6 @@ class CodeVisualizer {
 
         // City renderer — turns world snapshots into 3D geometry
         this.cityRenderer = new CityRenderer(scene, this.materialManager);
-
-        // Timeline controller — drives WorldState and triggers re-renders
-        this.timeline = new TimelineController(this.worldState, (snapshot) => {
-            this.cityRenderer.render(snapshot);
-            this._updateTimelineUI(snapshot);
-        });
 
         // Explode manager for click-to-inspect
         this.explodeManager = new ExplodeManager(scene, camera, this.materialManager);
@@ -86,23 +77,6 @@ class CodeVisualizer {
 
         // Update stats
         this._updateStats(trace.length);
-        this._updateTimelineUI(this.worldState.getSnapshot());
-    }
-
-    // ─── Timeline controls (called from main.js) ──────────────────
-
-    stepForward()  { this.timeline.stepForward(); }
-    stepBackward() { this.timeline.stepBackward(); }
-    seekTo(step)   { this.timeline.seekTo(step); }
-    goToStart()    { this.timeline.goToStart(); }
-    goToEnd()      { this.timeline.goToEnd(); }
-
-    togglePlay() {
-        return this.timeline.togglePlay();
-    }
-
-    setSpeed(ms) {
-        this.timeline.setSpeed(ms);
     }
 
     // ─── Camera ────────────────────────────────────────────────────
@@ -143,31 +117,4 @@ class CodeVisualizer {
         el.innerHTML = html;
     }
 
-    _updateTimelineUI(snapshot) {
-        // Timeline slider
-        const slider = document.getElementById('timelineSlider');
-        if (slider) {
-            slider.max = snapshot.totalSteps - 1;
-            slider.value = snapshot.step;
-        }
-
-        // Step counter
-        const counter = document.getElementById('stepCounter');
-        if (counter) {
-            counter.textContent = `Step ${snapshot.step + 1} / ${snapshot.totalSteps}`;
-        }
-
-        // Current event display
-        const eventEl = document.getElementById('currentEvent');
-        if (eventEl && snapshot.currentEvent) {
-            const e = snapshot.currentEvent;
-            let text = e.type;
-            if (e.name) text += ` ${e.name}`;
-            if (e.value !== undefined && e.value !== '') text += ` = ${e.value}`;
-            if (e.condition) text += ` (${e.condition})`;
-            eventEl.textContent = text;
-        } else if (eventEl) {
-            eventEl.textContent = '—';
-        }
-    }
 }

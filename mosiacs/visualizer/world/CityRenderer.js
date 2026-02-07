@@ -231,9 +231,8 @@ class CityRenderer {
 
     _updateFunctionState(entry, fn, isOnStack) {
         if (!entry.mesh) return;
-        const alpha = isOnStack ? 0.85 : (fn.active ? 0.55 : 0.2);
-        if (entry.mesh.material) entry.mesh.material.alpha = alpha;
-        if (entry.cap && entry.cap.material) entry.cap.material.alpha = alpha;
+        if (entry.mesh.material) entry.mesh.material.alpha = 0.85;
+        if (entry.cap && entry.cap.material) entry.cap.material.alpha = 0.9;
         if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = this._fnChildSteps(fn);
         }
@@ -314,15 +313,13 @@ class CityRenderer {
 
     _updateVariableState(entry, v) {
         if (!entry.mesh) return;
-        const alpha = v.active ? 0.85 : 0.15;
         if (entry.mesh.material) {
-            entry.mesh.material.alpha = alpha;
-            const glow = v.active ? 0.5 : 0.08;
+            entry.mesh.material.alpha = 0.85;
             entry.mesh.material.emissiveColor = new BABYLON.Color3(
-                entry.color.r * glow, entry.color.g * glow, entry.color.b * glow
+                entry.color.r * 0.5, entry.color.g * 0.5, entry.color.b * 0.5
             );
         }
-        if (entry.roof && entry.roof.material) entry.roof.material.alpha = alpha;
+        if (entry.roof && entry.roof.material) entry.roof.material.alpha = 0.9;
         if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = this._varChildSteps(v);
             entry.mesh._buildingData.stepData.value = v.currentValue;
@@ -401,15 +398,13 @@ class CityRenderer {
 
     _updateLoopState(entry, loop) {
         if (!entry.mesh) return;
-        const alpha = loop.running ? 0.9 : (loop.active ? 0.6 : 0.2);
         if (entry.mesh.material) {
-            entry.mesh.material.alpha = alpha;
-            const glow = loop.running ? 0.6 : 0.15;
+            entry.mesh.material.alpha = 0.85;
             entry.mesh.material.emissiveColor = new BABYLON.Color3(
-                entry.color.r * glow, entry.color.g * glow, entry.color.b * glow
+                entry.color.r * 0.6, entry.color.g * 0.6, entry.color.b * 0.6
             );
         }
-        if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = alpha;
+        if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = 0.9;
         if (entry.mesh._buildingData) {
             entry.mesh._buildingData.childSteps = this._loopChildSteps(loop);
         }
@@ -496,9 +491,9 @@ class CityRenderer {
     _updateBranchState(entry, br) {
         if (!entry.mesh) return;
         if (entry.truePath && entry.truePath.material)
-            entry.truePath.material.alpha = br.result ? 0.9 : 0.15;
+            entry.truePath.material.alpha = 0.9;
         if (entry.falsePath && entry.falsePath.material)
-            entry.falsePath.material.alpha = br.result ? 0.15 : 0.9;
+            entry.falsePath.material.alpha = 0.9;
         if (entry.label) {
             this._updateLabelText(entry.label, `IF (${br.condition}) → ${br.result ? 'true' : 'false'}`);
         }
@@ -651,14 +646,13 @@ class CityRenderer {
 
     _setInactive(entry) {
         if (!entry) return;
-        const alpha = 0.12;
-        if (entry.mesh && entry.mesh.material) entry.mesh.material.alpha = alpha;
-        if (entry.cap && entry.cap.material) entry.cap.material.alpha = alpha;
-        if (entry.roof && entry.roof.material) entry.roof.material.alpha = alpha;
-        if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = alpha;
-        if (entry.truePath && entry.truePath.material) entry.truePath.material.alpha = alpha;
-        if (entry.falsePath && entry.falsePath.material) entry.falsePath.material.alpha = alpha;
-        if (entry.label) entry.label.setEnabled(false);
+        // All buildings stay fully lit — no dimming
+        if (entry.mesh && entry.mesh.material) entry.mesh.material.alpha = 0.85;
+        if (entry.cap && entry.cap.material) entry.cap.material.alpha = 0.9;
+        if (entry.roof && entry.roof.material) entry.roof.material.alpha = 0.9;
+        if (entry.chimney && entry.chimney.material) entry.chimney.material.alpha = 0.9;
+        if (entry.truePath && entry.truePath.material) entry.truePath.material.alpha = 0.9;
+        if (entry.falsePath && entry.falsePath.material) entry.falsePath.material.alpha = 0.9;
     }
 
     _disposeEntry(entry) {
