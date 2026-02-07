@@ -54,8 +54,31 @@ class ExplodeManager {
 
             // ── Check if a galaxy building was clicked ──
             if (pick.pickedMesh._isGalaxyBuilding) {
+                const galaxyMesh = pick.pickedMesh;
+
+                // Double-click detection for galaxy buildings (recursive warp)
+                if (this._pendingClickMesh === galaxyMesh && this._pendingClickTimer) {
+                    this._cancelPendingClick();
+                    this._closeDotInspector();
+
+                    // Warp deeper if this galaxy building has children
+                    if (this.galaxyWarpManager && this.galaxyWarpManager.canWarp(galaxyMesh)) {
+                        this.galaxyWarpManager.warpTo(galaxyMesh);
+                        return;
+                    }
+                    // Otherwise fall through to single-click (inspector)
+                    this._showGalaxyBuildingInspector(galaxyMesh);
+                    return;
+                }
+
+                // Schedule delayed single-click
                 this._cancelPendingClick();
-                this._showGalaxyBuildingInspector(pick.pickedMesh);
+                this._pendingClickMesh = galaxyMesh;
+                this._pendingClickTimer = setTimeout(() => {
+                    this._pendingClickTimer = null;
+                    this._pendingClickMesh = null;
+                    this._showGalaxyBuildingInspector(galaxyMesh);
+                }, this._dblClickThreshold);
                 return;
             }
 

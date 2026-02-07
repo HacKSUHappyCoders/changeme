@@ -819,19 +819,63 @@ class CityRenderer {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // ─── Memory Layer (disabled — stack address reuse makes this
-    //     misleading for C programs) ────────────────────────────────
+    // ─── Memory Layer — address-colored rings under variables ───────
     // ═══════════════════════════════════════════════════════════════
 
     _renderMemoryLayer(memoryNodes) {
-        this.memoryLines.forEach(l => l.dispose());
+        this.memoryLines.forEach(l => {
+            if (l.material) l.material.dispose();
+            l.dispose();
+        });
         this.memoryLines = [];
-        // Intentionally empty: the old memory-layer drew floor-level
-        // lines between variables sharing a memory address. In C
-        // programs stack addresses are heavily reused, so this
-        // produced a tangle of meaningless lines at the bottom of
-        // the scene. READ-based causality strands now convey actual
-        // data-flow relationships far more accurately.
+
+        // For each memory address that has 2+ active variables, draw a
+        // glowing ring under each variable sharing that address. Variables
+        // that share an address get the same colour ring, making the
+        // relationship visible at a glance without confusing floor-lines.
+        memoryNodes.forEach(node => {
+            // Collect only active variables for this address
+            const activeEntries = [];
+            node.variables.forEach(varKey => {
+                const entry = this.variableMeshes.get(varKey);
+                if (!entry || !entry.mesh) return;
+                const entityData = entry.mesh._entityData;
+                if (!entityData || !entityData.active) return;
+                activeEntries.push(entry);
+            });
+            if (activeEntries.length < 2) return;
+
+            // Deterministic colour for this address
+            const addrColor = ColorHash.color('memory', node.address);
+
+            for (const entry of activeEntries) {
+                const pos = entry.mesh.position;
+                const ring = BABYLON.MeshBuilder.CreateTorus(
+                    `memRing_${node.address}_${entry.mesh.name}`, {
+                        diameter: 2.2,
+                        thickness: 0.12,
+                        tessellation: 16
+                    }, this.scene
+                );
+                ring.position = new BABYLON.Vector3(pos.x, pos.y - 0.8, pos.z);
+                ring.rotation.x = 0; // flat on the ground plane
+
+                const mat = new BABYLON.StandardMaterial(
+                    `memRingMat_${node.address}_${entry.mesh.name}`, this.scene
+                );
+                mat.emissiveColor = new BABYLON.Color3(
+                    addrColor.r * 0.8, addrColor.g * 0.8, addrColor.b * 0.8
+                );
+                mat.diffuseColor = new BABYLON.Color3(addrColor.r, addrColor.g, addrColor.b);
+                mat.alpha = 0.5;
+                mat.freeze();
+                ring.material = mat;
+                ring.isPickable = false;
+                ring.freezeWorldMatrix();
+
+                this.memoryLines.push(ring);
+            }
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════
