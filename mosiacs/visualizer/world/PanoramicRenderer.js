@@ -137,10 +137,15 @@ class PanoramicRenderer {
 
         // ── Pass 1: gather containers and collect dot positions ──
         // positionsByType: colorType → [ {x,y,z}, … ]
+        // Also track bounding box for camera positioning
         const positionsByType = new Map();
+        let bMinX = Infinity, bMinY = Infinity, bMinZ = Infinity;
+        let bMaxX = -Infinity, bMaxY = -Infinity, bMaxZ = -Infinity;
         const addDot = (colorType, x, y, z) => {
             if (!positionsByType.has(colorType)) positionsByType.set(colorType, []);
             positionsByType.get(colorType).push(x, y, z);
+            if (x < bMinX) bMinX = x; if (y < bMinY) bMinY = y; if (z < bMinZ) bMinZ = z;
+            if (x > bMaxX) bMaxX = x; if (y > bMaxY) bMaxY = y; if (z > bMaxZ) bMaxZ = z;
         };
 
         const containers = this._gatherContainers(snapshot);
@@ -156,6 +161,25 @@ class PanoramicRenderer {
         for (const [colorType, flatPositions] of positionsByType) {
             this._stampDots(colorType, flatPositions);
         }
+
+        // Include main spiral top/bottom in bounds
+        const totalSlots = this.cityRenderer._nextSlot;
+        if (totalSlots > 0) {
+            const top = this.cityRenderer._spiralPositionBase(0);
+            const bot = this.cityRenderer._spiralPositionBase(totalSlots - 1);
+            for (const p of [top, bot]) {
+                if (p.x < bMinX) bMinX = p.x; if (p.y < bMinY) bMinY = p.y; if (p.z < bMinZ) bMinZ = p.z;
+                if (p.x > bMaxX) bMaxX = p.x; if (p.y > bMaxY) bMaxY = p.y; if (p.z > bMaxZ) bMaxZ = p.z;
+            }
+        }
+
+        // Store bounds for camera positioning (scaled 1.5× from center for padding)
+        const padScale = 1.13;
+        const cX = (bMinX + bMaxX) / 2, cY = (bMinY + bMaxY) / 2, cZ = (bMinZ + bMaxZ) / 2;
+        this._panoBounds = {
+            min: new BABYLON.Vector3(cX + (bMinX - cX) * padScale, cY + (bMinY - cY) * padScale, cZ + (bMinZ - cZ) * padScale),
+            max: new BABYLON.Vector3(cX + (bMaxX - cX) * padScale, cY + (bMaxY - cY) * padScale, cZ + (bMaxZ - cZ) * padScale)
+        };
 
         // Freeze all panoramic meshes (lines + source spheres)
         for (const mesh of this._meshes) {
@@ -557,21 +581,44 @@ class PanoramicRenderer {
     // ─── Camera ────────────────────────────────────────────────────
 
     /**
-     * Fly the camera to a grand bird's-eye overview of the entire mosaic
-     * with all its galaxies visible.
+     * Two-phase camera fly:
+     *   1. Place camera under the first building at the top, looking straight up
+     *   2. Descend to the very bottom of the spiral, still looking straight up
      */
     _flyCameraToOverview() {
         const camera = this.sceneManager.getCamera();
         this.scene.stopAnimation(camera);
 
-        // Position camera high above, looking down at the whole panorama
-        const newPos = new BABYLON.Vector3(10, 180, 10);
-        const newTarget = new BABYLON.Vector3(0, 0, 0);
+        const bounds = this._panoBounds;
+        if (!bounds) {
+            this._flyCamera(new BABYLON.Vector3(10, 180, 10), BABYLON.Vector3.Zero());
+            return;
+        }
 
-        this._flyCamera(newPos, newTarget);
+        // Get the position of the first building (slot 0 = top of spiral)
+        const topPos = this.cityRenderer._spiralPositionBase(0);
+        const bottomY = bounds.min.y;
+
+        // Always look straight up from current position
+        const lookUpOffset = 100;
+
+        // Phase 1: snap under the first building, looking straight up
+        const startPos = new BABYLON.Vector3(topPos.x, topPos.y - 2, topPos.z);
+        const startTarget = new BABYLON.Vector3(topPos.x, topPos.y + lookUpOffset, topPos.z);
+
+        // Phase 2: descend far below the bottom so the full scene fits in frame
+        // Drop distance based on the widest horizontal extent and a ~60° FOV
+        const width = Math.max(bounds.max.x - bounds.min.x, bounds.max.z - bounds.min.z);
+        const dropBelow = Math.max(width * 1.2, 20);
+        const endPos = new BABYLON.Vector3(topPos.x, bottomY - dropBelow, topPos.z);
+        const endTarget = new BABYLON.Vector3(topPos.x, bottomY + lookUpOffset, topPos.z);
+
+        this._flyCamera(startPos, startTarget, () => {
+            this._flyCamera(endPos, endTarget);
+        });
     }
 
-    _flyCamera(newPos, newTarget) {
+    _flyCamera(newPos, newTarget, onComplete) {
         const camera = this.sceneManager.getCamera();
         this.scene.stopAnimation(camera);
 
@@ -599,7 +646,10 @@ class PanoramicRenderer {
         ]);
         targetAnim.setEasingFunction(ease);
 
-        this.scene.beginDirectAnimation(camera, [posAnim, targetAnim], 0, 60, false);
+        const anim = this.scene.beginDirectAnimation(camera, [posAnim, targetAnim], 0, 60, false);
+        if (onComplete) {
+            anim.onAnimationEnd = onComplete;
+        }
     }
 
     // ─── Main Spiral Dim/Restore ───────────────────────────────────
