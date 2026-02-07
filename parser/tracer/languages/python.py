@@ -115,15 +115,9 @@ class PythonMetadataCollector:
             "file_path": os.path.abspath(self.source_file).replace("\\", "/"),
             "file_size": st.st_size,
             "file_mode": stat.filemode(st.st_mode),
-            "modified": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(st.st_mtime)
-            ),
-            "accessed": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(st.st_atime)
-            ),
-            "created": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(st.st_ctime)
-            ),
+            "modified": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_mtime)),
+            "accessed": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_atime)),
+            "created": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_ctime)),
             "language": "Python",
             "total_lines": total_lines,
             "non_blank_lines": sum(1 for ln in code_text.splitlines() if ln.strip()),
@@ -276,7 +270,11 @@ class PythonInstrumenter:
                 parent = n.parent
                 if not parent or parent.type not in self.EXCLUDE_IDENTS:
                     # Skip function names in call expressions
-                    if parent and parent.type == "call" and parent.child_by_field_name("function") == n:
+                    if (
+                        parent
+                        and parent.type == "call"
+                        and parent.child_by_field_name("function") == n
+                    ):
                         pass
                     else:
                         name = get_text(n, self.code_bytes)

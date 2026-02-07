@@ -63,7 +63,6 @@ RETURN|literal|0|0|7|1
 - Export visualizations as images/videos
 - More building shapes based on operation types
 - Interactive tooltips showing operation details
-- Timeline playback controls
 - Different visualization themes
 
 ---

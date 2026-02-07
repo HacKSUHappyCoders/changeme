@@ -100,15 +100,15 @@ class CTypeAnalyzer:
                     self.symbol_table.register(
                         get_text(var_node, self.code_bytes), cur_type
                     )
+            elif child.type == "identifier":
+                self.symbol_table.register(get_text(child, self.code_bytes), cur_type)
 
     def _handle_parameter(self, node):
         type_node = node.child_by_field_name("type")
         cur_type = get_text(type_node, self.code_bytes) if type_node else "int"
         var_node = node.child_by_field_name("declarator")
         if var_node:
-            self.symbol_table.register(
-                get_text(var_node, self.code_bytes), cur_type
-            )
+            self.symbol_table.register(get_text(var_node, self.code_bytes), cur_type)
 
 
 # ── Metadata collection ─────────────────────────────────────────────
@@ -149,15 +149,9 @@ class CMetadataCollector:
             "file_path": os.path.abspath(self.source_file).replace("\\", "/"),
             "file_size": st.st_size,
             "file_mode": stat.filemode(st.st_mode),
-            "modified": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(st.st_mtime)
-            ),
-            "accessed": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(st.st_atime)
-            ),
-            "created": time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(st.st_ctime)
-            ),
+            "modified": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_mtime)),
+            "accessed": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_atime)),
+            "created": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st.st_ctime)),
             "language": "C",
             "total_lines": total_lines,
             "non_blank_lines": sum(1 for ln in code_text.splitlines() if ln.strip()),
@@ -187,9 +181,7 @@ class CMetadataCollector:
                 if child.type == "function_declarator":
                     for sub in child.children:
                         if sub.type == "identifier":
-                            self.function_names.append(
-                                get_text(sub, self.code_bytes)
-                            )
+                            self.function_names.append(get_text(sub, self.code_bytes))
         elif node.type == "declaration":
             for child in node.children:
                 if child.type == "init_declarator":
@@ -198,11 +190,11 @@ class CMetadataCollector:
             self.num_variables += 1
         elif node.type in ("while_statement", "for_statement", "do_statement"):
             self.num_loops += 1
-        elif node.type == "if_statement":
+        elif node.type in ("if_statement", "switch_statement"):
             self.num_branches += 1
         elif node.type == "return_statement":
             self.num_returns += 1
-        elif node.type == "assignment_expression":
+        elif node.type in ("assignment_expression", "update_expression"):
             self.num_assignments += 1
         elif node.type == "call_expression":
             self.num_calls += 1
@@ -227,6 +219,7 @@ class CInstrumenter:
         "assignment_expression",
         "parameter_declaration",
         "function_definition",
+        "update_expression",
     }
 
     def __init__(self, ts_parser, code_bytes, symbol_table, metadata=None):
@@ -302,9 +295,17 @@ class CInstrumenter:
             if n.type == "identifier":
                 parent = n.parent
                 if not parent or parent.type not in self.EXCLUDE_TYPES:
-                    name = get_text(n, self.code_bytes)
-                    if name not in KEYWORDS:
-                        reads.append(name)
+                    # Skip function names in call expressions
+                    if (
+                        parent
+                        and parent.type == "call_expression"
+                        and parent.child_by_field_name("function") == n
+                    ):
+                        pass
+                    else:
+                        name = get_text(n, self.code_bytes)
+                        if name not in KEYWORDS:
+                            reads.append(name)
             for c in n.children:
                 walk(c)
 
@@ -348,9 +349,7 @@ class CInstrumenter:
         parts = ["CALL", func_name]
         if params:
             for p in params:
-                parts.append(
-                    (_type_fmt(self.symbol_table.get_type(p, "int")), p)
-                )
+                parts.append((_type_fmt(self.symbol_table.get_type(p, "int")), p))
         parts.append(("%d", "__stack_depth"))
 
         self._add_after(start_line, self._make_trace(parts))
@@ -465,6 +464,104 @@ class CInstrumenter:
             )
         self._add_after(line, trace)
 
+    def _visit_do_statement(self, node):
+        cond_text, cond_expr = _extract_condition(node, self.code_bytes)
+        body = node.child_by_field_name("body")
+        if not body or body.type != "compound_statement":
+            return
+        line = body.start_point[0]
+        if cond_expr:
+            trace = self._make_trace(
+                [
+                    "LOOP",
+                    "do-while",
+                    cond_text,
+                    ("%d", cond_expr),
+                    str(line + 1),
+                    ("%d", "__stack_depth"),
+                ]
+            )
+        else:
+            trace = self._make_trace(
+                ["LOOP", "do-while", "", "1", str(line + 1), ("%d", "__stack_depth")]
+            )
+        self._add_after(line, trace)
+
+    def _visit_switch_statement(self, node):
+        cond_text, cond_expr = _extract_condition(node, self.code_bytes)
+        line = node.start_point[0]
+        if cond_expr:
+            trace = self._make_trace(
+                [
+                    "SWITCH",
+                    cond_text,
+                    ("%d", cond_expr),
+                    str(line + 1),
+                    ("%d", "__stack_depth"),
+                ]
+            )
+            self._add_before(line, trace)
+
+    def _visit_case_statement(self, node):
+        line = node.start_point[0]
+        value_node = node.child_by_field_name("value")
+        if value_node:
+            value_text = get_text(value_node, self.code_bytes)
+            safe_text = value_text.replace("%", "%%").replace('"', '\\"')
+            trace = self._make_trace(
+                ["CASE", safe_text, str(line + 1), ("%d", "__stack_depth")]
+            )
+        else:
+            trace = self._make_trace(
+                ["CASE", "default", str(line + 1), ("%d", "__stack_depth")]
+            )
+        self._add_after(line, trace)
+
+    def _visit_update_expression(self, node):
+        if node.parent and node.parent.type == "for_statement":
+            return
+        var_name = None
+        for child in node.children:
+            if child.type == "identifier":
+                var_name = get_text(child, self.code_bytes)
+                break
+        if not var_name or var_name in KEYWORDS:
+            return
+        line = node.start_point[0]
+        full_text = get_text(node, self.code_bytes)
+        op = "++" if "++" in full_text else "--"
+        fmt = _type_fmt(self.symbol_table.get_type(var_name, "int"))
+        trace = self._make_trace(
+            [
+                "UPDATE",
+                var_name,
+                op,
+                (fmt, var_name),
+                ("%p", f"&{var_name}"),
+                str(line + 1),
+                ("%d", "__stack_depth"),
+            ]
+        )
+        self._add_after(line, trace)
+
+    def _visit_conditional_expression(self, node):
+        condition = node.child_by_field_name("condition")
+        if not condition:
+            return
+        cond_text = get_text(condition, self.code_bytes)
+        safe_text = cond_text.replace("%", "%%").replace('"', '\\"')
+        line = node.start_point[0]
+        trace = self._make_trace(
+            [
+                "TERNARY",
+                safe_text,
+                ("%d", cond_text),
+                str(line + 1),
+                ("%d", "__stack_depth"),
+            ]
+        )
+        self._add_before(line, trace)
+
     def _visit_declaration(self, node):
         for child in node.children:
             if child.type == "init_declarator":
@@ -488,9 +585,7 @@ class CInstrumenter:
                 self._add_after(line, trace)
 
                 for read_var in self._collect_reads(child):
-                    r_fmt = _type_fmt(
-                        self.symbol_table.get_type(read_var, "int")
-                    )
+                    r_fmt = _type_fmt(self.symbol_table.get_type(read_var, "int"))
                     trace = self._make_trace(
                         [
                             "READ",
@@ -530,9 +625,7 @@ class CInstrumenter:
 
         for read_var in self._collect_reads(node):
             if read_var != left_var:
-                r_fmt = _type_fmt(
-                    self.symbol_table.get_type(read_var, "int")
-                )
+                r_fmt = _type_fmt(self.symbol_table.get_type(read_var, "int"))
                 trace = self._make_trace(
                     [
                         "READ",
@@ -551,9 +644,7 @@ class CInstrumenter:
             if child.type == "identifier":
                 var_name = get_text(child, self.code_bytes)
                 if var_name not in KEYWORDS:
-                    fmt = _type_fmt(
-                        self.symbol_table.get_type(var_name, "int")
-                    )
+                    fmt = _type_fmt(self.symbol_table.get_type(var_name, "int"))
                     trace = self._make_trace(
                         [
                             "RETURN",
@@ -599,6 +690,4 @@ class CLanguage(LanguageSupport):
         return CMetadataCollector(ts_parser, code_bytes, source_file).collect()
 
     def instrument(self, ts_parser, code_bytes, symbol_table, metadata):
-        return CInstrumenter(
-            ts_parser, code_bytes, symbol_table, metadata
-        ).instrument()
+        return CInstrumenter(ts_parser, code_bytes, symbol_table, metadata).instrument()

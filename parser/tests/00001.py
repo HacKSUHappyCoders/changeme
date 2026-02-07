@@ -2,6 +2,7 @@ def add(a, b):
     result = a + b
     return result
 
+
 def main():
     x = 10
     y = 20
@@ -22,5 +23,6 @@ def main():
         count += 1
 
     return total
+
 
 main()

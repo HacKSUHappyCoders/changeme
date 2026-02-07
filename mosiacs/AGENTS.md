@@ -1,286 +1,260 @@
-# Code Mosaic Visualizer - Agent Guidelines
+# Copilot Agent Instruction — What a “Building” Represents in the Visual Debugger
 
-## Project Overview
+You are implementing a 3D visual debugger where a program execution trace is rendered as a spiral city.
+**A building must never represent a line of code or an AST node.**
+A building represents a *persistent runtime concept* — something that continues to exist across multiple execution events.
 
-**Code Mosaic** is a revolutionary 3D visualization system that transforms code execution traces into beautiful, interactive stained-glass artwork using Babylon.js. The goal is to make code execution visible, tangible, and aesthetically pleasing.
+The visualization is driven by the execution trace (CALL, DECL, ASSIGN, LOOP, CONDITION, BRANCH, RETURN).
+The user navigates forward along a spiral path that represents **time**. Each trace event advances time.
 
----
-
-## Who You Are
-
-You are a **virtual artist and visualization engineer** specializing in:
-- Creating beautiful, abstract 3D web experiences with Babylon.js
-- Translating technical data into artistic, intuitive visualizations
-- Designing with stained-glass aesthetics (rich colors, translucency, light effects)
-- Building interactive, educational tools that make programming concepts accessible
+Your task: construct buildings based on runtime responsibility, not syntax.
 
 ---
 
-## Core Concept
+## Core Rule
 
-### The Vision
-Transform linear code execution into a **3D descending spiral journey** where:
-- Each operation becomes a colorful trapezoid "building" with a unique shape based on its type
-- The execution path forms a **spiral road descending** from the sky to the ground
-- CALL operations are the grandest structures; child operations build off them
-- Stained-glass materials create a cathedral-like, reverent atmosphere
-- The visualization is both informative and meditative
+Create buildings only for entities that have lifetime:
 
-### Why a Spiral?
-- **Compact**: Shows many execution steps in a condensed, viewable space
-- **Intuitive**: Natural reading flow — execution flows **downward** like gravity, like reading a page
-- **Beautiful**: Creates interesting perspectives and patterns
-- **Meaningful**: Represents the cyclical nature of loops and recursion
-- **Descending**: The start is at the top (the "big picture") and details unfold downward
+1. Functions
+2. Variables
+3. Control Flow Structures (loops + branches)
+4. Memory
+
+Instructions are moments.
+Buildings are things that persist across moments.
 
 ---
 
-## Technical Specifications
+## Building Types
 
-### Input Format
-The system parses C code execution traces in this format:
+---
+
+### 1. Function Buildings (Districts)
+
+**Represents:** a stack frame / function invocation
+
+Create a large landmark structure when a CALL event occurs:
+
 ```
-TYPE|name|value|address|line|depth
+CALL main
 ```
 
-**Field Descriptions:**
-- `TYPE`: Operation type (CALL, DECL, LOOP, ASSIGN, RETURN, IF, ELSE, etc.)
-- `name`: Variable/function name
-- `value`: Current value (if applicable)
-- `address`: Memory address (hexadecimal)
-- `line`: Source code line number
-- `depth`: Call stack depth / nesting level
+Behavior:
 
-**Example Trace:**
-```
-CALL|main|||1
-DECL|sum|0|00000049923FF88C|2|1
-LOOP|iter|3|1
-DECL|i|0|00000049923FF888|3|1
-ASSIGN|sum|0|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|1|00000049923FF888|3|1
-ASSIGN|sum|1|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|2|00000049923FF888|3|1
-ASSIGN|sum|3|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|3|00000049923FF888|3|1
-ASSIGN|sum|6|00000049923FF88C|4|1
-LOOP|iter|3|1
-DECL|i|4|00000049923FF888|3|1
-ASSIGN|sum|10|00000049923FF88C|4|1
-RETURN|literal|0|0|7|1
-```
+* Enter the function building when a CALL happens
+* Exit when RETURN occurs
+* Stack depth determines vertical placement (higher depth = higher floor)
+* Nested calls are physically above the caller
 
-This trace represents a simple C program that sums numbers from 0 to 4.
+Data displayed inside:
+
+* Function name
+* Current stack depth
+* Active local variables
+* Return value (when available)
+
+Implementation mapping:
+
+* CALL → create or activate function district
+* RETURN → close the district and emit a return object leaving the building
+
+The player should experience the call stack as moving between floors.
 
 ---
 
-## Artistic Guidelines
+### 2. Variable Buildings (Houses)
 
-### Color Palette (Stained Glass)
-Each operation type has a signature color inspired by precious gems:
+**Represents:** a variable with storage location and lifetime
 
-| Operation | Color | Gemstone | RGB Values |
-|-----------|-------|----------|------------|
-| CALL | Ruby Red | Rich, warm entry point | (0.8, 0.2, 0.2) |
-| DECL | Sapphire Blue | Clear, declarative | (0.2, 0.4, 0.8) |
-| LOOP | Amethyst Purple | Cyclic, mystical | (0.6, 0.2, 0.8) |
-| ASSIGN | Emerald Green | Growth, change | (0.2, 0.8, 0.4) |
-| RETURN | Amber Gold | Completion, value | (0.9, 0.7, 0.1) |
-| IF | Topaz Orange | Decision, branching | (0.9, 0.4, 0.2) |
-| ELSE | Aquamarine | Alternative path | (0.4, 0.7, 0.9) |
+Create one persistent building per unique variable identity:
+Key = (function_scope + variable_name + memory_address)
 
-### Material Properties
-- **Translucency**: 70-90% alpha for glass-like effect
-- **Emissive glow**: 30% of base color for inner light
-- **Specular highlights**: High specular power (64+) for glass shine
-- **Glow layer**: Global glow effect for magical atmosphere
+Example:
 
-### Spatial Design
-
-**Spiral Path (DESCENDING):**
-- Starts at the **TOP** (highest Y position) and spirals **downward**
-- Execution flow reads top-to-bottom, like gravity pulling code through time
-- Rotates 0.3 radians per step
-- Grows outward 0.3 units per step
-- **Descends** 0.5 units per step
-- Step 0 (first operation) is at the peak; the last step is at the bottom
-- Camera defaults to a slightly elevated angle looking down at the spiral
-
-**Buildings/Structures — Trapezoid Shapes:**
-- All buildings use **trapezoid prism** geometry (not uniform boxes)
-- Different top-width vs bottom-width creates dynamic, architectural silhouettes
-- Each operation type has a **unique shape profile and size hierarchy**
-- Buildings have a glowing "crown/cap" on top
-- Animated entrance (scale from 0 to 1)
-- Subtle floating animation for life
-
-### Operation Shape Hierarchy (Biggest → Smallest)
-
-Each operation type has a distinct trapezoid shape reflecting its importance in the execution flow:
-
-| Operation | Shape Style | Height Range | Bottom Width | Top Width | Role |
-|-----------|------------|--------------|--------------|-----------|------|
-| **CALL** | Trapezoid Tower | 4.0–5.5 | 2.2–3.0 | 0.4–0.6 | **Largest/tallest** — grand tower for function entry (dramatic taper) |
-| **RETURN** | Inverted Trapezoid | 3.0–4.0 | 0.6–0.8 | 1.2–1.6 | Tall capstone (narrow base, wide top) — function exit |
-| **LOOP** | Wide Trapezoid | 2.5–3.5 | 1.6–2.2 | 0.4–0.6 | Medium-large — repeating block structure |
-| **IF** | Angled Trapezoid | 2.0–3.0 | 1.2–1.6 | 0.3–0.5 | Medium — decision point |
-| **ELSE** | Angled Trapezoid | 1.8–2.8 | 1.2–1.6 | 0.3–0.5 | Medium — alternative path |
-| **DECL** | Slim Trapezoid | 1.5–2.5 | 1.0–1.4 | 0.3–0.5 | Medium-small — variable birth |
-| **ASSIGN** | Small Trapezoid | 1.0–1.8 | 0.8–1.2 | 0.2–0.4 | **Smallest** — incremental change |
-
-### Building-Off / Hierarchical Stacking
-
-Operations are not all placed at the same base level. Instead, they **build off their parent context**:
-
-- **CALL** operations are the foundation — they sit directly on the spiral path and are the tallest structures (the "cathedral towers")
-- **Child operations** (DECL, ASSIGN, LOOP, etc.) that occur within a function call are **vertically offset upward** by a fraction of their parent CALL's height
-- This creates a visual effect where inner operations **stack on top of** or **grow out of** their parent function call
-- The result is a layered, architectural look — like floors of a building rising from the CALL foundation
-- When a new CALL is encountered, it resets the base and starts a new tower
-
-### Why Trapezoids?
-- **Visual variety**: Different top/bottom widths create a dynamic, non-uniform skyline
-- **Metaphor**: Wide-base structures feel grounded and important (CALL); narrow ones feel transient (ASSIGN)
-- **Architecture**: Trapezoid shapes evoke real buildings — buttresses, towers, pyramids
-- **Readability**: You can tell operation types apart by silhouette alone
-
-### Trapezoid Mesh Technical Notes
-- Meshes are built with **per-face vertices** (24 vertices for 6 faces) to ensure correct flat-shaded normals
-- Both **X-width and Z-depth taper** from bottom to top, creating true truncated pyramid / frustum shapes (not just a box with different x-widths)
-- The depth tapers proportionally to the width ratio (`topDepth = depth * (topWidth / bottomWidth)`)
-- Inverted trapezoids (RETURN) swap top/bottom dimensions for a "capstone" silhouette
-
----
-
-## Implementation Architecture
-
-### File Structure
 ```
-mosiacs/
-├── index.html       # Main HTML with UI and scene canvas
-├── main.js          # Application entry point and event handlers
-├── parser.js        # Parses trace format into structured data
-├── visualizer.js    # Babylon.js scene creation and rendering
-├── AGENTS.md        # This file - project documentation
-└── README.md        # User-facing documentation
+DECL sum address 000000660F5FF91C
 ```
 
-### Key Classes
+The building must persist for the entire lifetime of the variable.
 
-**`CodeParser`**
-- Parses trace strings into structured objects
-- Maps operation types to colors
-- Provides example traces for testing
+Inside the building store:
 
-**`CodeVisualizer`**
-- Initializes Babylon.js engine and scene
-- Creates camera, lights, and effects (glow layer)
-- Generates spiral path from trace data
-- Creates 3D buildings for each operation
-- Manages animations and interactions
+* Variable name
+* Address (street address metaphor)
+* Current value
+* Value history
+* Last writer (line/event)
 
----
+Behavior:
 
-## Creative Freedom & Future Directions
+* DECL → construct the house and turn lights on
+* ASSIGN → deliver a value to the house and update visible display
+* Variable value should be visibly displayed on the building exterior
+* When scope ends → lights turn off
 
-### You Are Encouraged To:
-
-1. **Experiment with Building Shapes**
-   - Different geometries for different operations (boxes, cylinders, pyramids)
-   - More complex structures for function calls (towers, cathedrals)
-   - Smaller markers for simple assignments
-
-2. **Enhance the Path**
-   - Add decorative elements (rails, arches, gates)
-   - Particle effects following execution flow
-   - Glowing trail showing most recent operations
-
-3. **Improve Interactivity**
-   - Click buildings to see operation details
-   - Hover effects with tooltips
-   - Timeline scrubber to replay execution
-   - Zoom to specific operations
-
-4. **Add Visual Metaphors**
-   - Loops could spiral tighter or create sub-spirals
-   - Function calls could branch off the main path
-   - Conditional branches could split the path temporarily
-   - Memory addresses could create connections between buildings
-
-5. **Advanced Effects**
-   - Caustics (light through glass)
-   - Reflections and refractions
-   - Dynamic lighting based on execution "heat"
-   - Sound design (gentle chimes per operation)
-
-### Design Principles to Follow:
-
-✅ **DO:**
-- Keep it beautiful and calming
-- Make the spiral prominent and easy to follow
-- Use color meaningfully
-- Animate smoothly and subtly
-- Provide clear camera controls
-- Make it feel cathedral-like and reverent
-
-❌ **AVOID:**
-- Overwhelming chaos or visual noise
-- Harsh, jarring colors
-- Too much animation (keep it zen)
-- Making the UI obtrusive
-- Losing the core spiral metaphor
+Important:
+If the same address appears again, it is the same physical memory location and must reuse the same building.
 
 ---
 
-## Testing & Development
+### 3. Loop Buildings (Factories)
 
-### Current Example
-The default example visualizes a simple sum loop:
-```c
-int main() {
-    int sum = 0;
-    for(int i = 0; i < 5; i++) {
-        sum += i;
-    }
-    return 0;
-}
+**Represents:** repetition machinery (NOT a place in code)
+
+Create a factory when a LOOP event is encountered:
+
+```
+LOOP subtype=for condition="i<5"
 ```
 
-### Next Steps for Testing
-1. Create more complex traces (nested loops, recursion, branching)
-2. Test with real C programs using a tracer tool
-3. Handle edge cases (very long traces, deeply nested code)
-4. Optimize performance for 1000+ operations
+The building represents a repeating process.
+
+Behavior:
+
+* Each LOOP event with condition_result = 1 is one machine cycle
+* Increment an iteration counter
+* Trigger the events occurring inside the loop
+* When condition_result = 0 → the factory stops operating
+
+Data to store:
+
+* Loop condition
+* Iteration count
+* Exit reason (condition became false)
+
+The user must be able to visually perceive repetition occurring.
 
 ---
 
-## Philosophy
+### 4. Branch Buildings (Intersections)
 
-> "Code is poetry, and execution is dance. Let's make it visible."
+**Represents:** a decision point
 
-This project bridges the gap between the abstract world of programming and the tangible world of art. By visualizing code execution as a physical journey through a beautiful space, we:
+Create a road fork when a CONDITION event occurs:
 
-- Make debugging more intuitive
-- Help learners understand program flow
-- Celebrate the elegance of well-written code
-- Create artifacts worth sharing and discussing
+```
+CONDITION sum < 10 → false
+BRANCH else
+```
 
-**Your mission**: Continue building this bridge between art and code, always keeping both beauty and utility in mind.
+Behavior:
+
+* Evaluate the condition
+* Activate only the chosen path
+* Non-taken paths must visibly deactivate
+
+Data to store:
+
+* Condition expression
+* Boolean result
+* Selected branch
+
+The visualization should communicate that execution follows a path, not a jump.
 
 ---
 
-## Questions to Consider
+### 5. Memory Layer (Underground System)
 
-As you develop:
-- How can we make loops more visually distinct from linear execution?
-- What would recursion look like? (Spirals within spirals?)
-- How can we show the relationship between variables at the same memory location?
-- What camera animations would help tell the "story" of execution?
-- How can we make this tool useful for teaching programming concepts?
+**Represents:** raw memory
+
+All variable buildings must connect to a memory node using their address:
+
+```
+address = 000000660F5FF91C
+```
+
+Rules:
+
+* Identical addresses share the same memory node
+* Visualize shared memory connections
+* Support pointer visualization later
+
+This allows detection of aliasing and memory errors.
 
 ---
 
-*Built with 💎✨ - Where code becomes cathedral*
+## Event → World Mapping
+
+| Trace Event  | World Action            |
+| ------------ | ----------------------- |
+| CALL         | Enter function district |
+| DECL         | Create variable house   |
+| ASSIGN       | Update house value      |
+| LOOP (true)  | Run factory cycle       |
+| LOOP (false) | Stop factory            |
+| CONDITION    | Evaluate intersection   |
+| BRANCH       | Choose road             |
+| RETURN       | Exit function           |
+
+---
+
+
+## Non-Goals
+
+Do NOT:
+
+* Render AST nodes as buildings
+* Place one building per line number
+* Treat statements as objects
+
+This system is a runtime world simulation, not a code viewer.
+
+---
+
+Implement the world as a simulation of program execution state over time.
+
+
+## PHASE TWO
+
+This is the next phase is the development of the application. Now that we have the buildings defined and looking good in the spiral, we now need to define when a building is created, in addition how a buildings color is defined and also how code inside of building blocks are defined and viewed. 
+
+Firstly, here are the rules for when buildings are created. So we will have 5 different types of builidns, for this new phase we are adding in while loops as a new bulidng. 
+
+Functions: new building on function invocation. Everytime the function is called a new building should be created
+Variables: On declaration make a new building, and also make sure that the variables values are stored throughout the course of program and you can see the flow of its values overtime.
+For loops: Each time the loop is at its first iteration make it a new building. 
+If statement: for each if statement make a building and make a chain of buildings for if, if else and else
+While: same as for loops
+
+Now to define the colors, we will do a combo of hash and specific coloring. You should create a hash based on the name or other indetifying data that each piece has and then we will use a color schema to declare each one. So the color schema follows the RGB aproach with the following idea
+
+# IDEA
+X X X
+X X 255
+X 255 255
+255 255 255
+X 255 X
+255 255 X
+255 X 255
+
+The 255 values are solid inplace, but the X values can be changed and are determing by the unique hash that was created above. This will make sure that if a function building is shown multiple times that it is the same color, like hello() should be the same color throughout and end() should be a different color then hello().
+
+## NEW BIG FEATURE
+Now we want to build a spiral inside of spiral idea. So for example, we have function buildings, and inside of functions there is code. So lets make it so when we click on a function, if statement, for loop and while loop, a new spiral comes out of them that represents the code inside of them. This code inside each would not be displayed in the main spiral, but instead in this mini subversion spiral. Also can you make it so all the spirals are visibly created as the program is run. and also keep all the spiral visible. In addition, each spirals path color should be different too. But essentially I want spirals building off of spirals to make a really cool mosiac.
+
+### Phase 3 Toggled features
+** THIS SECTION IS ALL ABOUT BEAUTY AND FUNCTIONALITY **
+** Trying to make these toggles useful but also beautiful to look at. **
+
+In this phase we will be creating a lot of different visual features that can be toggled on and off, this is to help bring in developer usefulness while also helping to bring about a mosiac asthetic to it.
+
+# Part 1: Revisualizing the way sub spirals are created
+- Instead of having the sub spirals apear going vertically down on building click, I think they should appear to circle around the building and go up. These spirals should be more compact but be bigger, so then you can click on the buildings inside of this sub spiral if deemed necessary. These subspirals should push out the main spiral. So if you open a sub spiral, the main spiral path should be pushed out as to let in room for this new sub spiral, and then when it goes away, the main spiral should go back to its noraml position. 
+
+# Part 2 - sub spiral galaxy formation and connection
+
+# Part 3 - Causailty Visualization (togglable)
+- Each value that has been assigned, it should point to the value that created it. THis should come together to create a web. When you connect the values up, color the lines to be a color similar to the two values being connected up and make it look like a visually beautiful spider web.
+
+# Part 3.5 - Small quality of life features
+- when you load in, have the camera be looking down upon the mosaic zoomed out an apropriate way
+- I want to be able to zoom out a lot more to be able to see things from further away.
+- Some of the same type of buildings are too similar in color, feel free to be more extreme in the color variations between smae buildings.
+
+
+# Part 4 - Low quality total render. 
+- THis one should be a toggle for sure, but I think it would be really awesome to have a total code base spiral render, where all the sub spirals are rendered at the same time. When on this toggle, the user does not need to access data points, or see titles. It is just a purley visual spectical. You can make the camera zoomed out and above to
+
+
+# Part whenever
+- In the sub spirals and 
