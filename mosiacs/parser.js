@@ -12,6 +12,7 @@ class CodeParser {
     constructor() {
         this.executionTrace = [];
         this.metadata = null;
+        this.error = null;
     }
 
     /**
@@ -21,6 +22,17 @@ class CodeParser {
      */
     parse(jsonData) {
         const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+
+        // Check for compilation/runtime errors
+        if (data.success === false && data.error) {
+            this.error = {
+                stage: data.error.stage,
+                message: data.error.message,
+                line: this._extractErrorLine(data.error.message)
+            };
+        } else {
+            this.error = null;
+        }
 
         this.metadata = data.metadata || null;
 
@@ -78,6 +90,29 @@ class CodeParser {
         });
 
         return this.executionTrace;
+    }
+
+    /**
+     * Extract the first line number from a compilation error message.
+     * @param {string} message - The error message
+     * @returns {number|null} The line number or null if not found
+     */
+    _extractErrorLine(message) {
+        if (!message) return null;
+
+        // Match patterns like ":32:" or "line 32"
+        const patterns = [
+            /:(\d+):\d+:/,  // :32:5: (line:column)
+            /:(\d+):/,      // :32:
+            /line\s+(\d+)/i // line 32
+        ];
+
+        for (const pattern of patterns) {
+            const match = message.match(pattern);
+            if (match) return parseInt(match[1], 10);
+        }
+
+        return null;
     }
 
     /**

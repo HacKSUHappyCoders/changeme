@@ -52,10 +52,14 @@ class WorldState {
         // This is used by the renderer to assign spiral slots in trace-order
         // instead of grouping by type.
         this.creationOrder = [];
+
+        // Error information from compilation/runtime failures
+        this.error = null;
     }
 
-    loadTrace(trace) {
+    loadTrace(trace, error = null) {
         this.trace = trace;
+        this.error = error;
         this.reset();
     }
 
@@ -570,7 +574,8 @@ class WorldState {
             consoleOutputs: [...this.consoleOutputs.values()],
             readRelations: [...this.readRelations],
             callStack: [...this.callStack],
-            currentEvent: this.currentStep >= 0 ? this.trace[this.currentStep] : null
+            currentEvent: this.currentStep >= 0 ? this.trace[this.currentStep] : null,
+            error: this.error  // Include error information
         };
     }
 }

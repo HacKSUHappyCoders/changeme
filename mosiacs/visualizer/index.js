@@ -107,8 +107,13 @@ class CodeVisualizer {
         // Parse the trace
         const trace = this.parser.parse(codeTrace);
 
-        // Feed into world state
-        this.worldState.loadTrace(trace);
+        // Show error notification if there's an error
+        if (this.parser.error) {
+            this._showErrorNotification(this.parser.error);
+        }
+
+        // Feed into world state (with error info if present)
+        this.worldState.loadTrace(trace, this.parser.error);
 
         // Advance to the end so the full city is visible
         this.worldState.seekTo(trace.length - 1);
@@ -239,6 +244,74 @@ class CodeVisualizer {
             if (meta.num_variables) html += `, ${meta.num_variables} vars`;
         }
         el.innerHTML = html;
+    }
+
+    _showErrorNotification(error) {
+        // Create or update error notification panel
+        let errorPanel = document.getElementById('errorNotification');
+        if (!errorPanel) {
+            errorPanel = document.createElement('div');
+            errorPanel.id = 'errorNotification';
+            errorPanel.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                max-width: 400px;
+                background: linear-gradient(135deg, rgba(139, 0, 0, 0.95) 0%, rgba(220, 20, 60, 0.95) 100%);
+                border: 2px solid rgba(255, 69, 0, 0.8);
+                border-radius: 8px;
+                padding: 15px;
+                color: white;
+                font-family: monospace;
+                font-size: 13px;
+                box-shadow: 0 4px 20px rgba(255, 0, 0, 0.4);
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            document.body.appendChild(errorPanel);
+
+            // Add slide-in animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const stageLabel = error.stage ? `[${error.stage.toUpperCase()}]` : '[ERROR]';
+
+        // Different messaging for compile vs runtime errors
+        let locationInfo = '';
+        let helpText = '';
+
+        if (error.line) {
+            // Compile error with line number
+            locationInfo = `<div style="margin-top: 8px; font-weight: bold;">Error at line ${error.line}</div>`;
+            helpText = '<div style="margin-top: 8px; font-size: 11px; opacity: 0.8;">Buildings at/after this line are highlighted in red.</div>';
+        } else if (error.stage === 'runtime') {
+            // Runtime error - crashed after trace
+            locationInfo = `<div style="margin-top: 8px; font-weight: bold;">Program crashed after execution</div>`;
+            helpText = '<div style="margin-top: 8px; font-size: 11px; opacity: 0.8;">The last executed step is marked with [!]. Crash occurred after trace ended.</div>';
+        } else {
+            // Other errors (instrument, normalize, etc.)
+            helpText = '<div style="margin-top: 8px; font-size: 11px; opacity: 0.8;">No visualization available for this error.</div>';
+        }
+
+        errorPanel.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                <div style="font-weight: bold; font-size: 16px;">${stageLabel} ERROR</div>
+                <button onclick="this.parentElement.parentElement.remove()"
+                        style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; line-height: 1;">✕</button>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; margin-bottom: 8px; max-height: 200px; overflow-y: auto;">
+                ${error.message.replace(/\n/g, '<br>')}
+            </div>
+            ${locationInfo}
+            ${helpText}
+        `;
     }
 
     // ─── Code Panel ─────────────────────────────────────────────

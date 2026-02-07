@@ -689,6 +689,50 @@ class ExplodeManager {
 
     // ─── build the inspector DOM from real data ─────────────────────
 
+    /**
+     * Generate error banner HTML if this building is at/after error line or is the last step for runtime errors
+     */
+    _getErrorBanner(entity) {
+        if (!this.cityRenderer || !this.cityRenderer._error) return '';
+        const error = this.cityRenderer._error;
+
+        // Runtime error without line number - check if this is the last step
+        if (!error.line && error.stage === 'runtime') {
+            if (this.cityRenderer._isLastStep(entity)) {
+                return `<div style="background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(220, 20, 60, 0.9) 100%);
+                             padding: 12px; margin: 10px; border-radius: 6px; border: 2px solid rgba(255, 69, 0, 0.8);">
+                    <div style="font-weight: bold; margin-bottom: 6px;">LAST STEP BEFORE CRASH</div>
+                    <div style="font-size: 11px; opacity: 0.9;">Stage: ${error.stage}</div>
+                    <div style="font-size: 11px; margin-top: 4px; max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 3px;">
+                        ${error.message.replace(/\n/g, '<br>')}<br><br>
+                        Program crashed after this step during execution.
+                    </div>
+                </div>`;
+            }
+            return '';
+        }
+
+        // Compile error with line number
+        if (!error.line || !entity.line) return '';
+
+        if (entity.line === error.line) {
+            return `<div style="background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(220, 20, 60, 0.9) 100%);
+                         padding: 12px; margin: 10px; border-radius: 6px; border: 2px solid rgba(255, 69, 0, 0.8);">
+                <div style="font-weight: bold; margin-bottom: 6px;">ERROR AT THIS LINE</div>
+                <div style="font-size: 11px; opacity: 0.9;">Stage: ${error.stage || 'compile'}</div>
+                <div style="font-size: 11px; margin-top: 4px; max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 3px;">
+                    ${error.message.replace(/\n/g, '<br>')}
+                </div>
+            </div>`;
+        } else if (entity.line > error.line) {
+            return `<div style="background: rgba(139, 0, 0, 0.6); padding: 8px; margin: 10px; border-radius: 4px; border: 1px solid rgba(255, 69, 0, 0.5);">
+                <div style="font-size: 11px;">After error (line ${error.line})</div>
+            </div>`;
+        }
+
+        return '';
+    }
+
     _buildInspectorHTML(bd, entity) {
         const panel = document.createElement('div');
         panel.id = 'inspectorPanel';
@@ -732,6 +776,7 @@ class ExplodeManager {
             <span class="inspector-icon">️</span>
             <span>${fn.name || bd.stepData.name}()</span>
         </div>`;
+        h += this._getErrorBanner(fn);
         h += `<div class="inspector-section">`;
         h += this._row('Type', 'Function Call');
         h += this._row('Depth', fn.depth !== undefined ? fn.depth : bd.stepData.depth);
@@ -771,6 +816,7 @@ class ExplodeManager {
             <span>${fn.name}()</span>
             <span style="opacity: 0.7; font-size: 0.9em; margin-left: 8px;">EXTERNAL</span>
         </div>`;
+        h += this._getErrorBanner(fn);
 
         h += '<div class="inspector-body">';
 
@@ -833,6 +879,7 @@ class ExplodeManager {
             <span class="inspector-icon"></span>
             <span>${v.name || bd.stepData.name}</span>
         </div>`;
+        h += this._getErrorBanner(v);
         h += `<div class="inspector-section">`;
         h += this._row('Type', 'Variable');
         h += this._row('Current value', `<strong>${v.currentValue !== undefined ? v.currentValue : bd.stepData.value}</strong>`);
@@ -868,6 +915,7 @@ class ExplodeManager {
             <span class="inspector-icon"></span>
             <span>${(loop.subtype || 'loop').toUpperCase()}</span>
         </div>`;
+        h += this._getErrorBanner(loop);
         h += `<div class="inspector-section">`;
         h += this._row('Type', (loop.subtype || 'loop').toUpperCase() + ' Loop');
         h += this._row('Condition', `<code>${loop.condition || bd.stepData.condition || '—'}</code>`);
@@ -902,6 +950,7 @@ class ExplodeManager {
             <span class="inspector-icon"></span>
             <span>CONDITION</span>
         </div>`;
+        h += this._getErrorBanner(br);
         h += `<div class="inspector-section">`;
         h += this._row('Type', 'Branch / Condition');
         h += this._row('Condition', `<code>${br.condition || bd.stepData.name || '—'}</code>`);

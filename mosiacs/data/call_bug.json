@@ -1,0 +1,117 @@
+{
+  "success": true,
+  "metadata": {
+    "file_name": "call_bug.c",
+    "file_path": "/tmp/tmpi6w0n1xo/call_bug.c",
+    "file_size": "223",
+    "file_mode": "-rw-r--r--",
+    "modified": "2026-02-07 17:59:23",
+    "accessed": "2026-02-07 17:59:23",
+    "created": "2026-02-07 17:59:23",
+    "language": "C",
+    "total_lines": "16",
+    "non_blank_lines": "12",
+    "num_includes": "1",
+    "num_comments": "0",
+    "num_functions": "3",
+    "function_names": "add,thisisdifferent,main",
+    "num_variables": "7",
+    "num_assignments": "0",
+    "num_calls": "2",
+    "num_returns": "3",
+    "num_loops": "0",
+    "num_branches": "0",
+    "max_nesting_depth": "1"
+  },
+  "traces": [
+    {
+      "type": "CALL",
+      "subject": "main",
+      "stack_depth": "1",
+      "id": 0
+    },
+    {
+      "type": "CALL",
+      "subject": "add",
+      "stack_depth": "2",
+      "args": [
+        "3",
+        "4"
+      ],
+      "id": 1
+    },
+    {
+      "type": "PARAM",
+      "subject": "a",
+      "value": "3",
+      "line_number": "3",
+      "id": 2
+    },
+    {
+      "type": "PARAM",
+      "subject": "b",
+      "value": "4",
+      "line_number": "3",
+      "id": 3
+    },
+    {
+      "type": "DECL",
+      "subject": "x",
+      "value": "7",
+      "address": "0x7ffc8e30964c",
+      "line_number": "12",
+      "stack_depth": "1",
+      "id": 4
+    },
+    {
+      "type": "CALL",
+      "subject": "thisisdifferent",
+      "stack_depth": "2",
+      "args": [
+        "1",
+        "2",
+        "3"
+      ],
+      "id": 5
+    },
+    {
+      "type": "PARAM",
+      "subject": "a",
+      "value": "1",
+      "line_number": "7",
+      "id": 6
+    },
+    {
+      "type": "PARAM",
+      "subject": "b",
+      "value": "2",
+      "line_number": "7",
+      "id": 7
+    },
+    {
+      "type": "PARAM",
+      "subject": "c",
+      "value": "3",
+      "line_number": "7",
+      "id": 8
+    },
+    {
+      "type": "DECL",
+      "subject": "y",
+      "value": "6",
+      "address": "0x7ffc8e309648",
+      "line_number": "13",
+      "stack_depth": "1",
+      "id": 9
+    },
+    {
+      "type": "RETURN",
+      "subtype": "literal",
+      "value": "0",
+      "line_number": "14",
+      "stack_depth": "1",
+      "id": 10
+    }
+  ],
+  "seed": 11011024768132560505
+}
