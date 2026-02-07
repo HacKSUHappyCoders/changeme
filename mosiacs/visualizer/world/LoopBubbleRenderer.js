@@ -59,7 +59,7 @@ class LoopBubbleRenderer {
         // Remove existing bubble if present
         this.removeBubble(parentKey);
 
-        // Consolidate child steps into main entity types (functions, variables, loops, branches)
+        // Consolidate child steps into main entity types (functions, variables, loops)
         // This filters out raw trace steps and groups them into buildings
         const entities = this._consolidateChildren(childIndices, trace);
 
@@ -89,6 +89,10 @@ class LoopBubbleRenderer {
         // Create entry connector from parent building to first node in bubble
         const entryConnector = this._createEntryConnector(parentPos, nodes[0], parentKey, bubbleColor);
 
+        // The bubble center is at parentPos (since bubble.position = parentPos)
+        // This is where the camera should focus
+        const bubbleCenter = parentPos.clone();
+
         // Store the bubble data
         const bubbleData = {
             bubble,
@@ -97,15 +101,16 @@ class LoopBubbleRenderer {
             entryConnector,
             boundingRadius: bubbleRadius,
             parentPos: parentPos.clone(),
+            bubbleCenter: bubbleCenter,
             childIndices,
             entities
         };
 
         this.bubbles.set(parentKey, bubbleData);
 
-        // Notify parent of bubble creation
+        // Notify parent of bubble creation (use bubble center for camera focus)
         if (this.onBubbleToggle) {
-            this.onBubbleToggle('open', parentKey, bubbleRadius, parentPos);
+            this.onBubbleToggle('open', parentKey, bubbleRadius, bubbleCenter);
         }
 
         return bubbleData;
@@ -168,7 +173,7 @@ class LoopBubbleRenderer {
         );
 
         bubble.position = position.clone();
-        bubble.position.y += radius * 0.5; // lift slightly above ground
+        // Center the bubble at the parent position (camera focus point)
 
         // Semi-transparent material
         const mat = new BABYLON.StandardMaterial(`bubbleMat_${key}`, this.scene);
@@ -217,16 +222,14 @@ class LoopBubbleRenderer {
      * - Functions (CALL/RETURN consolidated)
      * - Variables (DECL/ASSIGN/PARAM consolidated by name+address)
      * - Loops (LOOP events consolidated by condition)
-     * - Branches (CONDITION/BRANCH consolidated)
      * 
-     * Skips: READ events, raw computation steps
+     * Skips: READ events, raw computation steps, branches
      */
     _consolidateChildren(childIndices, trace) {
         const entities = [];
         const varMap = new Map();      // "name|address" → entity
         const loopMap = new Map();     // "subtype|condition" → entity
         const callMap = new Map();     // "functionName" → entity
-        const branchMap = new Map();   // "condition" → entity
 
         for (const idx of childIndices) {
             const step = trace[idx];
@@ -305,30 +308,6 @@ class LoopBubbleRenderer {
                     loopMap.set(loopKey, ent);
                     entities.push(ent);
                 }
-            }
-            // ── Branches: CONDITION/BRANCH ──
-            else if (step.type === 'CONDITION') {
-                const ent = {
-                    type: 'condition',
-                    colorType: 'CONDITION',
-                    label: stepName || step.condition || 'condition',
-                    condition: step.condition,
-                    result: step.result,
-                    stepIndices: [idx],
-                    firstStep: step
-                };
-                entities.push(ent);
-            }
-            else if (step.type === 'BRANCH') {
-                const ent = {
-                    type: 'branch',
-                    colorType: 'BRANCH',
-                    label: stepName || step.branch || 'branch',
-                    branch: step.branch,
-                    stepIndices: [idx],
-                    firstStep: step
-                };
-                entities.push(ent);
             }
         }
 
@@ -463,6 +442,7 @@ class LoopBubbleRenderer {
     _calculateNodePosition(centerPos, bubbleRadius, t, index, total) {
         // Create a curved path inside the bubble
         // Use a parametric curve that stays inside the sphere
+        // Bubble is now centered at centerPos, so nodes should be relative to that center
 
         const angle = t * Math.PI * 1.5; // 270 degrees of curve
         const height = Math.sin(t * Math.PI) * (bubbleRadius * 0.6); // arc up and down
@@ -472,7 +452,7 @@ class LoopBubbleRenderer {
         const azimuth = t * Math.PI * 2 * 1.5; // spiral around
 
         const x = centerPos.x + radius * Math.cos(azimuth);
-        const y = centerPos.y + bubbleRadius * 0.5 + height;
+        const y = centerPos.y + height; // Centered at centerPos, height provides variation
         const z = centerPos.z + radius * Math.sin(azimuth);
 
         return new BABYLON.Vector3(x, y, z);
@@ -553,10 +533,8 @@ class LoopBubbleRenderer {
                 break;
             }
 
-            case 'condition':
-            case 'branch':
             default: {
-                // Conditions/branches are spheres (like galaxy default)
+                // Default fallback for any other types - use spheres
                 mesh = BABYLON.MeshBuilder.CreateSphere(
                     name,
                     { diameter: this.nodeRadius * 2.2, segments: 8 },
@@ -627,11 +605,6 @@ class LoopBubbleRenderer {
             case 'call':
             case 'return':
                 return ColorHash.color('function', name);
-            case 'CONDITION':
-            case 'BRANCH':
-            case 'condition':
-            case 'branch':
-                return ColorHash.color('branch', name);
             case 'LOOP':
             case 'loop':
                 return ColorHash.color(entity.subtype || 'for', name);
@@ -658,18 +631,6 @@ class LoopBubbleRenderer {
                     { size: this.nodeRadius * 2 },
                     this.scene
                 );
-                break;
-
-            case 'CONDITION':
-            case 'BRANCH':
-                // Branches are diamonds (rotated boxes)
-                mesh = BABYLON.MeshBuilder.CreateBox(
-                    name,
-                    { size: this.nodeRadius * 2 },
-                    this.scene
-                );
-                mesh.rotation.y = Math.PI / 4;
-                mesh.rotation.x = Math.PI / 4;
                 break;
 
             default:
@@ -1015,9 +976,6 @@ class LoopBubbleRenderer {
             case 'CALL':
             case 'RETURN':
                 return ColorHash.color('function', name);
-            case 'CONDITION':
-            case 'BRANCH':
-                return ColorHash.color('branch', name);
             case 'LOOP':
                 return ColorHash.color('for', name);
             default:
@@ -1036,10 +994,6 @@ class LoopBubbleRenderer {
                 return `CALL ${step.name || '?'}`;
             case 'RETURN':
                 return `RETURN ${step.value || ''}`;
-            case 'CONDITION':
-                return `IF ${step.condition || '?'}`;
-            case 'BRANCH':
-                return `${step.branch || '?'}`;
             case 'LOOP':
                 return `LOOP ${step.condition || '?'}`;
             default:

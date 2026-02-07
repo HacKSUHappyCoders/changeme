@@ -29,11 +29,109 @@ class ExplodeManager {
         this._lastClickTime = 0;
         this._lastClickMesh = null;
 
-        /** Navigation history for 'a' and 'd' keys */
+        /** Navigation for 'a' and 'd' keys */
         this._lastNavigatedMesh = null;
+
+        /** Selection ring indicator — a glowing torus under the active node */
+        this._selectionRing = null;
+        this._selectionRingAnim = null;
+        this._createSelectionRing();
 
         this._setupPointerObservable();
         this._setupNavigationKeys();
+    }
+
+    // ─── selection ring indicator ───────────────────────────────────
+
+    /**
+     * Create the reusable selection ring mesh (hidden initially).
+     */
+    _createSelectionRing() {
+        const ring = BABYLON.MeshBuilder.CreateTorus('selectionRing', {
+            diameter: 4,
+            thickness: 0.18,
+            tessellation: 48
+        }, this.scene);
+
+        const mat = new BABYLON.StandardMaterial('selectionRingMat', this.scene);
+        mat.emissiveColor = new BABYLON.Color3(0.1, 0.85, 1.0);
+        mat.diffuseColor  = new BABYLON.Color3(0.05, 0.5, 0.9);
+        mat.alpha = 0.85;
+        mat.disableLighting = true;
+        ring.material = mat;
+
+        ring.isPickable = false;
+        ring.setEnabled(false);
+
+        // Gentle pulsing animation on alpha
+        const pulseAnim = new BABYLON.Animation(
+            'selRingPulse', 'material.alpha', 30,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+        pulseAnim.setKeys([
+            { frame: 0,  value: 0.85 },
+            { frame: 30, value: 0.45 },
+            { frame: 60, value: 0.85 }
+        ]);
+        ring.animations = [pulseAnim];
+        this._selectionRingAnim = this.scene.beginAnimation(ring, 0, 60, true);
+        this._selectionRingAnim.pause();
+
+        this._selectionRing = ring;
+    }
+
+    /**
+     * Move the selection ring underneath the given mesh and make it visible.
+     * Automatically scales the ring to fit the building's footprint.
+     */
+    _showSelectionRing(mesh) {
+        if (!this._selectionRing || !mesh || mesh.isDisposed()) {
+            this._hideSelectionRing();
+            return;
+        }
+
+        // Compute a bounding-based diameter
+        mesh.computeWorldMatrix(true);
+        const bounds = mesh.getBoundingInfo();
+        const extents = bounds.boundingBox.extendSizeWorld;
+        // Use the XZ footprint to size the ring
+        const footprint = Math.max(extents.x, extents.z) * 2;
+        const ringDiameter = Math.max(footprint + 1.2, 2.5);
+
+        // Scale the torus uniformly — it was created with diameter=4
+        const scale = ringDiameter / 4;
+        this._selectionRing.scaling.set(scale, 1, scale);
+
+        // Position under the mesh (at its base Y)
+        const pos = mesh.getAbsolutePosition();
+        const baseY = pos.y - extents.y;
+        this._selectionRing.position.set(pos.x, baseY + 0.05, pos.z);
+
+        this._selectionRing.setEnabled(true);
+        if (this._selectionRingAnim) this._selectionRingAnim.restart();
+    }
+
+    /**
+     * Hide the selection ring.
+     */
+    _hideSelectionRing() {
+        if (!this._selectionRing) return;
+        this._selectionRing.setEnabled(false);
+        if (this._selectionRingAnim) this._selectionRingAnim.pause();
+    }
+
+    /**
+     * Set the currently active/selected mesh and show the ring on it.
+     * Use this instead of assigning _lastNavigatedMesh directly.
+     */
+    _setActiveMesh(mesh) {
+        this._lastNavigatedMesh = mesh;
+        if (mesh && !mesh.isDisposed()) {
+            this._showSelectionRing(mesh);
+        } else {
+            this._hideSelectionRing();
+        }
     }
 
     // ─── public ─────────────────────────────────────────────────────
@@ -150,7 +248,7 @@ class ExplodeManager {
         });
     }
 
-    // ─── sequential node navigation (a/d keys) ───────────────────
+    // ─── sequential node navigation (a/d/w/s keys) ────────────────
 
     _setupNavigationKeys() {
         window.addEventListener('keydown', (e) => {
@@ -163,12 +261,18 @@ class ExplodeManager {
             } else if (e.key === 'd' || e.key === 'D') {
                 e.preventDefault();
                 this._navigateSequential(+1);
+            } else if (e.key === 'w' || e.key === 'W') {
+                e.preventDefault();
+                this._navigateWarpIn();
+            } else if (e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                this._navigateWarpOut();
             }
         });
     }
 
     /**
-     * Get an ordered list of all navigable meshes in the current context.
+     * Get an ordered list of all navigable meshes at the CURRENT level.
      *
      * If we're inside a galaxy warp, return that galaxy's building meshes.
      * Otherwise, return the main spiral's building meshes sorted by slot.
@@ -183,7 +287,6 @@ class ExplodeManager {
             const galaxy = this.galaxyWarpManager.warpedGalaxy;
             if (galaxy) {
                 if (galaxy.isBubble && galaxy.galaxyData && galaxy.galaxyData.bubbleData) {
-                    // Bubble nodes from a for-loop galaxy
                     const bubbleData = galaxy.galaxyData.bubbleData;
                     if (bubbleData.nodes) {
                         for (const n of bubbleData.nodes) {
@@ -193,7 +296,6 @@ class ExplodeManager {
                         }
                     }
                 } else if (galaxy.galaxyData && galaxy.galaxyData.meshes) {
-                    // Galaxy spiral buildings
                     for (const m of galaxy.galaxyData.meshes) {
                         if (m && !m.isDisposed() && m._isGalaxyBuilding) {
                             nodes.push({ mesh: m, type: 'galaxy' });
@@ -240,15 +342,14 @@ class ExplodeManager {
      * Find the currently active mesh — whatever is being inspected right now.
      */
     _getCurrentMesh() {
-        // Dot / galaxy / bubble inspector takes priority (secondary overlay)
+        if (this._lastNavigatedMesh && !this._lastNavigatedMesh.isDisposed()) {
+            return this._lastNavigatedMesh;
+        }
         if (this._dotPanel) {
-            // The dot panel can be for a dot, galaxy building, or bubble node.
-            // Check what we last opened:
             if (this._lastNavigatedMesh && !this._lastNavigatedMesh.isDisposed()) {
                 return this._lastNavigatedMesh;
             }
         }
-        // Primary building inspector
         if (this.exploded && this.exploded.mesh && !this.exploded.mesh.isDisposed()) {
             return this.exploded.mesh;
         }
@@ -256,11 +357,108 @@ class ExplodeManager {
     }
 
     /**
+     * Check whether a mesh can be warped into (has children in a sub-galaxy).
+     */
+    _canWarpInto(mesh) {
+        return this.galaxyWarpManager && this.galaxyWarpManager.canWarp(mesh);
+    }
+
+    /**
+     * Warp into a building's sub-galaxy and select its first or last child.
+     * @param {BABYLON.AbstractMesh} mesh  – the parent building to warp into
+     * @param {number} direction           – +1 selects first child, -1 selects last
+     */
+    _warpIntoAndSelect(mesh, direction) {
+        // Close inspectors before warping
+        if (this.exploded) this._collapse();
+        this._closeDotInspector();
+
+        // Perform the warp
+        this.galaxyWarpManager.warpTo(mesh);
+
+        // After warping, get the new child nodes
+        const childNodes = this._getOrderedNodes();
+        if (childNodes.length === 0) return;
+
+        const target = direction > 0 ? childNodes[0] : childNodes[childNodes.length - 1];
+        if (!target || !target.mesh || target.mesh.isDisposed()) return;
+
+        this._openInspectorForNode(target);
+        this._setActiveMesh(target.mesh);
+    }
+
+    /**
+     * Warp back out to the parent level and select the parent building.
+     * If we came from the main spiral, select the parent on the main spiral.
+     * If we came from a parent galaxy, select the parent in that galaxy.
+     */
+    _warpOutAndSelect() {
+        if (!this.galaxyWarpManager || !this.galaxyWarpManager.isWarped()) return;
+
+        // Remember the parent building that spawned this galaxy
+        const parentMesh = this.galaxyWarpManager.warpedGalaxy.buildingMesh;
+
+        // Close inspectors before returning
+        if (this.exploded) this._collapse();
+        this._closeDotInspector();
+
+        // Return one level
+        this.galaxyWarpManager.returnToMainGalaxy(true);
+
+        // Now select the parent building in whatever level we're on
+        if (parentMesh && !parentMesh.isDisposed()) {
+            // Determine the type of the parent mesh at the new level
+            const nodes = this._getOrderedNodes();
+            const parentNode = nodes.find(n => n.mesh === parentMesh);
+            if (parentNode) {
+                this._openInspectorForNode(parentNode);
+            } else {
+                // If we can't find it in the ordered list, open it as a building
+                this._explode(parentMesh, true);
+            }
+            this._setActiveMesh(parentMesh);
+        }
+    }
+
+    /**
+     * Open the correct inspector for a given node entry.
+     */
+    _openInspectorForNode(node) {
+        switch (node.type) {
+            case 'building':
+                this._explode(node.mesh, true);
+                break;
+            case 'galaxy':
+                this._showGalaxyBuildingInspector(node.mesh, true);
+                break;
+            case 'bubble':
+                this._showBubbleNodeInspector(node.mesh, true);
+                break;
+        }
+    }
+
+    /**
      * Step forward (+1) or backward (-1) through the ordered node list.
+     *
+     * Cross-level traversal:
+     *   – Going forward ('d') past the last node of a sub-galaxy warps back
+     *     out and selects the NEXT sibling after the parent on the parent level.
+     *   – Going forward on a warpable building warps INTO it and selects
+     *     the first child.
+     *   – Going backward ('a') past the first node of a sub-galaxy warps
+     *     back out and selects the parent building.
+     *   – Going backward on a warpable building warps INTO it and selects
+     *     the last child.
      */
     _navigateSequential(direction) {
         const nodes = this._getOrderedNodes();
-        if (nodes.length === 0) return;
+        if (nodes.length === 0) {
+            // No nodes at this level — try to warp out
+            if (this.galaxyWarpManager && this.galaxyWarpManager.isWarped()) {
+                this._warpOutAndSelect();
+            }
+            return;
+        }
 
         const currentMesh = this._getCurrentMesh();
 
@@ -269,17 +467,42 @@ class ExplodeManager {
             currentIdx = nodes.findIndex(n => n.mesh === currentMesh);
         }
 
-        let nextIdx;
+        // ── Nothing selected yet: pick first or last ──
         if (currentIdx === -1) {
-            // Nothing selected yet — pick first (d) or last (a) node
-            nextIdx = direction > 0 ? 0 : nodes.length - 1;
-        } else {
-            nextIdx = currentIdx + direction;
-            // Wrap around
-            if (nextIdx < 0) nextIdx = nodes.length - 1;
-            if (nextIdx >= nodes.length) nextIdx = 0;
+            // Close whatever might be open
+            if (this.exploded) this._collapse();
+            this._closeDotInspector();
+
+            const target = direction > 0 ? nodes[0] : nodes[nodes.length - 1];
+            if (!target || !target.mesh || target.mesh.isDisposed()) return;
+            this._openInspectorForNode(target);
+            this._setActiveMesh(target.mesh);
+            return;
         }
 
+        const nextIdx = currentIdx + direction;
+
+        // ── Going past the beginning (a at first node) ──
+        if (nextIdx < 0) {
+            if (this.galaxyWarpManager && this.galaxyWarpManager.isWarped()) {
+                // Warp out to parent level, selecting the parent building
+                this._warpOutAndSelect();
+            }
+            // On the main spiral with no parent — do nothing (already at start)
+            return;
+        }
+
+        // ── Going past the end (d at last node) ──
+        if (nextIdx >= nodes.length) {
+            if (this.galaxyWarpManager && this.galaxyWarpManager.isWarped()) {
+                // Warp out and select the next sibling AFTER the parent
+                this._warpOutAndSelectNext();
+            }
+            // On the main spiral with no further — do nothing (already at end)
+            return;
+        }
+
+        // ── Normal step within this level ──
         const target = nodes[nextIdx];
         if (!target || !target.mesh || target.mesh.isDisposed()) return;
 
@@ -287,21 +510,70 @@ class ExplodeManager {
         if (this.exploded) this._collapse();
         this._closeDotInspector();
 
-        // Open the correct inspector for this node type
-        switch (target.type) {
-            case 'building':
-                this._explode(target.mesh, false);
-                break;
-            case 'galaxy':
-                this._showGalaxyBuildingInspector(target.mesh, false);
-                break;
-            case 'bubble':
-                this._showBubbleNodeInspector(target.mesh, false);
-                break;
+        this._openInspectorForNode(target);
+        this._setActiveMesh(target.mesh);
+    }
+
+    /**
+     * Warp out from a sub-galaxy and select the next sibling AFTER the
+     * parent building on the parent level (used when pressing 'd' past
+     * the last child in a sub-galaxy).
+     */
+    _warpOutAndSelectNext() {
+        if (!this.galaxyWarpManager || !this.galaxyWarpManager.isWarped()) return;
+
+        const parentMesh = this.galaxyWarpManager.warpedGalaxy.buildingMesh;
+
+        // Close inspectors
+        if (this.exploded) this._collapse();
+        this._closeDotInspector();
+
+        // Return one level
+        this.galaxyWarpManager.returnToMainGalaxy(true);
+
+        if (!parentMesh || parentMesh.isDisposed()) return;
+
+        // Find the parent in the new level's ordered list
+        const nodes = this._getOrderedNodes();
+        const parentIdx = nodes.findIndex(n => n.mesh === parentMesh);
+
+        if (parentIdx !== -1 && parentIdx + 1 < nodes.length) {
+            // Select the next sibling after the parent
+            const nextSibling = nodes[parentIdx + 1];
+            if (nextSibling && nextSibling.mesh && !nextSibling.mesh.isDisposed()) {
+                this._openInspectorForNode(nextSibling);
+                this._setActiveMesh(nextSibling.mesh);
+                return;
+            }
         }
 
-        // Track so we can find it next time
-        this._lastNavigatedMesh = target.mesh;
+        // If parent was the last node, just select the parent
+        if (parentIdx !== -1) {
+            this._openInspectorForNode(nodes[parentIdx]);
+            this._setActiveMesh(parentMesh);
+        }
+    }
+
+    /**
+     * 'w' key — warp INTO the currently selected building (descend one level).
+     * The building must be warpable (has child steps).
+     */
+    _navigateWarpIn() {
+        const currentMesh = this._getCurrentMesh();
+        if (!currentMesh) return;
+
+        if (this._canWarpInto(currentMesh)) {
+            this._warpIntoAndSelect(currentMesh, +1);
+        }
+    }
+
+    /**
+     * 's' key — warp OUT from the current sub-galaxy back to the parent level.
+     */
+    _navigateWarpOut() {
+        if (this.galaxyWarpManager && this.galaxyWarpManager.isWarped()) {
+            this._warpOutAndSelect();
+        }
     }
 
     // ─── click detection ────────────────────────────────────────────
@@ -362,7 +634,7 @@ class ExplodeManager {
         this.exploded = { mesh: buildingMesh, buildingData: bd, panel };
 
         // Track as the last navigated mesh for a/d key navigation
-        this._lastNavigatedMesh = buildingMesh;
+        this._setActiveMesh(buildingMesh);
 
         // Highlight the source line for this node
         if (this.onNodeSelect) {
@@ -575,7 +847,7 @@ class ExplodeManager {
         this._dotPanel = panel;
 
         // Track as the last navigated mesh for a/d key navigation
-        this._lastNavigatedMesh = mesh;
+        this._setActiveMesh(mesh);
 
         // Highlight source line if available
         if (this.onNodeSelect) {
@@ -755,7 +1027,7 @@ class ExplodeManager {
         this._dotPanel = panel;
 
         // Track as the last navigated mesh for a/d key navigation
-        this._lastNavigatedMesh = dotMesh;
+        this._setActiveMesh(dotMesh);
 
         // Highlight source line for this step
         if (this.onNodeSelect) {
@@ -818,7 +1090,7 @@ class ExplodeManager {
         this._dotPanel = panel;
 
         // Track as the last navigated mesh for a/d key navigation
-        this._lastNavigatedMesh = nodeMesh;
+        this._setActiveMesh(nodeMesh);
 
         // Highlight source line for this step
         if (this.onNodeSelect && step.line) {
@@ -1150,6 +1422,10 @@ class ExplodeManager {
 
         // Also close any dot inspector
         this._closeDotInspector();
+
+        // Hide the selection ring indicator
+        this._hideSelectionRing();
+        this._lastNavigatedMesh = null;
 
         // Hide the sub-spiral for this building
         if (this.cityRenderer) {
