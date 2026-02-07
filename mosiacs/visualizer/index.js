@@ -253,6 +253,7 @@ class CodeVisualizer {
 
         panel.appendChild(content);
         document.body.appendChild(panel);
+        makeDraggable(panel, header);
 
         // Animate in
         requestAnimationFrame(() => panel.classList.add('open'));

@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the visualizer
     visualizer.init();
 
+    // Make static panels draggable
+    makeDraggable(document.getElementById('controls'), document.querySelector('#controls h2'));
+    makeDraggable(document.getElementById('info'), document.querySelector('#info > strong'));
+
     const traceSelect = document.getElementById('traceFile');
 
     /** Load the currently selected trace file. */

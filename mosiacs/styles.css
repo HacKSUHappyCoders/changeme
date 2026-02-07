@@ -14,7 +14,7 @@ body {
 }
 
 #controls {
-    position: absolute;
+    position: fixed;
     display: flex;
     flex-direction: column;
     bottom: 20px;
@@ -150,7 +150,7 @@ input[type="file"] {
 }
 
 #info {
-    position: absolute;
+    position: fixed;
     bottom: 20px;
     right: 20px;
     background: linear-gradient(
