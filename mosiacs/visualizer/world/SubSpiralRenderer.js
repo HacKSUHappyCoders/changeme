@@ -30,6 +30,12 @@ class SubSpiralRenderer {
         this.tubeRadius   = 0.08;
         this.dotRadius    = 0.40;        // big dots — easy to click and inspect
 
+        // ── Performance: cap the number of nodes in any sub-spiral ──
+        // Large recursive traces can have 100+ children — rendering them
+        // all as individual spheres with labels crushes frame rate.
+        // We cap at this limit and add a summary node at the end.
+        this.maxNodes = 60;
+
         // Shared material cache (stepType → StandardMaterial)
         this._matCache = new Map();
 
@@ -54,11 +60,18 @@ class SubSpiralRenderer {
         // Remove existing spiral for this key
         this.removeSingle(parentKey);
 
+        // Block material dirty notifications during bulk mesh creation
+        const wasBlocked = this.scene.blockMaterialDirtyMechanism;
+        this.scene.blockMaterialDirtyMechanism = true;
+
         const pathColor = ColorHash.spiralColor(parentKey);
         const result = this._buildSubSpiral(
             parentKey, childIndices, parentPos, pathColor, trace
         );
         this.subSpirals.set(parentKey, result);
+
+        // Re-enable material updates
+        this.scene.blockMaterialDirtyMechanism = wasBlocked;
 
         // Notify CityRenderer to push main spiral outward
         if (this.onSubSpiralToggle) {
@@ -221,10 +234,29 @@ class SubSpiralRenderer {
         // ── Consolidate raw events into deduplicated entities ──
         const entities = this._consolidateChildren(childIndices, trace);
 
+        // ── Performance: cap large sub-spirals ──
+        // If there are more entities than maxNodes, keep only the first
+        // (maxNodes - 1) and append a summary "…N more" node so the user
+        // knows data was truncated.
+        let displayEntities = entities;
+        let truncated = false;
+        if (entities.length > this.maxNodes) {
+            truncated = true;
+            displayEntities = entities.slice(0, this.maxNodes - 1);
+            const remaining = entities.length - displayEntities.length;
+            displayEntities.push({
+                type: 'summary',
+                colorType: 'SUMMARY',
+                label: `… ${remaining} more nodes`,
+                stepIndices: [],
+                firstStep: entities[this.maxNodes - 1].firstStep
+            });
+        }
+
         const dots = [];
         const labels = [];
         const pathPoints = [];
-        const maxSlots = entities.length;
+        const maxSlots = displayEntities.length;
         let maxRadius = 0;
 
         for (let i = 0; i < maxSlots; i++) {
@@ -237,7 +269,7 @@ class SubSpiralRenderer {
             const dist = Math.sqrt(dx * dx + dz * dz);
             if (dist > maxRadius) maxRadius = dist;
 
-            const entity = entities[i];
+            const entity = displayEntities[i];
 
             const dot = BABYLON.MeshBuilder.CreateSphere(
                 `subDot_${parentKey}_${i}`,
@@ -274,27 +306,35 @@ class SubSpiralRenderer {
         }
 
         // Animate dots appearing one by one with a slight delay
-        dots.forEach((dot, i) => {
-            dot.scaling = new BABYLON.Vector3(0, 0, 0);
-            const anim = new BABYLON.Animation(
-                `subDotScale_${parentKey}_${i}`,
-                'scaling', 30,
-                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-            );
-            anim.setKeys([
-                { frame: 0, value: new BABYLON.Vector3(0, 0, 0) },
-                { frame: 8, value: new BABYLON.Vector3(1.1, 1.1, 1.1) },
-                { frame: 12, value: new BABYLON.Vector3(1, 1, 1) }
-            ]);
-            const ease = new BABYLON.CubicEase();
-            ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
-            anim.setEasingFunction(ease);
+        // For large sub-spirals (>30 dots), skip stagger animation for perf
+        if (dots.length <= 30) {
+            dots.forEach((dot, i) => {
+                dot.scaling = new BABYLON.Vector3(0, 0, 0);
+                const anim = new BABYLON.Animation(
+                    `subDotScale_${parentKey}_${i}`,
+                    'scaling', 30,
+                    BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                );
+                anim.setKeys([
+                    { frame: 0, value: new BABYLON.Vector3(0, 0, 0) },
+                    { frame: 8, value: new BABYLON.Vector3(1.1, 1.1, 1.1) },
+                    { frame: 12, value: new BABYLON.Vector3(1, 1, 1) }
+                ]);
+                const ease = new BABYLON.CubicEase();
+                ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+                anim.setEasingFunction(ease);
 
-            setTimeout(() => {
-                this.scene.beginDirectAnimation(dot, [anim], 0, 12, false);
-            }, i * 30);
-        });
+                setTimeout(() => {
+                    this.scene.beginDirectAnimation(dot, [anim], 0, 12, false);
+                }, i * 30);
+            });
+        } else {
+            // Instant appearance for large sub-spirals — much faster
+            dots.forEach(dot => {
+                dot.scaling = new BABYLON.Vector3(1, 1, 1);
+            });
+        }
 
         // Draw the spiral tube
         let tube = null;
@@ -302,6 +342,7 @@ class SubSpiralRenderer {
             tube = BABYLON.MeshBuilder.CreateTube(`subTube_${parentKey}`, {
                 path: pathPoints,
                 radius: this.tubeRadius,
+                tessellation: 8,
                 sideOrientation: BABYLON.Mesh.DOUBLESIDE
             }, this.scene);
             const tubeMat = new BABYLON.StandardMaterial(`subTubeMat_${parentKey}`, this.scene);
@@ -336,6 +377,7 @@ class SubSpiralRenderer {
             case 'LOOP':      return { r: 0.7, g: 0.3, b: 0.9 };
             case 'CONDITION': return { r: 0.9, g: 0.5, b: 0.2 };
             case 'BRANCH':    return { r: 0.9, g: 0.8, b: 0.2 };
+            case 'SUMMARY':   return { r: 0.6, g: 0.6, b: 0.6 };  // grey for truncation node
             default:          return { r: 0.5, g: 0.5, b: 0.5 };
         }
     }

@@ -49,14 +49,15 @@ class ExplodeManager {
     _createSelectionRing() {
         const ring = BABYLON.MeshBuilder.CreateTorus('selectionRing', {
             diameter: 4,
-            thickness: 0.18,
-            tessellation: 48
+            thickness: 0.35,
+            tessellation: 24
         }, this.scene);
 
         const mat = new BABYLON.StandardMaterial('selectionRingMat', this.scene);
-        mat.emissiveColor = new BABYLON.Color3(0.1, 0.85, 1.0);
-        mat.diffuseColor  = new BABYLON.Color3(0.05, 0.5, 0.9);
-        mat.alpha = 0.85;
+        mat.emissiveColor = new BABYLON.Color3(0.2, 1.0, 1.0);
+        mat.diffuseColor  = new BABYLON.Color3(0.1, 0.7, 1.0);
+        mat.specularColor = new BABYLON.Color3(0.3, 0.9, 1.0);
+        mat.alpha = 0.95;
         mat.disableLighting = true;
         ring.material = mat;
 
@@ -70,15 +71,42 @@ class ExplodeManager {
             BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
         );
         pulseAnim.setKeys([
-            { frame: 0,  value: 0.85 },
-            { frame: 30, value: 0.45 },
-            { frame: 60, value: 0.85 }
+            { frame: 0,  value: 0.95 },
+            { frame: 30, value: 0.65 },
+            { frame: 60, value: 0.95 }
         ]);
         ring.animations = [pulseAnim];
         this._selectionRingAnim = this.scene.beginAnimation(ring, 0, 60, true);
         this._selectionRingAnim.pause();
 
         this._selectionRing = ring;
+
+        // ── Camera-distance-based scaling ──
+        // Store the base scale set by _showSelectionRing so we can multiply
+        // by a camera-distance factor each frame.
+        this._selectionRingBaseScale = 1;
+        this._selectionRingTargetMesh = null;
+
+        this.scene.onBeforeRenderObservable.add(() => {
+            if (!this._selectionRing || !this._selectionRing.isEnabled()) return;
+
+            const camera = this.scene.activeCamera;
+            if (!camera) return;
+
+            // Camera distance from the ring position
+            const camDist = BABYLON.Vector3.Distance(
+                camera.position, this._selectionRing.position
+            );
+
+            // Scale factor: at distance ≤ 20 use 1×, then grow gently beyond that.
+            // The 0.25 multiplier keeps the ring from getting too large when zoomed out
+            // while still being clearly visible.
+            const minDist = 20;
+            const distFactor = 1 + Math.max(0, (camDist - minDist) / minDist) * 0.25;
+
+            const s = this._selectionRingBaseScale * distFactor;
+            this._selectionRing.scaling.set(s, distFactor, s);
+        });
     }
 
     /**
@@ -101,6 +129,8 @@ class ExplodeManager {
 
         // Scale the torus uniformly — it was created with diameter=4
         const scale = ringDiameter / 4;
+        this._selectionRingBaseScale = scale;
+        this._selectionRingTargetMesh = mesh;
         this._selectionRing.scaling.set(scale, 1, scale);
 
         // Position under the mesh (at its base Y)

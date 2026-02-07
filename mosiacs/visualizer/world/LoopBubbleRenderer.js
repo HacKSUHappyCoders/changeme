@@ -36,6 +36,11 @@ class LoopBubbleRenderer {
         this.connectionRadius = 0.05;       // thinner tubes for connections
         this.connectionOpacity = 0.5;       // slightly transparent
 
+        // ── Performance: cap nodes per bubble ──
+        // Recursive loops can produce 100+ entities inside a bubble.
+        // Rendering all of them as individual pickable meshes is expensive.
+        this.maxBubbleNodes = 50;
+
         // Material cache for performance (shared across all bubbles)
         this._matCache = new Map();
 
@@ -61,9 +66,23 @@ class LoopBubbleRenderer {
 
         // Consolidate child steps into main entity types (functions, variables, loops)
         // This filters out raw trace steps and groups them into buildings
-        const entities = this._consolidateChildren(childIndices, trace);
+        const rawEntities = this._consolidateChildren(childIndices, trace);
 
-        if (entities.length === 0) return;
+        if (rawEntities.length === 0) return;
+
+        // ── Performance: cap large bubbles ──
+        let entities = rawEntities;
+        if (rawEntities.length > this.maxBubbleNodes) {
+            entities = rawEntities.slice(0, this.maxBubbleNodes - 1);
+            const remaining = rawEntities.length - entities.length;
+            entities.push({
+                type: 'summary',
+                colorType: 'SUMMARY',
+                label: `… ${remaining} more`,
+                stepIndices: [],
+                firstStep: rawEntities[this.maxBubbleNodes - 1].firstStep
+            });
+        }
 
         // Calculate bubble size based on consolidated entities
         const bubbleRadius = this.bubbleRadiusBase + (entities.length * this.bubbleRadiusPerNode);
@@ -592,7 +611,7 @@ class LoopBubbleRenderer {
                 // Everything else is a sphere
                 mesh = BABYLON.MeshBuilder.CreateSphere(
                     name,
-                    { diameter: this.nodeRadius * 2, segments: 16 },
+                    { diameter: this.nodeRadius * 2, segments: 6 },
                     this.scene
                 );
         }
