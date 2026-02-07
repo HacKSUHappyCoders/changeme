@@ -8,6 +8,8 @@ class SpiralPathBuilder {
         this.spiralPath = null;
     }
 
+    
+
     /**
      * Create the DESCENDING spiral path.
      * Step 0 is at the TOP, and the path spirals downward.
@@ -17,13 +19,12 @@ class SpiralPathBuilder {
         const radius = SPIRAL_CONFIG.radiusStart;
         const radiusGrowth = SPIRAL_CONFIG.radiusGrowth;
         const heightPerStep = SPIRAL_CONFIG.heightStep;
-        const turnsPerStep = SPIRAL_CONFIG.angleStep;
 
         // Calculate the total height so we can start at the top
         const totalHeight = (steps - 1) * heightPerStep;
 
         for (let i = 0; i < steps; i++) {
-            const angle = i * turnsPerStep;
+            const angle = getSpiralAngle(i);
             const currentRadius = radius + (i * radiusGrowth);
             const x = Math.cos(angle) * currentRadius;
             const z = Math.sin(angle) * currentRadius;
