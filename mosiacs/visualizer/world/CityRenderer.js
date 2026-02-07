@@ -45,6 +45,8 @@ class CityRenderer {
         this.loopMeshes     = new Map();   // for-loops
         this.whileMeshes    = new Map();   // while-loops (new)
         this.branchMeshes   = new Map();
+        this.blackHoleMeshes = new Map();  // external function calls
+        this.blackHoleConnections = [];    // connection lines from spiral to black holes
         this.memoryLines    = [];
 
         // Spiral layout config
@@ -340,18 +342,21 @@ class CityRenderer {
         for (const [, e] of this.loopMeshes)     unfreezeEntry(e);
         for (const [, e] of this.whileMeshes)    unfreezeEntry(e);
         for (const [, e] of this.branchMeshes)   unfreezeEntry(e);
+        for (const [, e] of this.blackHoleMeshes) unfreezeEntry(e);
 
         if (this._spiralTube) this._spiralTube.unfreezeWorldMatrix();
     }
 
     clear() {
         [this.functionMeshes, this.variableMeshes, this.loopMeshes,
-         this.whileMeshes, this.branchMeshes].forEach(cache => {
+         this.whileMeshes, this.branchMeshes, this.blackHoleMeshes].forEach(cache => {
             cache.forEach(entry => this._disposeEntry(entry));
             cache.clear();
         });
         this.memoryLines.forEach(l => l.dispose());
         this.memoryLines = [];
+        this.blackHoleConnections.forEach(c => c.dispose());
+        this.blackHoleConnections = [];
         if (this._spiralTube) { this._spiralTube.dispose(); this._spiralTube = null; }
         this._nextSlot = 0;
         this._slotMap.clear();
@@ -480,6 +485,25 @@ class CityRenderer {
             }
             if (entry.label) entry.label.position.set(pos.x, pos.y + entry.height + 1, pos.z);
         }
+        // Black holes - update connection lines based on spiral position changes
+        for (const [key, entry] of this.blackHoleMeshes) {
+            const slot = this._slotMap.get(key);
+            if (slot === undefined || !entry.mesh) continue;
+            const spiralPos = this._spiralPosition(slot);
+
+            // Black hole position stays fixed (off to the side)
+            // But update the connection line
+            if (entry.connection) {
+                entry.connection.dispose();
+                entry.connection = BABYLON.MeshBuilder.CreateLines(`connection_${key}`, {
+                    points: [spiralPos, entry.mesh.position],
+                    updatable: false
+                }, this.scene);
+                entry.connection.color = new BABYLON.Color3(0.5, 0.3, 0.7);
+                entry.connection.alpha = 0.4;
+                entry.connection.isPickable = false;
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -488,25 +512,119 @@ class CityRenderer {
 
     _renderFunctions(functions, callStack) {
         const activeKeys = new Set();
+        const activeBlackHoleKeys = new Set();
+
         functions.forEach(fn => {
-            activeKeys.add(fn.key);
-            if (!this.functionMeshes.has(fn.key)) {
-                const slot = this._slotFor(fn.key);
-                const pos = this._spiralPosition(slot);
-                this.functionMeshes.set(fn.key, this._createFunctionDistrict(fn, pos, slot));
+            if (fn.isExternal) {
+                // External functions become black holes
+                activeBlackHoleKeys.add(fn.key);
+                if (!this.blackHoleMeshes.has(fn.key)) {
+                    const slot = this._slotFor(fn.key);
+                    const spiralPos = this._spiralPosition(slot);
+                    this.blackHoleMeshes.set(fn.key, this._createBlackHole(fn, spiralPos, slot));
+                }
+            } else {
+                // Internal functions get normal buildings
+                activeKeys.add(fn.key);
+                if (!this.functionMeshes.has(fn.key)) {
+                    const slot = this._slotFor(fn.key);
+                    const pos = this._spiralPosition(slot);
+                    this.functionMeshes.set(fn.key, this._createFunctionDistrict(fn, pos, slot));
+                }
+                this._updateFunctionState(this.functionMeshes.get(fn.key), fn);
             }
-            this._updateFunctionState(this.functionMeshes.get(fn.key), fn);
         });
+
         this.functionMeshes.forEach((entry, key) => {
             if (!activeKeys.has(key)) this._setInactive(entry);
         });
+        this.blackHoleMeshes.forEach((entry, key) => {
+            if (!activeBlackHoleKeys.has(key)) this._setInactive(entry);
+        });
+    }
+
+    _createBlackHole(fn, spiralPos, slot) {
+        // Position black hole off to the side of the spiral
+        const angle = getSpiralAngle(slot);
+        const radius = this.spiralRadiusStart + slot * this.spiralRadiusGrowth;
+        const offsetDistance = radius * 0.5 + 5; // Push outward from spiral
+
+        const blackHolePos = new BABYLON.Vector3(
+            Math.cos(angle) * (radius + offsetDistance),
+            spiralPos.y,
+            Math.sin(angle) * (radius + offsetDistance)
+        );
+
+        // Create black sphere with event horizon effect
+        const size = 1.2;
+        const sphere = BABYLON.MeshBuilder.CreateSphere(`blackhole_${fn.key}`, {
+            diameter: size, segments: 16
+        }, this.scene);
+        sphere.position = blackHolePos;
+
+        // Dark material with subtle purple glow
+        const mat = new BABYLON.StandardMaterial(`blackholeMat_${fn.key}`, this.scene);
+        mat.diffuseColor = new BABYLON.Color3(0.05, 0.0, 0.1);
+        mat.emissiveColor = new BABYLON.Color3(0.15, 0.05, 0.25);
+        mat.specularColor = new BABYLON.Color3(0.3, 0.1, 0.4);
+        mat.alpha = 0.95;
+        sphere.material = mat;
+        sphere.isPickable = true;
+
+        // Accretion disk (glowing ring)
+        const disk = BABYLON.MeshBuilder.CreateTorus(`blackholeDisk_${fn.key}`, {
+            diameter: size * 2.2, thickness: size * 0.15, tessellation: 24
+        }, this.scene);
+        disk.position = blackHolePos;
+        disk.rotation.x = Math.PI / 2;
+
+        const diskMat = new BABYLON.StandardMaterial(`blackholeDiskMat_${fn.key}`, this.scene);
+        diskMat.diffuseColor = new BABYLON.Color3(0.4, 0.2, 0.6);
+        diskMat.emissiveColor = new BABYLON.Color3(0.6, 0.3, 0.8);
+        diskMat.alpha = 0.7;
+        disk.material = diskMat;
+        disk.isPickable = false;
+
+        // Connection line from spiral to black hole
+        const connectionLine = BABYLON.MeshBuilder.CreateLines(`connection_${fn.key}`, {
+            points: [spiralPos, blackHolePos],
+            updatable: false
+        }, this.scene);
+        connectionLine.color = new BABYLON.Color3(0.5, 0.3, 0.7);
+        connectionLine.alpha = 0.4;
+        connectionLine.isPickable = false;
+        this.blackHoleConnections.push(connectionLine);
+
+        // Label
+        const labelText = `${fn.name}() 📦`;
+        const labelColor = { r: 0.6, g: 0.4, b: 0.8, a: 1.0 };
+        const label = this._createFloatingLabel(
+            `blackholeLabel_${fn.key}`, labelText, blackHolePos.clone(), size + 0.5, labelColor
+        );
+        label.isPickable = false;
+
+        this._animateScaleIn(sphere);
+        this._animateScaleIn(disk);
+
+        sphere._buildingData = {
+            step: fn.enterStep,
+            stepData: { type: 'EXTERNAL_CALL', name: fn.name, depth: fn.depth, line: fn.line || 0 },
+            color: labelColor,
+            type: 'EXTERNAL_CALL',
+            childSteps: [],
+            capMesh: disk
+        };
+        sphere._trapHeight = size;
+        sphere._entityData = fn;
+
+        return { mesh: sphere, disk, label, connection: connectionLine, height: size, color: labelColor, type: 'blackhole' };
     }
 
     _createFunctionDistrict(fn, pos, slot) {
         const height = 4 + fn.depth * 2.5;
         const width = 3.5;
         const tangentAngle = this._spiralTangentAngle(slot);
-        const color = ColorHash.color('function', fn.name);
+        const color = ColorHash.colorWithFile('function', fn.name, fn.sourceFile);
 
         const mesh = BABYLON.MeshBuilder.CreateCylinder(`building_${fn.key}`, {
             height, diameterTop: width * 0.5, diameterBottom: width, tessellation: 4, subdivisions: 1
@@ -535,8 +653,11 @@ class CityRenderer {
         this._animateScaleIn(cap);
 
         const invLabel = fn.invocation > 1 ? ` #${fn.invocation}` : '';
+        const externalMark = fn.isExternal ? ' 📦' : '';
+        const fileLabel = fn.sourceFile && fn.sourceFile !== 'unknown' ? ` [${fn.sourceFile}]` : '';
+        const labelText = `${fn.name}()${invLabel}${externalMark}${fileLabel}`;
         const label = this._createFloatingLabel(
-            `fnLabel_${fn.key}`, `${fn.name}()${invLabel}`, pos.clone(), height + 0.5, color
+            `fnLabel_${fn.key}`, labelText, pos.clone(), height + 0.5, color
         );
         label.isPickable = false;
 
@@ -601,7 +722,7 @@ class CityRenderer {
         const height = 2;
         const width = 1.4;
         const tangentAngle = this._spiralTangentAngle(slot);
-        const color = ColorHash.color('variable', v.name);
+        const color = ColorHash.colorWithFile('variable', v.name, v.sourceFile);
 
         const mesh = BABYLON.MeshBuilder.CreateBox(`building_${v.key}`, {
             height, width, depth: width
@@ -717,7 +838,7 @@ class CityRenderer {
         const height = 3;
         const width = 2.6;
         const tangentAngle = this._spiralTangentAngle(slot);
-        const color = ColorHash.color(loopType, loop.condition);
+        const color = ColorHash.colorWithFile(loopType, loop.condition, loop.sourceFile);
 
         const mesh = BABYLON.MeshBuilder.CreateCylinder(`building_${loop.key}`, {
             height, diameterTop: width * 0.75, diameterBottom: width, tessellation: 6
@@ -812,7 +933,7 @@ class CityRenderer {
         const width = 2.2;
         const tangentAngle = this._spiralTangentAngle(slot);
         const branchType = br.chosenBranch === 'else' ? 'else' : 'branch';
-        const color = ColorHash.color(branchType, br.condition);
+        const color = ColorHash.colorWithFile(branchType, br.condition, br.sourceFile);
 
         const mesh = BABYLON.MeshBuilder.CreateCylinder(`building_${br.key}`, {
             height, diameterTop: 0.3, diameterBottom: width, tessellation: 4
@@ -967,6 +1088,7 @@ class CityRenderer {
         for (const [, e] of this.loopMeshes)     freezeEntry(e);
         for (const [, e] of this.whileMeshes)    freezeEntry(e);
         for (const [, e] of this.branchMeshes)   freezeEntry(e);
+        for (const [, e] of this.blackHoleMeshes) freezeEntry(e);
 
         // Freeze the spiral tube
         if (this._spiralTube) this._spiralTube.freezeWorldMatrix();
@@ -984,7 +1106,7 @@ class CityRenderer {
 
     _disposeEntry(entry) {
         if (!entry) return;
-        const disposable = ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath', 'label'];
+        const disposable = ['mesh', 'cap', 'roof', 'chimney', 'truePath', 'falsePath', 'label', 'disk', 'connection'];
         disposable.forEach(k => {
             if (entry[k]) {
                 if (entry[k].material) entry[k].material.dispose();

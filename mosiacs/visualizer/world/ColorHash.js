@@ -82,4 +82,40 @@ class ColorHash {
             b: (255 - x1) / 255
         };
     }
+
+    /**
+     * Generate color with file-specific tint for multi-file visualizations.
+     * Applies a subtle brightness variation based on source file to help
+     * distinguish buildings from different files while maintaining the
+     * type-based color scheme.
+     *
+     * @param {'function'|'variable'|'for'|'while'|'branch'|'else'} type
+     * @param {string} name - Entity name
+     * @param {string} sourceFile - Source file name (optional)
+     * @returns {{r:number, g:number, b:number, a:number}}
+     */
+    static colorWithFile(type, name, sourceFile) {
+        if (!sourceFile || sourceFile === 'unknown') {
+            return ColorHash.color(type, name);
+        }
+
+        // Get base color
+        const baseColor = ColorHash.color(type, name);
+
+        // Compute file-specific tint
+        const fileHash = ColorHash._hash(sourceFile);
+        const fileTintFactor = (fileHash % 100) / 200; // 0.0 to 0.5 range
+
+        // Alternate files between slightly brighter and slightly darker
+        const fileMod = fileHash % 2 === 0
+            ? 1.0 + fileTintFactor           // brighten
+            : 1.0 - fileTintFactor * 0.5;    // darken
+
+        return {
+            r: Math.min(baseColor.r * fileMod, 1.0),
+            g: Math.min(baseColor.g * fileMod, 1.0),
+            b: Math.min(baseColor.b * fileMod, 1.0),
+            a: baseColor.a
+        };
+    }
 }

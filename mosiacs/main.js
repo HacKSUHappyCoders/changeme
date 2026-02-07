@@ -31,6 +31,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load example button — loads the selected file from the dropdown
     document.getElementById('loadExample').addEventListener('click', loadSelectedTrace);
 
+    // Load multiple button — loads and merges multiple selected files
+    document.getElementById('loadMultiple').addEventListener('click', () => {
+        const selectedOptions = traceSelect ? Array.from(traceSelect.selectedOptions) : [];
+        const selectedFiles = selectedOptions.map(opt => opt.value);
+
+        if (selectedFiles.length === 0) {
+            alert('Please select one or more trace files');
+            return;
+        }
+
+        if (selectedFiles.length === 1) {
+            // Just load single file normally
+            loadSelectedTrace();
+            return;
+        }
+
+        visualizer.setSourceCode(null); // No source code for example traces
+
+        // Load all selected files in parallel
+        Promise.all(selectedFiles.map(f => CodeParser.getExampleTrace(f)))
+            .then(jsons => {
+                // Merge the traces
+                const merged = CodeParser.mergeTraces(jsons);
+                visualizer.visualize(merged);
+            })
+            .catch(err => console.error('Failed to load multiple traces:', err));
+    });
+
     // Reset camera button
     document.getElementById('resetCamera').addEventListener('click', () => {
         visualizer.resetCamera();

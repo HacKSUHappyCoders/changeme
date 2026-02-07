@@ -1,0 +1,657 @@
+{
+  "success": true,
+  "metadata": {
+    "file_name": "00006.c",
+    "file_path": "/tmp/tmpugw8wnfv/00006.c",
+    "file_size": "1113",
+    "file_mode": "-rw-r--r--",
+    "modified": "2026-02-07 17:15:24",
+    "accessed": "2026-02-07 17:15:24",
+    "created": "2026-02-07 17:15:24",
+    "language": "C",
+    "total_lines": "64",
+    "non_blank_lines": "54",
+    "num_includes": "1",
+    "num_comments": "7",
+    "num_functions": "2",
+    "function_names": "abs_val,main",
+    "num_variables": "11",
+    "num_assignments": "12",
+    "num_calls": "1",
+    "num_returns": "2",
+    "num_loops": "2",
+    "num_branches": "2",
+    "max_nesting_depth": "3"
+  },
+  "traces": [
+    {
+      "type": "CALL",
+      "subject": "main",
+      "stack_depth": "1",
+      "id": 0
+    },
+    {
+      "type": "DECL",
+      "subject": "a",
+      "value": "1",
+      "address": "0x7ffeb526084c",
+      "line_number": "9",
+      "stack_depth": "1",
+      "id": 1
+    },
+    {
+      "type": "DECL",
+      "subject": "b",
+      "value": "2",
+      "address": "0x7ffeb5260848",
+      "line_number": "9",
+      "stack_depth": "1",
+      "id": 2
+    },
+    {
+      "type": "DECL",
+      "subject": "c",
+      "value": "3",
+      "address": "0x7ffeb5260844",
+      "line_number": "9",
+      "stack_depth": "1",
+      "id": 3
+    },
+    {
+      "type": "UPDATE",
+      "subject": "a",
+      "operator": "++",
+      "value": "2",
+      "address": "0x7ffeb526084c",
+      "line_number": "12",
+      "stack_depth": "1",
+      "id": 4
+    },
+    {
+      "type": "UPDATE",
+      "subject": "b",
+      "operator": "++",
+      "value": "3",
+      "address": "0x7ffeb5260848",
+      "line_number": "13",
+      "stack_depth": "1",
+      "id": 5
+    },
+    {
+      "type": "UPDATE",
+      "subject": "c",
+      "operator": "--",
+      "value": "2",
+      "address": "0x7ffeb5260844",
+      "line_number": "14",
+      "stack_depth": "1",
+      "id": 6
+    },
+    {
+      "type": "UPDATE",
+      "subject": "a",
+      "operator": "--",
+      "value": "1",
+      "address": "0x7ffeb526084c",
+      "line_number": "15",
+      "stack_depth": "1",
+      "id": 7
+    },
+    {
+      "type": "DECL",
+      "subject": "count",
+      "value": "0",
+      "address": "0x7ffeb5260840",
+      "line_number": "18",
+      "stack_depth": "1",
+      "id": 8
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "19",
+      "stack_depth": "1",
+      "condition": "count < 5",
+      "condition_result": "1",
+      "id": 9
+    },
+    {
+      "type": "UPDATE",
+      "subject": "count",
+      "operator": "++",
+      "value": "1",
+      "address": "0x7ffeb5260840",
+      "line_number": "20",
+      "stack_depth": "1",
+      "id": 10
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "19",
+      "stack_depth": "1",
+      "condition": "count < 5",
+      "condition_result": "1",
+      "id": 11
+    },
+    {
+      "type": "UPDATE",
+      "subject": "count",
+      "operator": "++",
+      "value": "2",
+      "address": "0x7ffeb5260840",
+      "line_number": "20",
+      "stack_depth": "1",
+      "id": 12
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "19",
+      "stack_depth": "1",
+      "condition": "count < 5",
+      "condition_result": "1",
+      "id": 13
+    },
+    {
+      "type": "UPDATE",
+      "subject": "count",
+      "operator": "++",
+      "value": "3",
+      "address": "0x7ffeb5260840",
+      "line_number": "20",
+      "stack_depth": "1",
+      "id": 14
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "19",
+      "stack_depth": "1",
+      "condition": "count < 5",
+      "condition_result": "1",
+      "id": 15
+    },
+    {
+      "type": "UPDATE",
+      "subject": "count",
+      "operator": "++",
+      "value": "4",
+      "address": "0x7ffeb5260840",
+      "line_number": "20",
+      "stack_depth": "1",
+      "id": 16
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "19",
+      "stack_depth": "1",
+      "condition": "count < 5",
+      "condition_result": "1",
+      "id": 17
+    },
+    {
+      "type": "UPDATE",
+      "subject": "count",
+      "operator": "++",
+      "value": "5",
+      "address": "0x7ffeb5260840",
+      "line_number": "20",
+      "stack_depth": "1",
+      "id": 18
+    },
+    {
+      "type": "DECL",
+      "subject": "grade",
+      "value": "2",
+      "address": "0x7ffeb526083c",
+      "line_number": "24",
+      "stack_depth": "1",
+      "id": 19
+    },
+    {
+      "type": "SWITCH",
+      "subject": "grade",
+      "value": "2",
+      "line_number": "25",
+      "stack_depth": "1",
+      "id": 20
+    },
+    {
+      "type": "CASE",
+      "label": "2",
+      "line_number": "29",
+      "stack_depth": "1",
+      "id": 21
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "a",
+      "value": "20",
+      "address": "0x7ffeb526084c",
+      "line_number": "30",
+      "stack_depth": "1",
+      "id": 22
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "20",
+      "address": "0x7ffeb526084c",
+      "line_number": "41",
+      "stack_depth": "1",
+      "id": 23
+    },
+    {
+      "type": "READ",
+      "subject": "b",
+      "format_spec": "3",
+      "address": "0x7ffeb5260848",
+      "line_number": "41",
+      "stack_depth": "1",
+      "id": 24
+    },
+    {
+      "type": "READ",
+      "subject": "a",
+      "format_spec": "20",
+      "address": "0x7ffeb526084c",
+      "line_number": "41",
+      "stack_depth": "1",
+      "id": 25
+    },
+    {
+      "type": "READ",
+      "subject": "b",
+      "format_spec": "3",
+      "address": "0x7ffeb5260848",
+      "line_number": "41",
+      "stack_depth": "1",
+      "id": 26
+    },
+    {
+      "type": "TERNARY",
+      "subject": "(a > b)",
+      "condition_result": "1",
+      "line_number": "41",
+      "stack_depth": "1",
+      "id": 27
+    },
+    {
+      "type": "DECL",
+      "subject": "max",
+      "value": "20",
+      "address": "0x7ffeb5260838",
+      "line_number": "41",
+      "stack_depth": "1",
+      "id": 28
+    },
+    {
+      "type": "READ",
+      "subject": "c",
+      "format_spec": "2",
+      "address": "0x7ffeb5260844",
+      "line_number": "42",
+      "stack_depth": "1",
+      "id": 29
+    },
+    {
+      "type": "TERNARY",
+      "subject": "(c >= 0)",
+      "condition_result": "1",
+      "line_number": "42",
+      "stack_depth": "1",
+      "id": 30
+    },
+    {
+      "type": "DECL",
+      "subject": "sign",
+      "value": "1",
+      "address": "0x7ffeb5260834",
+      "line_number": "42",
+      "stack_depth": "1",
+      "id": 31
+    },
+    {
+      "type": "CALL",
+      "subject": "abs_val",
+      "stack_depth": "2",
+      "args": [
+        "-42"
+      ],
+      "id": 32
+    },
+    {
+      "type": "PARAM",
+      "subject": "x",
+      "value": "-42",
+      "line_number": "3",
+      "id": 33
+    },
+    {
+      "type": "TERNARY",
+      "subject": "(x < 0)",
+      "condition_result": "1",
+      "line_number": "4",
+      "stack_depth": "1",
+      "id": 34
+    },
+    {
+      "type": "DECL",
+      "subject": "result",
+      "value": "42",
+      "address": "0x7ffeb5260830",
+      "line_number": "45",
+      "stack_depth": "1",
+      "id": 35
+    },
+    {
+      "type": "DECL",
+      "subject": "i",
+      "value": "0",
+      "address": "0x7ffeb526082c",
+      "line_number": "48",
+      "stack_depth": "1",
+      "id": 36
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "49",
+      "stack_depth": "1",
+      "condition": "i < 3",
+      "condition_result": "1",
+      "id": 37
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 38
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 39
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "0",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 40
+    },
+    {
+      "type": "TERNARY",
+      "subject": "(i % 2 == 0)",
+      "condition_result": "1",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 41
+    },
+    {
+      "type": "DECL",
+      "subject": "val",
+      "value": "0",
+      "address": "0x7ffeb5260828",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 42
+    },
+    {
+      "type": "SWITCH",
+      "subject": "val",
+      "value": "0",
+      "line_number": "51",
+      "stack_depth": "1",
+      "id": 43
+    },
+    {
+      "type": "CASE",
+      "label": "0",
+      "line_number": "52",
+      "stack_depth": "1",
+      "id": 44
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "42",
+      "address": "0x7ffeb5260830",
+      "line_number": "53",
+      "stack_depth": "1",
+      "id": 45
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "43",
+      "address": "0x7ffeb5260830",
+      "line_number": "53",
+      "stack_depth": "1",
+      "id": 46
+    },
+    {
+      "type": "UPDATE",
+      "subject": "i",
+      "operator": "++",
+      "value": "1",
+      "address": "0x7ffeb526082c",
+      "line_number": "59",
+      "stack_depth": "1",
+      "id": 47
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "49",
+      "stack_depth": "1",
+      "condition": "i < 3",
+      "condition_result": "1",
+      "id": 48
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 49
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 50
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "1",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 51
+    },
+    {
+      "type": "TERNARY",
+      "subject": "(i % 2 == 0)",
+      "condition_result": "0",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 52
+    },
+    {
+      "type": "DECL",
+      "subject": "val",
+      "value": "-1",
+      "address": "0x7ffeb5260828",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 53
+    },
+    {
+      "type": "SWITCH",
+      "subject": "val",
+      "value": "-1",
+      "line_number": "51",
+      "stack_depth": "1",
+      "id": 54
+    },
+    {
+      "type": "CASE",
+      "label": "default",
+      "line_number": "55",
+      "stack_depth": "1",
+      "id": 55
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "43",
+      "address": "0x7ffeb5260830",
+      "line_number": "56",
+      "stack_depth": "1",
+      "id": 56
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "42",
+      "address": "0x7ffeb5260830",
+      "line_number": "56",
+      "stack_depth": "1",
+      "id": 57
+    },
+    {
+      "type": "UPDATE",
+      "subject": "i",
+      "operator": "++",
+      "value": "2",
+      "address": "0x7ffeb526082c",
+      "line_number": "59",
+      "stack_depth": "1",
+      "id": 58
+    },
+    {
+      "type": "LOOP",
+      "subtype": "do-while",
+      "line_number": "49",
+      "stack_depth": "1",
+      "condition": "i < 3",
+      "condition_result": "1",
+      "id": 59
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 60
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 61
+    },
+    {
+      "type": "READ",
+      "subject": "i",
+      "format_spec": "2",
+      "address": "0x7ffeb526082c",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 62
+    },
+    {
+      "type": "TERNARY",
+      "subject": "(i % 2 == 0)",
+      "condition_result": "1",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 63
+    },
+    {
+      "type": "DECL",
+      "subject": "val",
+      "value": "2",
+      "address": "0x7ffeb5260828",
+      "line_number": "50",
+      "stack_depth": "1",
+      "id": 64
+    },
+    {
+      "type": "SWITCH",
+      "subject": "val",
+      "value": "2",
+      "line_number": "51",
+      "stack_depth": "1",
+      "id": 65
+    },
+    {
+      "type": "CASE",
+      "label": "default",
+      "line_number": "55",
+      "stack_depth": "1",
+      "id": 66
+    },
+    {
+      "type": "READ",
+      "subject": "result",
+      "format_spec": "42",
+      "address": "0x7ffeb5260830",
+      "line_number": "56",
+      "stack_depth": "1",
+      "id": 67
+    },
+    {
+      "type": "ASSIGN",
+      "subject": "result",
+      "value": "41",
+      "address": "0x7ffeb5260830",
+      "line_number": "56",
+      "stack_depth": "1",
+      "id": 68
+    },
+    {
+      "type": "UPDATE",
+      "subject": "i",
+      "operator": "++",
+      "value": "3",
+      "address": "0x7ffeb526082c",
+      "line_number": "59",
+      "stack_depth": "1",
+      "id": 69
+    },
+    {
+      "type": "RETURN",
+      "subtype": "result",
+      "value": "41",
+      "line_number": "62",
+      "stack_depth": "1",
+      "address": "0x7ffeb5260830",
+      "id": 70
+    }
+  ],
+  "seed": 98278234176869965586
+}

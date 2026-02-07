@@ -103,15 +103,17 @@ class WorldState {
         }
 
         switch (step.type) {
-            case 'CALL':      this._handleCall(step); break;
-            case 'RETURN':    this._handleReturn(step); break;
-            case 'DECL':      this._handleDecl(step); break;
-            case 'PARAM':     this._handleDecl(step); break;  // params are variable declarations
-            case 'ASSIGN':    this._handleAssign(step); break;
-            case 'READ':      this._handleRead(step); break;
-            case 'LOOP':      this._handleLoop(step); break;
-            case 'CONDITION': this._handleCondition(step); break;
-            case 'BRANCH':    this._handleBranch(step); break;
+            case 'CALL':         this._handleCall(step); break;
+            case 'RETURN':       this._handleReturn(step); break;
+            case 'DECL':         this._handleDecl(step); break;
+            case 'PARAM':        this._handleDecl(step); break;  // params are variable declarations
+            case 'ASSIGN':       this._handleAssign(step); break;
+            case 'READ':         this._handleRead(step); break;
+            case 'LOOP':         this._handleLoop(step); break;
+            case 'CONDITION':    this._handleCondition(step); break;
+            case 'BRANCH':       this._handleBranch(step); break;
+            case 'EXTERNAL_CALL': this._handleExternalCall(step); break;
+            case 'UNKNOWN':      /* silently ignore */ break;
         }
     }
 
@@ -140,7 +142,8 @@ class WorldState {
             localVars: [],
             returnValue: null,
             childStepIndices: [],
-            line: step.line || 0
+            line: step.line || 0,
+            sourceFile: step.sourceFile
         });
 
         this.creationOrder.push(key);
@@ -152,6 +155,34 @@ class WorldState {
             endStep: null,
             children: this.functionDistricts.get(key).childStepIndices
         });
+    }
+
+    // ─── EXTERNAL_CALL — library/external function calls ───────────
+
+    _handleExternalCall(step) {
+        const n = this._nextCount(this._fnCallCount, `extern_${step.name}`);
+        const key = `extern_${step.name}_#${n}`;
+
+        this.functionDistricts.set(key, {
+            key,
+            name: step.name,
+            depth: step.depth,
+            invocation: n,
+            enterStep: this.currentStep,
+            exitStep: this.currentStep,  // external calls are instantaneous
+            active: true,
+            localVars: [],
+            returnValue: null,
+            childStepIndices: [],
+            line: step.line || 0,
+            isExternal: true,            // flag for external calls
+            sourceFile: step.sourceFile
+        });
+
+        this.creationOrder.push(key);
+
+        // External calls don't push onto the call stack
+        // They're instantaneous side-effects
     }
 
     // ─── RETURN ────────────────────────────────────────────────────
@@ -216,7 +247,8 @@ class WorldState {
                 lastWriter: this.currentStep,
                 declStep: this.currentStep,
                 active: true,
-                line: step.line || 0
+                line: step.line || 0,
+                sourceFile: step.sourceFile
             });
 
             this.creationOrder.push(key);
@@ -398,7 +430,8 @@ class WorldState {
                 steps: [this.currentStep],
                 childStepIndices: [],
                 _baseLookup: baseLookup,
-                line: step.line || 0
+                line: step.line || 0,
+                sourceFile: step.sourceFile
             };
             map.set(key, factory);
 
@@ -447,7 +480,8 @@ class WorldState {
             childStepIndices: [],
             chainLinks: [],
             _baseLookup: baseLookup,
-            line: step.line || 0
+            line: step.line || 0,
+            sourceFile: step.sourceFile
         };
         this.branchIntersections.set(key, intersection);
 

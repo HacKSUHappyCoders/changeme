@@ -24,12 +24,40 @@ class CodeParser {
 
         this.metadata = data.metadata || null;
 
+        // Normalize metadata: convert string numbers to actual numbers
+        if (this.metadata) {
+            const numericFields = ['file_size', 'total_lines', 'non_blank_lines',
+                                  'num_includes', 'num_comments', 'num_functions',
+                                  'num_variables', 'num_assignments', 'num_calls',
+                                  'num_returns', 'num_loops', 'num_branches', 'max_nesting_depth'];
+            numericFields.forEach(field => {
+                if (typeof this.metadata[field] === 'string') {
+                    this.metadata[field] = parseInt(this.metadata[field], 10) || 0;
+                }
+            });
+
+            // Convert comma-separated strings to arrays
+            if (typeof this.metadata.function_names === 'string') {
+                this.metadata.function_names = this.metadata.function_names
+                    .split(',').map(s => s.trim()).filter(s => s);
+            }
+            if (typeof this.metadata.includes === 'string') {
+                this.metadata.includes = this.metadata.includes
+                    .split(',').map(s => s.trim()).filter(s => s);
+            }
+            if (typeof this.metadata.defined_functions === 'string') {
+                this.metadata.defined_functions = this.metadata.defined_functions
+                    .split(',').map(s => s.trim()).filter(s => s);
+            }
+        }
+
+        const sourceFile = this.metadata?.file_name || 'unknown';
         const traces = data.traces || [];
 
         this.executionTrace = traces.map((t, index) => {
             return {
                 step:       index,
-                type:       t.type,                          // CALL, DECL, LOOP, ASSIGN, RETURN, CONDITION, BRANCH, READ
+                type:       t.type,                          // CALL, DECL, LOOP, ASSIGN, RETURN, CONDITION, BRANCH, READ, EXTERNAL_CALL, UNKNOWN
                 name:       t.subject || '',                 // primary identifier
                 value:      t.value !== undefined ? String(t.value) : '',
                 address:    t.address || '0',
@@ -41,6 +69,10 @@ class CodeParser {
                 conditionResult: t.condition_result !== undefined ? Number(t.condition_result) : null,
                 // READ-specific: the value that was read (format_spec in the raw trace)
                 readValue:  t.format_spec !== undefined ? String(t.format_spec) : '',
+                // Multi-file support
+                sourceFile: sourceFile,                      // which file this step is from
+                id:         t.id,                            // trace event ID
+                args:       t.args || [],                    // for UNKNOWN events
                 raw:        t
             };
         });
@@ -72,5 +104,44 @@ class CodeParser {
         formData.append('file', file);
         return fetch('/api/upload', { method: 'POST', body: formData })
             .then(res => res.json());
+    }
+
+    /**
+     * Merge multiple trace JSON objects into a single trace.
+     * Useful for multi-file visualization.
+     * @param {Array<object>} jsonArray – array of trace JSON objects
+     * @returns {object} Merged trace JSON
+     */
+    static mergeTraces(jsonArray) {
+        if (!jsonArray || jsonArray.length === 0) {
+            return { metadata: {}, traces: [] };
+        }
+
+        if (jsonArray.length === 1) {
+            return jsonArray[0];
+        }
+
+        const result = {
+            metadata: {
+                files: jsonArray.map(j => j.metadata?.file_name || 'unknown'),
+                merged: true,
+                total_files: jsonArray.length
+            },
+            traces: []
+        };
+
+        // Concatenate traces, adding file context to each trace event
+        jsonArray.forEach(json => {
+            const fileName = json.metadata?.file_name || 'unknown';
+            const traces = json.traces || [];
+            traces.forEach(t => {
+                result.traces.push({
+                    ...t,
+                    sourceFile: fileName  // Ensure sourceFile is set
+                });
+            });
+        });
+
+        return result;
     }
 }
