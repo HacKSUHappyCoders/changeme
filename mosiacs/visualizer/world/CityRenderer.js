@@ -525,29 +525,140 @@ class CityRenderer {
 
     _renderSpiralPath() {
         if (this._spiralTube) { this._spiralTube.dispose(); this._spiralTube = null; }
+        if (this._spiralTubeError) { this._spiralTubeError.dispose(); this._spiralTubeError = null; }
         if (this._nextSlot < 2) return;
 
+        // Find the error split point (slot number where error occurs)
+        const errorSlot = this._findErrorSlot();
+
         const points = [];
+        const errorPoints = [];
+
         // For large spirals, compute every other point to reduce geometry
         const stride = this._nextSlot > 200 ? 2 : 1;
         for (let i = 0; i < this._nextSlot; i += stride) {
             const p = this._spiralPosition(i);
             p.y -= 0.05;
-            points.push(p);
+
+            if (errorSlot !== null && i >= errorSlot) {
+                errorPoints.push(p);
+            } else {
+                points.push(p);
+            }
         }
 
-        this._spiralTube = BABYLON.MeshBuilder.CreateTube('spiralTimeline', {
-            path: points, radius: 0.12,
-            tessellation: 8,
-            sideOrientation: BABYLON.Mesh.DOUBLESIDE
-        }, this.scene);
-        const mat = new BABYLON.StandardMaterial('spiralMat', this.scene);
-        mat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 0.3);
-        mat.diffuseColor  = new BABYLON.Color3(0.9, 0.8, 0.4);
-        mat.alpha = 0.55;
-        mat.freeze();
-        this._spiralTube.material = mat;
-        this._spiralTube.isPickable = false;
+        // Create normal spiral tube (before error)
+        if (points.length >= 2) {
+            this._spiralTube = BABYLON.MeshBuilder.CreateTube('spiralTimeline', {
+                path: points, radius: 0.12,
+                tessellation: 8,
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE
+            }, this.scene);
+            const mat = new BABYLON.StandardMaterial('spiralMat', this.scene);
+            mat.emissiveColor = new BABYLON.Color3(0.8, 0.7, 0.3);
+            mat.diffuseColor  = new BABYLON.Color3(0.9, 0.8, 0.4);
+            mat.alpha = 0.55;
+            mat.freeze();
+            this._spiralTube.material = mat;
+            this._spiralTube.isPickable = false;
+        }
+
+        // Create error spiral tube (after error) in red
+        if (errorPoints.length >= 2) {
+            // Add transition point from normal path if needed
+            if (points.length > 0 && errorSlot > 0) {
+                const transitionPoint = this._spiralPosition(errorSlot);
+                transitionPoint.y -= 0.05;
+                errorPoints.unshift(transitionPoint);
+            }
+
+            this._spiralTubeError = BABYLON.MeshBuilder.CreateTube('spiralTimelineError', {
+                path: errorPoints, radius: 0.12,
+                tessellation: 8,
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE
+            }, this.scene);
+            const errorMat = new BABYLON.StandardMaterial('spiralErrorMat', this.scene);
+            errorMat.emissiveColor = new BABYLON.Color3(0.9, 0.1, 0.1);
+            errorMat.diffuseColor  = new BABYLON.Color3(1.0, 0.2, 0.2);
+            errorMat.alpha = 0.65;
+            errorMat.freeze();
+            this._spiralTubeError.material = errorMat;
+            this._spiralTubeError.isPickable = false;
+        }
+    }
+
+    /**
+     * Find the slot number where the error occurs.
+     * @returns {number|null} The slot number, or null if no error
+     */
+    _findErrorSlot() {
+        if (!this._error) return null;
+
+        // For compile errors with line numbers, find the first building at/after that line
+        if (this._error.line) {
+            let minSlot = Infinity;
+            let found = false;
+
+            // Check all entity types
+            const allEntities = [
+                ...this.functionMeshes.entries(),
+                ...this.variableMeshes.entries(),
+                ...this.loopMeshes.entries(),
+                ...this.whileMeshes.entries(),
+                ...this.branchMeshes.entries()
+            ];
+
+            for (const [key, entry] of allEntities) {
+                const entity = entry.mesh?._entityData;
+                if (!entity || !entity.line) continue;
+
+                if (entity.line >= this._error.line) {
+                    const slot = this._slotMap.get(key);
+                    if (slot !== undefined && slot < minSlot) {
+                        minSlot = slot;
+                        found = true;
+                    }
+                }
+            }
+
+            return found ? minSlot : null;
+        }
+
+        // For runtime errors without line numbers, find the last step's slot
+        if (this._error.stage === 'runtime' && this._lastTrace && this._lastTrace.length > 0) {
+            const lastStepIndex = this._lastTrace.length - 1;
+            let maxSlot = -1;
+            let found = false;
+
+            const allEntities = [
+                ...this.functionMeshes.entries(),
+                ...this.variableMeshes.entries(),
+                ...this.loopMeshes.entries(),
+                ...this.whileMeshes.entries(),
+                ...this.branchMeshes.entries()
+            ];
+
+            for (const [key, entry] of allEntities) {
+                const entity = entry.mesh?._entityData;
+                if (!entity) continue;
+
+                // Check if this entity corresponds to the last step
+                if (entity.enterStep === lastStepIndex ||
+                    entity.declStep === lastStepIndex ||
+                    entity.step === lastStepIndex) {
+                    const slot = this._slotMap.get(key);
+                    if (slot !== undefined && slot > maxSlot) {
+                        maxSlot = slot;
+                        found = true;
+                    }
+                }
+            }
+
+            // Return slot AFTER the last step for runtime errors
+            return found ? maxSlot + 1 : null;
+        }
+
+        return null;
     }
 
     // ─── Reposition buildings ──────────────────────────────────────
