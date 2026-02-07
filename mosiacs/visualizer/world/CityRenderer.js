@@ -179,22 +179,11 @@ class CityRenderer {
         this._lastTrace = snapshot.trace || [];
         this._lastSnapshot = snapshot;
 
-        // Build a set of branch keys that will be skipped at render time
-        // (missing condition text or chosen branch) so they don't waste
-        // spiral slots and create visual gaps.
-        const skippedBranchKeys = new Set();
-        if (snapshot.branches) {
-            for (const br of snapshot.branches) {
-                if (!br.condition || !br.chosenBranch) skippedBranchKeys.add(br.key);
-            }
-        }
-
         // Pre-assign spiral slots in trace-creation order so that
         // buildings are interleaved along the spiral based on when they
         // first appeared in the execution trace, NOT grouped by type.
         if (snapshot.creationOrder) {
             for (const key of snapshot.creationOrder) {
-                if (skippedBranchKeys.has(key)) continue;  // skip blank branches
                 this._slotFor(key);   // assigns monotonically increasing slot
             }
         }
@@ -743,11 +732,6 @@ class CityRenderer {
     _renderBranches(branches) {
         const activeKeys = new Set();
         branches.forEach(br => {
-            // Skip branches that don't have both a condition and a chosen branch.
-            // These are typically false-condition evaluations where the if-body
-            // was never entered, so they add visual clutter with no useful info.
-            if (!br.condition || !br.chosenBranch) return;
-
             activeKeys.add(br.key);
             if (!this.branchMeshes.has(br.key)) {
                 const slot = this._slotFor(br.key);

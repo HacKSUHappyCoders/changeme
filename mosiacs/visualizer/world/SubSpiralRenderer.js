@@ -140,16 +140,19 @@ class SubSpiralRenderer {
      */
     _consolidateChildren(childIndices, trace) {
         const entities = [];          // final deduplicated list
-        const varMap   = new Map();   // "subject|address" → entity
+        const varMap   = new Map();   // "name|address" → entity
         const loopMap  = new Map();   // "subtype|condition" → entity
 
         for (const idx of childIndices) {
             const step = trace[idx];
             if (!step) continue;
 
+            // The parsed trace uses "name" (mapped from raw "subject")
+            const stepName = step.name || step.subject || '';
+
             if (step.type === 'DECL' || step.type === 'ASSIGN') {
-                // ── Variable: merge DECL + ASSIGNs by subject+address ──
-                const varKey = `${step.subject}|${step.address || ''}`;
+                // ── Variable: merge DECL + ASSIGNs by name+address ──
+                const varKey = `${stepName}|${step.address || ''}`;
                 if (varMap.has(varKey)) {
                     const ent = varMap.get(varKey);
                     ent.stepIndices.push(idx);
@@ -159,8 +162,8 @@ class SubSpiralRenderer {
                     const ent = {
                         type: 'variable',
                         colorType: 'DECL',
-                        label: step.subject,
-                        subject: step.subject,
+                        label: stepName,
+                        subject: stepName,
                         address: step.address,
                         currentValue: step.value,
                         values: [{ step: idx, value: step.value }],
@@ -177,7 +180,7 @@ class SubSpiralRenderer {
                     const ent = loopMap.get(loopKey);
                     ent.stepIndices.push(idx);
                     ent.iterations++;
-                    ent.running = !!step.condition_result;
+                    ent.running = !!(step.conditionResult || step.condition_result);
                 } else {
                     const ent = {
                         type: 'loop',
@@ -186,7 +189,7 @@ class SubSpiralRenderer {
                         subtype: step.subtype,
                         condition: step.condition,
                         iterations: 1,
-                        running: !!step.condition_result,
+                        running: !!(step.conditionResult || step.condition_result),
                         stepIndices: [idx],
                         firstStep: step
                     };
@@ -198,7 +201,7 @@ class SubSpiralRenderer {
                 entities.push({
                     type: step.type.toLowerCase(),
                     colorType: step.type,
-                    label: step.subject || step.subtype || step.type,
+                    label: stepName || step.subtype || step.type,
                     stepIndices: [idx],
                     firstStep: step
                 });

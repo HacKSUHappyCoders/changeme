@@ -436,13 +436,12 @@ class ExplodeManager {
             if (entity.firstStep) {
                 const step = entity.firstStep;
                 if (step.name)    h += this._row('Name', step.name);
-                if (step.subject) h += this._row('Subject', step.subject);
                 if (step.value !== undefined && step.value !== null)
                     h += this._row('Value', `<strong>${step.value}</strong>`);
-                if (step.stack_depth !== undefined)
-                    h += this._row('Stack Depth', step.stack_depth);
-                if (step.line_number)
-                    h += this._row('Line', step.line_number);
+                if (step.depth !== undefined)
+                    h += this._row('Stack Depth', step.depth);
+                if (step.line)
+                    h += this._row('Line', step.line);
             }
             h += `</div>`;
             return h;
@@ -459,8 +458,8 @@ class ExplodeManager {
             if (entity.firstStep) {
                 const step = entity.firstStep;
                 if (step.condition) h += this._row('Condition', `<code>${step.condition}</code>`);
-                if (step.condition_result !== undefined)
-                    h += this._row('Result', step.condition_result
+                if (step.conditionResult !== undefined)
+                    h += this._row('Result', step.conditionResult
                         ? '<span class="val-true">TRUE</span>'
                         : '<span class="val-false">FALSE</span>');
                 if (step.subtype)
@@ -480,11 +479,10 @@ class ExplodeManager {
         h += this._row('Type', entity.type || '—');
         if (entity.firstStep) {
             const step = entity.firstStep;
-            if (step.subject)     h += this._row('Subject', step.subject);
             if (step.name)        h += this._row('Name', step.name);
             if (step.value !== undefined && step.value !== null)
                 h += this._row('Value', `<strong>${step.value}</strong>`);
-            if (step.line_number) h += this._row('Line', step.line_number);
+            if (step.line)        h += this._row('Line', step.line);
         }
         if (entity.stepIndices)
             h += this._row('Steps', entity.stepIndices.length);
@@ -554,7 +552,7 @@ class ExplodeManager {
         if (entity && entity.type === 'variable') {
             h += `<div class="inspector-header var-header">
                 <span class="inspector-icon">🏠</span>
-                <span>${entity.subject}</span>
+                <span>${entity.subject || entity.label || 'Variable'}</span>
             </div>`;
             h += `<div class="inspector-section">`;
             h += this._row('Type', 'Variable');
@@ -616,17 +614,16 @@ class ExplodeManager {
         h += `<div class="inspector-section">`;
         h += this._row('Event Type', step.type);
         h += this._row('Trace Step', stepIndex !== undefined ? stepIndex : '—');
-        if (step.subject)     h += this._row('Subject', step.subject);
         if (step.name)        h += this._row('Name', step.name);
         if (step.value !== undefined && step.value !== null)
             h += this._row('Value', `<strong>${step.value}</strong>`);
         if (step.address)     h += this._row('Address', step.address);
-        if (step.line_number) h += this._row('Line', step.line_number);
-        if (step.stack_depth !== undefined)
-            h += this._row('Stack Depth', step.stack_depth);
+        if (step.line)        h += this._row('Line', step.line);
+        if (step.depth !== undefined)
+            h += this._row('Stack Depth', step.depth);
         if (step.condition)   h += this._row('Condition', `<code>${step.condition}</code>`);
-        if (step.condition_result !== undefined)
-            h += this._row('Result', step.condition_result ? '<span class="val-true">TRUE</span>' : '<span class="val-false">FALSE</span>');
+        if (step.conditionResult !== undefined)
+            h += this._row('Result', step.conditionResult ? '<span class="val-true">TRUE</span>' : '<span class="val-false">FALSE</span>');
         if (step.subtype)     h += this._row('Subtype', step.subtype);
         h += `</div>`;
         return h;
